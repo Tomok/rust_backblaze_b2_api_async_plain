@@ -1,5 +1,5 @@
 [package]
-name = "backblaze_b2_async"
+name = "backblaze_b2_async_plain"
 version = "0.1.0"
 authors = ["dev"]
 edition = "2018"

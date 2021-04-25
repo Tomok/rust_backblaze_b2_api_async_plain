@@ -66,6 +66,7 @@ pub async fn b2_authorize_account(
         Ok(auth_ok)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(|e| AuthorizeError::from(e))?;
+        // MachineReadableJsonErrorObj {status: $s, code: $c} ==>> JsonErrorObj {status: $s, code: $c, .. }
         let auth_error = match raw_error.machine_readable() {
             MachineReadableJsonErrorObj {
                 status: StatusCode::BadRequest,

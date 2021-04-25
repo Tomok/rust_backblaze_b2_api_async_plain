@@ -1,8 +1,8 @@
 use super::{AccountId, ApiUrl, AuthorizationToken, DownloadUrl, Error, JsonErrorObj};
 use http_types::StatusCode;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthorizeAccountOk {
     absolute_minimum_part_size: u32,
@@ -14,15 +14,15 @@ pub struct AuthorizeAccountOk {
     recommended_part_size: u32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthorizeAccountAllowed {
     pub capabilities: Vec<String>, //TODO: use enum instead ??
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub bucket_id: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub bucket_name: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name_prefix: Option<String>,
 }
 

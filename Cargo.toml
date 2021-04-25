@@ -20,3 +20,8 @@ wiremock = "0.5"
 base64 = "0.13"
 textwrap = "0.13"
 http-auth-basic = "0.1"
+structopt = "0.3.21"
+home = "0.5.3"
+
+[[example]]
+name = "b2_authorize_account"

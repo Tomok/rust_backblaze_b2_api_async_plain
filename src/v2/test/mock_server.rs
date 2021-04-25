@@ -1,7 +1,10 @@
 use std::convert::TryInto;
 
 use textwrap::dedent;
-use wiremock::{Match, matchers::{header, header_exists, method, path}};
+use wiremock::{
+    matchers::{header, header_exists, method, path},
+    Match,
+};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 use serde::Serialize;
@@ -55,11 +58,13 @@ impl Match for AuthorizationHeaderMatch {
 }
 
 struct JsonBodyMatch {
-    json_obj: serde_json::Value
+    json_obj: serde_json::Value,
 }
 
 impl JsonBodyMatch {
-    fn new(json_obj: serde_json::Value) -> Self { Self { json_obj } }
+    fn new(json_obj: serde_json::Value) -> Self {
+        Self { json_obj }
+    }
 }
 
 impl Match for JsonBodyMatch {
@@ -69,11 +74,13 @@ impl Match for JsonBodyMatch {
             if let Ok(input) = serde_json::from_str::<serde_json::Value>(&body) {
                 let res = input == self.json_obj;
                 if !res {
-                    println!("input != expected, input was {:#?} \n expected was {:#?}", input, self.json_obj);
+                    println!(
+                        "input != expected, input was {:#?} \n expected was {:#?}",
+                        input, self.json_obj
+                    );
                 }
                 res
             } else {
-                
                 false //not JSON
             }
         } else {
@@ -187,7 +194,8 @@ impl B2MockServer {
     /// creates a default list bucket handler, that responds to authorized requests using [FAKE_ACCOUNT_ID] and [FAKE_AUTHORIZATION_TOKEN],
     /// Note: no other fields may be part of the request body
     pub async fn register_default_list_bucket_handler(&self) {
-        let ok_body = dedent("
+        let ok_body = dedent(
+            "
         {
             \"buckets\": [
             {
@@ -235,7 +243,8 @@ impl B2MockServer {
                 },
                 \"lifecycleRules\": []
             } ]
-        }");
+        }",
+        );
         println!("ok_body = {}", &ok_body);
         let expected_input = json!({
             "accountId": "a30f20426f0b1"

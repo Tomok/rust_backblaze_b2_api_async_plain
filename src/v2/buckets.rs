@@ -4,7 +4,7 @@ use std::{
     collections::{HashMap, HashSet},
     convert::TryFrom,
     error::Error,
-    fmt::Display
+    fmt::Display,
 };
 
 use serde::{

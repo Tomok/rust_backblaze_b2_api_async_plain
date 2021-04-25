@@ -54,7 +54,7 @@ struct Bucket {
     bucket_type: BucketType,
     bucket_info: BucketInfo,
     #[serde(default)]
-    cors_rules: serde_json::Value,    // it's not part of the example, so maybe optional???                 //todo!!!
+    cors_rules: serde_json::Value, // it's not part of the example, so maybe optional???                 //todo!!!
     default_server_side_encryption: serde_json::Value, //todo !!!
     lifecycle_rules: serde_json::Value,
     #[serde(default)]
@@ -122,8 +122,8 @@ pub async fn b2_list_buckets<'a>(
 mod test {
     use crate::v2::test::mock_server::*;
 
+    use super::super::{AccountId, ApiUrl, AuthorizationToken};
     use super::{b2_list_buckets, ListBucketsRequest};
-    use super::super::{ApiUrl, AuthorizationToken, AccountId};
 
     #[tokio::test]
     async fn test_ok() {
@@ -135,7 +135,8 @@ mod test {
             &ListBucketsRequest::builder()
                 .account_id(&AccountId(FAKE_ACCOUNT_ID.to_string()))
                 .build(),
-        ).await;
+        )
+        .await;
         dbg!(&res);
         assert!(res.is_ok());
     }

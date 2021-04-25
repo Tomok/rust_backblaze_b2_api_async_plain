@@ -1,13 +1,11 @@
 use std::convert::TryInto;
 
 use textwrap::dedent;
-use wiremock::{
-    matchers::{any, header_exists, headers, method, path},
-    Match,
-};
+use wiremock::{Match, matchers::{header, header_exists, method, path}};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 use serde::Serialize;
+use serde_json::json;
 
 pub struct B2MockServer {
     mock_server: MockServer,
@@ -15,6 +13,8 @@ pub struct B2MockServer {
 
 pub const FAKE_APPLICATION_KEY_ID: &'static str = "applicationKeyId_value";
 pub const FAKE_APPLICATION_KEY: &'static str = "applicationKey_value";
+pub const FAKE_AUTHORIZATION_TOKEN: &'static str = "authorization_token";
+pub const FAKE_ACCOUNT_ID: &'static str = "a30f20426f0b1";
 
 struct AuthorizationHeaderMatch {
     username_expected: String,
@@ -50,6 +50,34 @@ impl Match for AuthorizationHeaderMatch {
             dbg!("not found");
             // no auth header
             false
+        }
+    }
+}
+
+struct JsonBodyMatch {
+    json_obj: serde_json::Value
+}
+
+impl JsonBodyMatch {
+    fn new(json_obj: serde_json::Value) -> Self { Self { json_obj } }
+}
+
+impl Match for JsonBodyMatch {
+    fn matches(&self, request: &wiremock::Request) -> bool {
+        if let Ok(body) = String::from_utf8(request.body.clone()) {
+            dbg!(&body);
+            if let Ok(input) = serde_json::from_str::<serde_json::Value>(&body) {
+                let res = input == self.json_obj;
+                if !res {
+                    println!("input != expected, input was {:#?} \n expected was {:#?}", input, self.json_obj);
+                }
+                res
+            } else {
+                
+                false //not JSON
+            }
+        } else {
+            false // not valid utf-8
         }
     }
 }
@@ -154,6 +182,71 @@ impl B2MockServer {
             ))
             .mount(&self.mock_server)
             .await
+    }
+
+    /// creates a default list bucket handler, that responds to authorized requests using [FAKE_ACCOUNT_ID] and [FAKE_AUTHORIZATION_TOKEN],
+    /// Note: no other fields may be part of the request body
+    pub async fn register_default_list_bucket_handler(&self) {
+        let ok_body = dedent("
+        {
+            \"buckets\": [
+            {
+                \"accountId\": \"30f20426f0b1\",
+                \"bucketId\": \"4a48fe8875c6214145260818\",
+                \"bucketInfo\": {},
+                \"bucketName\" : \"Kitten-Videos\",
+                \"bucketType\": \"allPrivate\",
+            \"defaultServerSideEncryption\": {
+                  \"isClientAuthorizedToRead\" : true,
+                  \"value\": {
+                    \"algorithm\" : \"AES256\",
+                    \"mode\" : \"SSE-B2\"
+                  }
+                },
+                \"lifecycleRules\": []
+            },
+            {
+                \"accountId\": \"30f20426f0b1\",
+                \"bucketId\" : \"5b232e8875c6214145260818\",
+                \"bucketInfo\": {},
+                \"bucketName\": \"Puppy-Videos\",
+                \"bucketType\": \"allPublic\",
+            \"defaultServerSideEncryption\": {
+                  \"isClientAuthorizedToRead\" : true,
+                  \"value\": {
+                    \"algorithm\" : null,
+                    \"mode\" : null
+                  }
+                },
+                \"lifecycleRules\": []
+            },
+            {
+                \"accountId\": \"30f20426f0b1\",
+                \"bucketId\": \"87ba238875c6214145260818\",
+                \"bucketInfo\": {},
+                \"bucketName\": \"Vacation-Pictures\",
+                \"bucketType\" : \"allPrivate\",
+            \"defaultServerSideEncryption\": {
+                  \"isClientAuthorizedToRead\" : true,
+                  \"value\": {
+                    \"algorithm\" : null,
+                    \"mode\" : null
+                  }
+                },
+                \"lifecycleRules\": []
+            } ]
+        }");
+        println!("ok_body = {}", &ok_body);
+        let expected_input = json!({
+            "accountId": "a30f20426f0b1"
+        });
+        Mock::given(method("GET"))
+            .and(path("/b2api/v2/b2_list_buckets"))
+            .and(header("Authorization", FAKE_AUTHORIZATION_TOKEN))
+            .and(JsonBodyMatch::new(expected_input))
+            .respond_with(ResponseTemplate::new(200).set_body_raw(ok_body, "application/json"))
+            .mount(&self.mock_server)
+            .await;
     }
 
     pub fn uri(&self) -> String {

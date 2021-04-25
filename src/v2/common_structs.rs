@@ -11,23 +11,6 @@ pub struct JsonErrorObj {
     pub message: String,
 }
 
-impl JsonErrorObj {
-    pub fn machine_readable<'a>(&'a self) -> MachineReadableJsonErrorObj<'a> {
-        MachineReadableJsonErrorObj {
-            status: self.status,
-            code: &self.code,
-        }
-    }
-}
-
-/// The parts of JsonErrorObj that are intended to be read by code
-/// usefull for match statements
-#[derive(Debug, PartialEq, Eq)]
-pub struct MachineReadableJsonErrorObj<'a> {
-    pub status: http_types::StatusCode,
-    pub code: &'a str,
-}
-
 /// Invalid data was received, the contents of message are subject to change,
 /// so please do not implement logic based on those.
 #[derive(Debug)]

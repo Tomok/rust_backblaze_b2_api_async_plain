@@ -1,6 +1,6 @@
 use super::{
     buckets::{BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes},
-    AccountId, ApiUrl, AuthorizationToken, Error, JsonErrorObj, MachineReadableJsonErrorObj,
+    AccountId, ApiUrl, AuthorizationToken, Error, JsonErrorObj,
 };
 use http_types::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -96,27 +96,20 @@ pub async fn b2_list_buckets<'a>(
         Ok(auth_ok)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(|e| ListBucketsError::from(e))?;
-        let err = match raw_error.machine_readable() {
-            MachineReadableJsonErrorObj {
-                status: StatusCode::BadRequest,
-                code: "bad_request",
-            } => ListBucketsError::BadRequest { raw_error },
-            MachineReadableJsonErrorObj {
-                status: StatusCode::Unauthorized,
-                code: "unauthorized",
-            } => ListBucketsError::Unauthorized { raw_error },
-            MachineReadableJsonErrorObj {
-                status: StatusCode::Unauthorized,
-                code: "bad_auth_token",
-            } => ListBucketsError::BadAuthToken { raw_error },
-            MachineReadableJsonErrorObj {
-                status: StatusCode::Unauthorized,
-                code: "expired_auth_token",
-            } => ListBucketsError::ExpiredAuthToken { raw_error },
-            MachineReadableJsonErrorObj {
-                status: StatusCode::Forbidden,
-                code: "transaction_cap_exceeded",
-            } => ListBucketsError::TransactionCapExceeded { raw_error },
+        let err = match (raw_error.status, raw_error.code.as_str()) {
+            (StatusCode::BadRequest, "bad_request") => ListBucketsError::BadRequest { raw_error },
+            (StatusCode::Unauthorized, "unauthorized") => {
+                ListBucketsError::Unauthorized { raw_error }
+            }
+            (StatusCode::Unauthorized, "bad_auth_token") => {
+                ListBucketsError::BadAuthToken { raw_error }
+            }
+            (StatusCode::Unauthorized, "expired_auth_token") => {
+                ListBucketsError::ExpiredAuthToken { raw_error }
+            }
+            (StatusCode::Forbidden, "transaction_cap_exceeded") => {
+                ListBucketsError::TransactionCapExceeded { raw_error }
+            }
             _ => ListBucketsError::Unexpected {
                 raw_error: Error::JSONError(raw_error),
             },

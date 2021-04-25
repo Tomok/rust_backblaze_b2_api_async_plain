@@ -1,7 +1,4 @@
-use super::{
-    AccountId, ApiUrl, AuthorizationToken, DownloadUrl, Error, JsonErrorObj,
-    MachineReadableJsonErrorObj,
-};
+use super::{AccountId, ApiUrl, AuthorizationToken, DownloadUrl, Error, JsonErrorObj};
 use http_types::StatusCode;
 use serde::Deserialize;
 
@@ -66,24 +63,15 @@ pub async fn b2_authorize_account(
         Ok(auth_ok)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(|e| AuthorizeError::from(e))?;
-        // MachineReadableJsonErrorObj {status: $s, code: $c} ==>> JsonErrorObj {status: $s, code: $c, .. }
-        let auth_error = match raw_error.machine_readable() {
-            MachineReadableJsonErrorObj {
-                status: StatusCode::BadRequest,
-                code: "bad_request",
-            } => AuthorizeError::BadRequest { raw_error },
-            MachineReadableJsonErrorObj {
-                status: StatusCode::Unauthorized,
-                code: "unauthorized",
-            } => AuthorizeError::Unauthorized { raw_error },
-            MachineReadableJsonErrorObj {
-                status: StatusCode::Unauthorized,
-                code: "unsupported",
-            } => AuthorizeError::Unsupported { raw_error },
-            MachineReadableJsonErrorObj {
-                status: StatusCode::Forbidden,
-                code: "transaction_cap_exceeded",
-            } => AuthorizeError::TransactionCapExceeded { raw_error },
+        let auth_error = match (raw_error.status, raw_error.code.as_str()) {
+            (StatusCode::BadRequest, "bad_request") => AuthorizeError::BadRequest { raw_error },
+            (StatusCode::Unauthorized, "unauthorized") => {
+                AuthorizeError::Unauthorized { raw_error }
+            }
+            (StatusCode::Unauthorized, "unsupported") => AuthorizeError::Unsupported { raw_error },
+            (StatusCode::Forbidden, "transaction_cap_exceeded") => {
+                AuthorizeError::TransactionCapExceeded { raw_error }
+            }
             _ => AuthorizeError::Unexpected {
                 raw_error: Error::JSONError(raw_error),
             },

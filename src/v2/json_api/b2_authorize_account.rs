@@ -1,4 +1,7 @@
-use super::{Error, JsonErrorObj, MachineReadableJsonErrorObj};
+use super::{
+    AccountId, ApiUrl, AuthorizationToken, DownloadUrl, Error, JsonErrorObj,
+    MachineReadableJsonErrorObj,
+};
 use http_types::StatusCode;
 use serde::Deserialize;
 
@@ -6,11 +9,11 @@ use serde::Deserialize;
 #[serde(rename_all = "camelCase")]
 pub struct AuthorizeAccountOk {
     absolute_minimum_part_size: u32,
-    account_id: String,
+    account_id: AccountId,
     allowed: AuthorizeAccountAllowed,
-    api_url: String,
-    authorization_token: String,
-    download_url: String,
+    api_url: ApiUrl,
+    authorization_token: AuthorizationToken,
+    download_url: DownloadUrl,
     recommended_part_size: u32,
 }
 

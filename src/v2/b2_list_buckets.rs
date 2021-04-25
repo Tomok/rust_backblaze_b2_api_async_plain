@@ -47,7 +47,7 @@ pub enum ListBucketsError {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct Bucket {
+pub struct Bucket {
     account_id: AccountId,
     bucket_id: String,
     bucket_name: BucketName,
@@ -67,6 +67,13 @@ struct Bucket {
 #[serde(rename_all = "camelCase")]
 pub struct ListBucketsOk {
     buckets: Vec<Bucket>,
+}
+
+impl ListBucketsOk {
+    /// Get a reference to the buckets
+    pub fn buckets(&self) -> &[Bucket] {
+        &self.buckets
+    }
 }
 
 impl From<reqwest::Error> for ListBucketsError {

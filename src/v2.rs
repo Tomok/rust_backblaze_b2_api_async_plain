@@ -20,7 +20,12 @@ pub async fn b2_authorize_account(
     .await
 }
 
+pub use buckets::{
+    BucketInfo, BucketInfoKey, BucketInfoValue, BucketName, BucketType, BucketTypes,
+};
+
 pub use b2_list_buckets::b2_list_buckets;
+pub use b2_list_buckets::{ListBucketsError, ListBucketsOk, ListBucketsRequest};
 pub use common_structs::*;
 
 #[cfg(test)]

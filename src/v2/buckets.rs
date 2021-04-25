@@ -239,7 +239,7 @@ impl<'de> Deserialize<'de> for BucketInfoValue {
 }
 
 impl BucketInfoValue {
-    fn new(data: Vec<u8>) -> Result<Self, InvalidData> {
+    pub fn new(data: Vec<u8>) -> Result<Self, InvalidData> {
         if data.len() > 10000 {
             Err(InvalidData::new(format!(
                 "Too many Bytes in Bucket Info, at most 10000 are allowed, but {} were attemted",
@@ -250,7 +250,7 @@ impl BucketInfoValue {
         }
     }
 
-    fn data(&self) -> &[u8] {
+    pub fn data(&self) -> &[u8] {
         self.0.as_slice()
     }
 }

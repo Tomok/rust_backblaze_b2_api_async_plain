@@ -14,6 +14,43 @@ pub struct AuthorizeAccountOk {
     recommended_part_size: u32,
 }
 
+impl AuthorizeAccountOk {
+    /// Get a reference to the authorize account ok's absolute minimum part size.
+    pub fn absolute_minimum_part_size(&self) -> u32 {
+        self.absolute_minimum_part_size
+    }
+
+    /// Get a reference to the authorize account ok's account id.
+    pub fn account_id(&self) -> &AccountId {
+        &self.account_id
+    }
+
+    /// Get a reference to the authorize account ok's allowed.
+    pub fn allowed(&self) -> &AuthorizeAccountAllowed {
+        &self.allowed
+    }
+
+    /// Get a reference to the authorize account ok's api url.
+    pub fn api_url(&self) -> &ApiUrl {
+        &self.api_url
+    }
+
+    /// Get a reference to the authorize account ok's authorization token.
+    pub fn authorization_token(&self) -> &AuthorizationToken {
+        &self.authorization_token
+    }
+
+    /// Get a reference to the authorize account ok's download url.
+    pub fn download_url(&self) -> &DownloadUrl {
+        &self.download_url
+    }
+
+    /// Get a reference to the authorize account ok's recommended part size.
+    pub fn recommended_part_size(&self) -> u32 {
+        self.recommended_part_size
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthorizeAccountAllowed {

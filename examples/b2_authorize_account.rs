@@ -54,27 +54,27 @@ async fn main() {
     let application_key_id = match p.application_key_id {
         Some(key_id) => key_id,
         None => {
-            write!(stdout, "Please enter application key id: ");
+            write!(stdout, "Please enter application key id: ").unwrap();
             stdout.flush().unwrap();
 
             readline(&stdin)
         }
     };
 
-    write!(stdout, "Please enter the application key: ");
+    write!(stdout, "Please enter the application key: ").unwrap();
     stdout.flush().unwrap();
     let application_key = readline(&stdin);
 
     let res = b2_authorize_account(&application_key_id, &application_key).await;
-    writeln!(stdout, "Result: {:#?}", res);
-    stdout.flush();
+    writeln!(stdout, "Result: {:#?}", res).unwrap();
+    stdout.flush().unwrap();
 
     // this is synchrounous as well ... todo: make async
     if let Some(save_file) = save {
         if let Ok(auth_data) = res {
             match std::fs::File::create(&save_file) {
                 Ok(f) => {
-                    serde_yaml::to_writer(&f, &auth_data);
+                    serde_yaml::to_writer(&f, &auth_data).unwrap();
                 }
                 Err(e) => panic!(
                     "Could not open file {:#?} to save authentication data:\n {:#?}",

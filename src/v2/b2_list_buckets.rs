@@ -16,10 +16,26 @@ pub struct ListBucketsRequest<'a> {
     bucket_id: Option<String>,
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    bucket_name: Option<String>,
+    bucket_name: Option<BucketName>,
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     bucket_types: Option<BucketTypes>,
+}
+
+impl<'a> ListBucketsRequest<'a> {
+    pub fn new(
+        account_id: &'a AccountId,
+        bucket_id: Option<String>,
+        bucket_name: Option<BucketName>,
+        bucket_types: Option<BucketTypes>,
+    ) -> Self {
+        Self {
+            account_id,
+            bucket_id,
+            bucket_name,
+            bucket_types,
+        }
+    }
 }
 
 #[derive(Debug)]

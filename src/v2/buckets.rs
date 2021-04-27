@@ -65,13 +65,32 @@ impl TryFrom<String> for BucketName {
     }
 }
 
-#[derive(Debug, Hash)]
+#[derive(Debug, Hash, PartialEq, Eq)]
 pub enum BucketType {
     AllPublic,
     AllPrivate,
     Snapshot,
 
     Other { name: String },
+}
+
+impl BucketType {
+    /// Returns `true` if the bucket_type is [`Other`], i.e. this library does not know it
+    pub fn is_other(&self) -> bool {
+        matches!(self, Self::Other { .. })
+    }
+}
+
+impl<S> From<S> for BucketType 
+    where S: Into<String> + PartialEq<&'static str>
+{
+    fn from(s: S) -> Self {
+        // since s is generic we cannot use match here (?), so compare manually
+        if s == "allPublic" { BucketType::AllPublic } 
+        else if s == "allPrivate" { BucketType::AllPrivate }
+        else if s == "snapshot" { BucketType::Snapshot }
+        else {BucketType::Other{ name: s.into() }}
+    }
 }
 
 impl Serialize for BucketType {
@@ -102,13 +121,7 @@ impl<'de> de::Visitor<'de> for BucketTypeVisitor {
     where
         E: serde::de::Error,
     {
-        let res = match v {
-            "allPublic" => BucketType::AllPublic,
-            "allPrivate" => BucketType::AllPrivate,
-            "snapshot" => BucketType::Snapshot,
-            _ => BucketType::Other { name: v.into() },
-        };
-        Ok(res)
+        Ok(v.into())
     }
 
     fn visit_string<E>(self, v: String) -> Result<Self::Value, E>

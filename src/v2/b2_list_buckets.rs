@@ -91,13 +91,11 @@ pub async fn b2_list_buckets<'a>(
     request_body: &ListBucketsRequest<'a>,
 ) -> Result<ListBucketsOk, ListBucketsError> {
     let url = format!("{}/b2api/v2/b2_list_buckets", api_url.as_str());
-    let resp = reqwest::Client::new()
-        .get(url)
+    let request = reqwest::Client::new()
+        .post(url)
         .header("Authorization", authorization_token.as_str())
-        .json(request_body)
-        .send()
-        .await
-        .map_err(|e| ListBucketsError::from(e))?;
+        .json(request_body);
+    let resp =  request.send().await.map_err(|e| ListBucketsError::from(e))?;
     if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
         let auth_ok: ListBucketsOk = resp.json().await.map_err(|e| ListBucketsError::from(e))?;
         Ok(auth_ok)

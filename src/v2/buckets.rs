@@ -81,15 +81,21 @@ impl BucketType {
     }
 }
 
-impl<S> From<S> for BucketType 
-    where S: Into<String> + PartialEq<&'static str>
+impl<S> From<S> for BucketType
+where
+    S: Into<String> + PartialEq<&'static str>,
 {
     fn from(s: S) -> Self {
         // since s is generic we cannot use match here (?), so compare manually
-        if s == "allPublic" { BucketType::AllPublic } 
-        else if s == "allPrivate" { BucketType::AllPrivate }
-        else if s == "snapshot" { BucketType::Snapshot }
-        else {BucketType::Other{ name: s.into() }}
+        if s == "allPublic" {
+            BucketType::AllPublic
+        } else if s == "allPrivate" {
+            BucketType::AllPrivate
+        } else if s == "snapshot" {
+            BucketType::Snapshot
+        } else {
+            BucketType::Other { name: s.into() }
+        }
     }
 }
 

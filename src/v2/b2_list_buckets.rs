@@ -111,7 +111,10 @@ pub async fn b2_list_buckets<'a>(
         .post(url)
         .header("Authorization", authorization_token.as_str())
         .json(request_body);
-    let resp =  request.send().await.map_err(|e| ListBucketsError::from(e))?;
+    let resp = request
+        .send()
+        .await
+        .map_err(|e| ListBucketsError::from(e))?;
     if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
         let auth_ok: ListBucketsOk = resp.json().await.map_err(|e| ListBucketsError::from(e))?;
         Ok(auth_ok)

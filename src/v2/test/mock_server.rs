@@ -18,6 +18,7 @@ pub const FAKE_APPLICATION_KEY_ID: &'static str = "applicationKeyId_value";
 pub const FAKE_APPLICATION_KEY: &'static str = "applicationKey_value";
 pub const FAKE_AUTHORIZATION_TOKEN: &'static str = "authorization_token";
 pub const FAKE_ACCOUNT_ID: &'static str = "a30f20426f0b1";
+pub const FAKE_BUCKET_ID: &'static str = "b2f6f21365e1d29f6c580f18";
 
 struct AuthorizationHeaderMatch {
     username_expected: String,
@@ -254,6 +255,61 @@ impl B2MockServer {
             .and(header("Authorization", FAKE_AUTHORIZATION_TOKEN))
             .and(JsonBodyMatch::new(expected_input))
             .respond_with(ResponseTemplate::new(200).set_body_raw(ok_body, "application/json"))
+            .mount(&self.mock_server)
+            .await;
+    }
+
+    pub async fn register_default_list_file_names_handler(&self) {
+        let ok_obj = json!({
+          "files": [
+            {
+              "accountId": "ACCOUNT_ID",
+              "action": "upload",
+              "bucketId": "b2f6f21365e1d29f6c580f18",
+              "contentLength": 7,
+              "contentSha1": "dc724af18fbdd4e59189f5fe768a5f8311527050",
+              "contentType": "text/plain",
+              "fileId": "4_zb2f6f21365e1d29f6c580f18_f10904e5ca06493a1_d20180914_m223119_c002_v0001094_t0002",
+              "fileInfo": {
+                "src_last_modified_millis": "1536964184056"
+              },
+              "fileName": "testing.txt",
+              "serverSideEncryption": {
+                "algorithm": "AES256",
+                "mode": "SSE-C"
+              },
+              "uploadTimestamp": 1536964279000u64
+            },
+            {
+              "accountId": "ACCOUNT_ID",
+              "action": "upload",
+              "bucketId": "b2f6f21365e1d29f6c580f18",
+              "contentLength": 8,
+              "contentSha1": "596b29ec9afea9e461a20610d150939b9c399d93",
+              "contentType": "text/plain",
+              "fileId": "4_zb2f6f21365e1d29f6c580f18_f10076875fe98d4af_d20180914_m223128_c002_v0001108_t0050",
+              "fileInfo": {
+                "src_last_modified_millis": "1536964200750"
+              },
+              "fileName": "testing2.txt",
+              "serverSideEncryption": {
+                "algorithm": "AES256",
+                "mode": "SSE-B2"
+              },
+              "uploadTimestamp": 1536964288000u64
+            }
+          ],
+          "nextFileName": null
+        });
+        println!("ok_body = {:#?}", &ok_obj);
+        let expected_input = json!({
+            "bucketId": "b2f6f21365e1d29f6c580f18",
+        });
+        Mock::given(method("POST"))
+            .and(path("/b2api/v2/b2_list_file_names"))
+            .and(header("Authorization", FAKE_AUTHORIZATION_TOKEN))
+            .and(JsonBodyMatch::new(expected_input))
+            .respond_with(ResponseTemplate::new(200).set_body_json(ok_obj))
             .mount(&self.mock_server)
             .await;
     }

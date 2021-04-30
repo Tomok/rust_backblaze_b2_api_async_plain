@@ -4,6 +4,7 @@ mod common_structs;
 mod b2_authorize_account;
 mod b2_list_buckets;
 mod buckets;
+mod server_side_encryption;
 
 pub use b2_authorize_account::{AuthorizeAccountOk, AuthorizeError};
 /// Authorize account function see [official documentation](https://www.backblaze.com/b2/docs/b2_authorize_account.html)

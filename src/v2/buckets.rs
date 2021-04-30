@@ -312,6 +312,12 @@ impl BucketInfo {
     }
 }
 
+impl Default for BucketInfo {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Serialize for BucketInfo {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

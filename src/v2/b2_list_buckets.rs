@@ -101,10 +101,10 @@ impl From<reqwest::Error> for ListBucketsError {
     }
 }
 
-pub async fn b2_list_buckets<'a>(
+pub async fn b2_list_buckets(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    request_body: &ListBucketsRequest<'a>,
+    request_body: &ListBucketsRequest<'_>,
 ) -> Result<ListBucketsOk, ListBucketsError> {
     let url = format!("{}/b2api/v2/b2_list_buckets", api_url.as_str());
     let request = reqwest::Client::new()
@@ -114,12 +114,12 @@ pub async fn b2_list_buckets<'a>(
     let resp = request
         .send()
         .await
-        .map_err(|e| ListBucketsError::from(e))?;
+        .map_err(ListBucketsError::from)?;
     if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
-        let auth_ok: ListBucketsOk = resp.json().await.map_err(|e| ListBucketsError::from(e))?;
+        let auth_ok: ListBucketsOk = resp.json().await.map_err(ListBucketsError::from)?;
         Ok(auth_ok)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(|e| ListBucketsError::from(e))?;
+        let raw_error: JsonErrorObj = resp.json().await.map_err(ListBucketsError::from)?;
         let err = match (raw_error.status, raw_error.code.as_str()) {
             (StatusCode::BadRequest, "bad_request") => ListBucketsError::BadRequest { raw_error },
             (StatusCode::Unauthorized, "unauthorized") => {

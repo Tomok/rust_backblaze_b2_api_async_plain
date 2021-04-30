@@ -249,7 +249,7 @@ impl B2MockServer {
         let expected_input = json!({
             "accountId": "a30f20426f0b1"
         });
-        Mock::given(method("GET"))
+        Mock::given(method("POST"))
             .and(path("/b2api/v2/b2_list_buckets"))
             .and(header("Authorization", FAKE_AUTHORIZATION_TOKEN))
             .and(JsonBodyMatch::new(expected_input))

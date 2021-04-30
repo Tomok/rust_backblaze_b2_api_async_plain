@@ -25,3 +25,6 @@ home = "0.5.3"
 
 [[example]]
 name = "b2_authorize_account"
+
+[[example]]
+name = "b2_list_buckets"

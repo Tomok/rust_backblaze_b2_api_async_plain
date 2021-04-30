@@ -94,12 +94,12 @@ pub async fn b2_authorize_account(
         .basic_auth(application_key_id, Some(application_key))
         .send()
         .await
-        .map_err(|e| AuthorizeError::from(e))?;
+        .map_err(AuthorizeError::from)?;
     if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
-        let auth_ok: AuthorizeAccountOk = resp.json().await.map_err(|e| AuthorizeError::from(e))?;
+        let auth_ok: AuthorizeAccountOk = resp.json().await.map_err(AuthorizeError::from)?;
         Ok(auth_ok)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(|e| AuthorizeError::from(e))?;
+        let raw_error: JsonErrorObj = resp.json().await.map_err(AuthorizeError::from)?;
         let auth_error = match (raw_error.status, raw_error.code.as_str()) {
             (StatusCode::BadRequest, "bad_request") => AuthorizeError::BadRequest { raw_error },
             (StatusCode::Unauthorized, "unauthorized") => {

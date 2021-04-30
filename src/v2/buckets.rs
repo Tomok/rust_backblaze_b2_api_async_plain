@@ -302,11 +302,9 @@ impl BucketInfo {
         value: BucketInfoValue,
     ) -> Result<(), TooManyEntriesError> {
         let len = self.key_values.len();
-        // only check length if it might be broken by this operation
-        if len >= 10 {
-            if !self.key_values.contains_key(&key) {
-                return Err(TooManyEntriesError::new(len + 1));
-            } //else it is just a replacement, so no need to worry
+        // only check length if it might be broken by this operation, if it is, check if action is just replacing an element
+        if len >= 10 && !self.key_values.contains_key(&key) {
+            return Err(TooManyEntriesError::new(len + 1));
         }
         self.key_values.insert(key, value);
         assert!(self.key_values.len() <= 10);

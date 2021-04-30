@@ -1,10 +1,6 @@
 use std::path::PathBuf;
 use std::vec::Vec;
-use std::{
-    collections::HashSet,
-    convert::TryFrom,
-    io::{self, BufRead, Write},
-};
+use std::{collections::HashSet, convert::TryFrom};
 use structopt::StructOpt;
 
 use backblaze_b2_async_plain::v2::{
@@ -47,9 +43,6 @@ async fn main() {
             .expect("Could not read authentication data from authentication data file");
         auth_data
     };
-
-    let stdin = io::stdin();
-    let mut stdout = io::stdout();
 
     let bucket_id = p.bucket_id;
     let bucket_name = p

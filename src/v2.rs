@@ -3,7 +3,9 @@ mod common_structs;
 
 mod b2_authorize_account;
 mod b2_list_buckets;
+mod b2_list_file_names;
 mod buckets;
+mod file;
 mod server_side_encryption;
 
 pub use b2_authorize_account::{AuthorizeAccountOk, AuthorizeError};
@@ -22,12 +24,17 @@ pub async fn b2_authorize_account(
 }
 
 pub use buckets::{
-    BucketInfo, BucketInfoKey, BucketInfoValue, BucketName, BucketType, BucketTypes,
+    BucketId, BucketInfo, BucketInfoKey, BucketInfoValue, BucketName, BucketType, BucketTypes,
 };
+
+pub use common_structs::*;
+pub use file::FileName;
+pub use server_side_encryption::ServerSideEncryption;
 
 pub use b2_list_buckets::b2_list_buckets;
 pub use b2_list_buckets::{ListBucketsError, ListBucketsOk, ListBucketsRequest};
-pub use common_structs::*;
+
+pub use b2_list_file_names::b2_list_file_names;
 
 #[cfg(test)]
 mod test;

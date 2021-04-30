@@ -1,5 +1,5 @@
 use super::{
-    buckets::{BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes},
+    buckets::{BucketId, BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes},
     AccountId, ApiUrl, AuthorizationToken, Error, JsonErrorObj,
 };
 use http_types::StatusCode;
@@ -13,7 +13,7 @@ pub struct ListBucketsRequest<'a> {
     account_id: &'a AccountId,
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    bucket_id: Option<String>,
+    bucket_id: Option<BucketId>,
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     bucket_name: Option<BucketName>,
@@ -25,7 +25,7 @@ pub struct ListBucketsRequest<'a> {
 impl<'a> ListBucketsRequest<'a> {
     pub fn new(
         account_id: &'a AccountId,
-        bucket_id: Option<String>,
+        bucket_id: Option<BucketId>,
         bucket_name: Option<BucketName>,
         bucket_types: Option<BucketTypes>,
     ) -> Self {
@@ -65,7 +65,7 @@ pub enum ListBucketsError {
 #[serde(rename_all = "camelCase")]
 pub struct Bucket {
     account_id: AccountId,
-    bucket_id: String,
+    bucket_id: BucketId,
     bucket_name: BucketName,
     bucket_type: BucketType,
     bucket_info: BucketInfo,

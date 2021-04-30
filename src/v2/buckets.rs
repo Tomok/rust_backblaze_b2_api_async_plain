@@ -378,3 +378,23 @@ impl TryFrom<HashMap<BucketInfoKey, BucketInfoValue>> for BucketInfo {
 /// however it seems like this could get big very quickly, so u128 seems like the safest bet
 /// unless BigUint or something similar is used
 pub type BucketRevision = u128;
+
+#[derive(Debug, Serialize, Deserialize, Hash, PartialEq, Eq)]
+pub struct BucketId(String);
+
+impl BucketId {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl TryFrom<String> for BucketId {
+    type Error = InvalidData;
+
+    /// Create BucketId from String
+    ///
+    /// right now this cannot fail, since I could not find rules for bucketIds. Hence all strings are assumed to be valid
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Ok(Self(value))
+    }
+}

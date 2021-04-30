@@ -4,7 +4,8 @@ use std::{collections::HashSet, convert::TryFrom};
 use structopt::StructOpt;
 
 use backblaze_b2_async_plain::v2::{
-    b2_list_buckets, AuthorizeAccountOk, BucketName, BucketType, BucketTypes, ListBucketsRequest,
+    b2_list_buckets, AuthorizeAccountOk, BucketId, BucketName, BucketType, BucketTypes,
+    ListBucketsRequest,
 };
 
 #[derive(StructOpt)]
@@ -44,7 +45,9 @@ async fn main() {
         auth_data
     };
 
-    let bucket_id = p.bucket_id;
+    let bucket_id = p
+        .bucket_id
+        .map(|s| BucketId::try_from(s).expect("Invalid Bucket Id"));
     let bucket_name = p
         .bucket_name
         .map(|s| BucketName::try_from(s).expect("Invalid Bucket Name"));

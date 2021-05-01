@@ -1,7 +1,7 @@
 use super::{AccountId, BucketId, InvalidData, ServerSideEncryption};
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
-#[derive(Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct FileName(String);
 
 impl TryFrom<String> for FileName {
@@ -32,7 +32,7 @@ impl TryFrom<String> for FileName {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum FileAction {
     START,
@@ -40,7 +40,7 @@ pub enum FileAction {
     HIDE,
     FOLDER,
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct FileId(String);
 
 impl TryFrom<String> for FileId {

@@ -34,7 +34,9 @@ pub use server_side_encryption::ServerSideEncryption;
 pub use b2_list_buckets::b2_list_buckets;
 pub use b2_list_buckets::{ListBucketsError, ListBucketsOk, ListBucketsRequest};
 
-pub use b2_list_file_names::b2_list_file_names;
+pub use b2_list_file_names::{
+    b2_list_file_names, ListFileNamesError, ListFileNamesOk, ListFileNamesRequest, MaxFileCount,
+};
 
 #[cfg(test)]
 mod test;

@@ -46,6 +46,54 @@ pub struct ListFileNamesRequest {
     delimiter: Option<String>,
 }
 
+impl ListFileNamesRequest {
+    pub fn new(
+        bucket_id: BucketId,
+        start_file_name: Option<FileName>,
+        max_file_count: Option<MaxFileCount>,
+        prefix: Option<String>,
+        delimiter: Option<String>,
+    ) -> Self {
+        Self {
+            bucket_id,
+            start_file_name,
+            max_file_count,
+            prefix,
+            delimiter,
+        }
+    }
+
+    /// Set the list file names request's start file name.
+    pub fn set_start_file_name(&mut self, start_file_name: Option<FileName>) {
+        self.start_file_name = start_file_name;
+    }
+
+    /// Set the list file names request's max file count.
+    pub fn set_max_file_count(&mut self, max_file_count: Option<MaxFileCount>) {
+        self.max_file_count = max_file_count;
+    }
+
+    /// Set the list file names request's prefix.
+    pub fn set_prefix(&mut self, prefix: Option<String>) {
+        self.prefix = prefix;
+    }
+
+    /// Set the list file names request's delimiter.
+    pub fn set_delimiter(&mut self, delimiter: Option<String>) {
+        self.delimiter = delimiter;
+    }
+
+    /// Get a reference to the list file names request's start file name.
+    pub fn start_file_name(&self) -> &Option<FileName> {
+        &self.start_file_name
+    }
+
+    /// Get a reference to the list file names request's bucket id.
+    pub fn bucket_id(&self) -> &BucketId {
+        &self.bucket_id
+    }
+}
+
 /// Error returned by b2_list_file_names
 ///
 /// based on (official documentation for b2_list_file_names)[https://www.backblaze.com/b2/docs/b2_list_file_names.html]
@@ -114,6 +162,18 @@ pub struct ListFileNamesOk {
     next_file_name: Option<FileName>,
 }
 
+impl ListFileNamesOk {
+    /// Get a reference to the list file names ok's next file name.
+    pub fn next_file_name(&self) -> &Option<FileName> {
+        &self.next_file_name
+    }
+
+    /// Get a reference to the list file names ok's files.
+    pub fn files(&self) -> &Vec<FileInformation> {
+        &self.files
+    }
+}
+
 pub async fn b2_list_file_names(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
@@ -124,13 +184,9 @@ pub async fn b2_list_file_names(
         .post(url)
         .header("Authorization", authorization_token.as_str())
         .json(request_body);
-    let resp = request
-        .send()
-        .await
-        .map_err(ListFileNamesError::from)?;
+    let resp = request.send().await.map_err(ListFileNamesError::from)?;
     if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
-        let auth_ok: ListFileNamesOk =
-            resp.json().await.map_err(ListFileNamesError::from)?;
+        let auth_ok: ListFileNamesOk = resp.json().await.map_err(ListFileNamesError::from)?;
         Ok(auth_ok)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(ListFileNamesError::from)?;

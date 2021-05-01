@@ -111,10 +111,7 @@ pub async fn b2_list_buckets(
         .post(url)
         .header("Authorization", authorization_token.as_str())
         .json(request_body);
-    let resp = request
-        .send()
-        .await
-        .map_err(ListBucketsError::from)?;
+    let resp = request.send().await.map_err(ListBucketsError::from)?;
     if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
         let auth_ok: ListBucketsOk = resp.json().await.map_err(ListBucketsError::from)?;
         Ok(auth_ok)
@@ -135,7 +132,7 @@ pub async fn b2_list_buckets(
                 ListBucketsError::TransactionCapExceeded { raw_error }
             }
             _ => ListBucketsError::Unexpected {
-                raw_error: Error::JSONError(raw_error),
+                raw_error: Error::JsonError(raw_error),
             },
         };
         Err(err)

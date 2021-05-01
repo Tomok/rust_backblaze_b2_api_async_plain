@@ -35,10 +35,10 @@ impl TryFrom<String> for FileName {
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum FileAction {
-    START,
-    UPLOAD,
-    HIDE,
-    FOLDER,
+    Start,
+    Upload,
+    Hide,
+    Folder,
 }
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct FileId(String);
@@ -59,8 +59,8 @@ impl TryFrom<String> for FileId {
 }
 
 // TODO: more specific types...
-type SHA1 = String;
-type MD5 = String;
+type Sha1 = String;
+type Md5 = String;
 type FileInfo = serde_json::Value;
 
 #[derive(Debug, Deserialize)]
@@ -70,8 +70,8 @@ pub struct FileInformation {
     action: FileAction,
     bucket_id: BucketId,
     content_length: u64,
-    content_sha1: Option<SHA1>,
-    content_md5: Option<MD5>,
+    content_sha1: Option<Sha1>,
+    content_md5: Option<Md5>,
     content_type: Option<String>,
     file_id: Option<FileId>,
     file_info: FileInfo,

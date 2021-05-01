@@ -110,7 +110,7 @@ pub async fn b2_authorize_account(
                 AuthorizeError::TransactionCapExceeded { raw_error }
             }
             _ => AuthorizeError::Unexpected {
-                raw_error: Error::JSONError(raw_error),
+                raw_error: Error::JsonError(raw_error),
             },
         };
         Err(auth_error)

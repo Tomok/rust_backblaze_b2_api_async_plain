@@ -141,7 +141,7 @@ impl From<JsonErrorObj> for ListFileNamesError {
             (403, "transaction_cap_exceeded") => Self::TransactionCapExceeded { raw_error: e },
             (503, "bad_request") => Self::BadRequestTimeout { raw_error: e },
             _ => Self::Unexpected {
-                raw_error: Error::JSONError(e),
+                raw_error: Error::JsonError(e),
             },
         }
     }

@@ -39,7 +39,7 @@ impl std::error::Error for InvalidData {}
 
 #[derive(Debug)]
 pub enum Error {
-    JSONError(JsonErrorObj),
+    JsonError(JsonErrorObj),
     ReqwestError(reqwest::Error),
 }
 

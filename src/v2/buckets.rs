@@ -337,9 +337,8 @@ impl<'de> Deserialize<'de> for BucketInfo {
         D: serde::Deserializer<'de>,
     {
         let inner = HashMap::deserialize(deserializer)?;
-        Ok(Self::try_from(inner).map_err(|e| {
-            de::Error::invalid_length(e.number_of_entries(), &"At most 10 elements")
-        })?)
+        Self::try_from(inner)
+            .map_err(|e| de::Error::invalid_length(e.number_of_entries(), &"At most 10 elements"))
     }
 }
 

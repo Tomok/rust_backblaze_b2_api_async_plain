@@ -3,6 +3,7 @@ mod common_structs;
 
 mod b2_authorize_account;
 mod b2_download_file_by_id;
+mod b2_get_upload_url;
 mod b2_list_buckets;
 mod b2_list_file_names;
 mod buckets;
@@ -39,7 +40,9 @@ pub use b2_list_file_names::{
     b2_list_file_names, ListFileNamesError, ListFileNamesOk, ListFileNamesRequest, MaxFileCount,
 };
 
-pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams};
+pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams, DownloadFileError};
+
+pub use b2_get_upload_url::{b2_get_upload_url, UploadParameters, GetUploadUrlError};
 
 #[cfg(test)]
 mod test;

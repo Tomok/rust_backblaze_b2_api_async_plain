@@ -29,3 +29,6 @@ name = "b2_authorize_account"
 
 [[example]]
 name = "b2_list_buckets"
+
+[[example]]
+name= "b2_download_file_by_id"

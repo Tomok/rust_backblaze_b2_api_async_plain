@@ -78,3 +78,8 @@ impl<'de> Deserialize<'de> for ServerSideEncryption {
         }
     }
 }
+
+#[derive(Debug)]
+pub struct ServerSideEncryptionCustomerKey {
+    //TODO
+}

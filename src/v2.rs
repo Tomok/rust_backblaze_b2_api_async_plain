@@ -2,6 +2,7 @@
 mod common_structs;
 
 mod b2_authorize_account;
+mod b2_download_file_by_id;
 mod b2_list_buckets;
 mod b2_list_file_names;
 mod buckets;
@@ -28,8 +29,8 @@ pub use buckets::{
 };
 
 pub use common_structs::*;
-pub use file::FileName;
-pub use server_side_encryption::ServerSideEncryption;
+pub use file::{FileId, FileName};
+pub use server_side_encryption::{ServerSideEncryption, ServerSideEncryptionCustomerKey};
 
 pub use b2_list_buckets::b2_list_buckets;
 pub use b2_list_buckets::{ListBucketsError, ListBucketsOk, ListBucketsRequest};
@@ -37,6 +38,8 @@ pub use b2_list_buckets::{ListBucketsError, ListBucketsOk, ListBucketsRequest};
 pub use b2_list_file_names::{
     b2_list_file_names, ListFileNamesError, ListFileNamesOk, ListFileNamesRequest, MaxFileCount,
 };
+
+pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams};
 
 #[cfg(test)]
 mod test;

@@ -43,6 +43,12 @@ pub enum FileAction {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct FileId(String);
 
+impl FileId {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
 impl TryFrom<String> for FileId {
     type Error = InvalidData;
 

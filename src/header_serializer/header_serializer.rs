@@ -159,39 +159,39 @@ impl<'a> ser::Serializer for &'a mut HeaderSerialzier {
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        panic!("Not supported");
     }
 
-    fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        todo!()
+    fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok, Self::Error> {
+        panic!("Not supported");
     }
 
     fn serialize_unit_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        panic!("Not supported");
     }
 
     fn serialize_newtype_struct<T: ?Sized>(
         self,
-        name: &'static str,
-        value: &T,
+        _name: &'static str,
+        _value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: Serialize,
     {
-        todo!()
+        panic!("Not supported");
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
         self,
-        name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
-        value: &T,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: Serialize,
@@ -199,40 +199,40 @@ impl<'a> ser::Serializer for &'a mut HeaderSerialzier {
         panic!("Not supported");
     }
 
-    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+    fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
         panic!("Not supported");
     }
 
-    fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple, Self::Error> {
+    fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
         panic!("Not supported");
     }
 
     fn serialize_tuple_struct(
         self,
-        name: &'static str,
-        len: usize,
+        _name: &'static str,
+        _len: usize,
     ) -> Result<Self::SerializeTupleStruct, Self::Error> {
         panic!("Not supported");
     }
 
     fn serialize_tuple_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
-        len: usize,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _len: usize,
     ) -> Result<Self::SerializeTupleVariant, Self::Error> {
         panic!("Not supported");
     }
 
-    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
+    fn serialize_map(self, _len: Option<usize>) -> Result<Self::SerializeMap, Self::Error> {
         panic!("Not supported");
     }
 
     fn serialize_struct(
         self,
-        name: &'static str,
-        len: usize,
+        _name: &'static str,
+        _len: usize,
     ) -> Result<Self::SerializeStruct, Self::Error> {
         // ignore struct name & continue
         Ok(self)
@@ -240,13 +240,13 @@ impl<'a> ser::Serializer for &'a mut HeaderSerialzier {
 
     fn serialize_struct_variant(
         self,
-        name: &'static str,
-        variant_index: u32,
-        variant: &'static str,
-        len: usize,
+        _name: &'static str,
+        _variant_index: u32,
+        _variant: &'static str,
+        _len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
         panic!("Not supported");
-    } //TODO
+    }
 }
 
 impl<'a> ser::SerializeStruct for &'a mut HeaderSerialzier {
@@ -275,7 +275,7 @@ impl<'a> ser::SerializeSeq for &'a mut HeaderSerialzier {
     type Ok = <&'a mut HeaderSerialzier as ser::Serializer>::Ok;
     type Error = <&'a mut HeaderSerialzier as ser::Serializer>::Error;
 
-    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    fn serialize_element<T: ?Sized>(&mut self, _value: &T) -> Result<(), Self::Error>
     where
         T: Serialize,
     {
@@ -291,14 +291,14 @@ impl<'a> ser::SerializeMap for &'a mut HeaderSerialzier {
     type Ok = <&'a mut HeaderSerialzier as ser::Serializer>::Ok;
     type Error = <&'a mut HeaderSerialzier as ser::Serializer>::Error;
 
-    fn serialize_key<T: ?Sized>(&mut self, key: &T) -> Result<(), Self::Error>
+    fn serialize_key<T: ?Sized>(&mut self, _key: &T) -> Result<(), Self::Error>
     where
         T: Serialize,
     {
         panic!("Not supported");
     }
 
-    fn serialize_value<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    fn serialize_value<T: ?Sized>(&mut self, _value: &T) -> Result<(), Self::Error>
     where
         T: Serialize,
     {
@@ -314,7 +314,7 @@ impl<'a> ser::SerializeTuple for &'a mut HeaderSerialzier {
     type Ok = <&'a mut HeaderSerialzier as ser::Serializer>::Ok;
     type Error = <&'a mut HeaderSerialzier as ser::Serializer>::Error;
 
-    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    fn serialize_element<T: ?Sized>(&mut self, _value: &T) -> Result<(), Self::Error>
     where
         T: Serialize,
     {
@@ -330,7 +330,7 @@ impl<'a> ser::SerializeTupleStruct for &'a mut HeaderSerialzier {
     type Ok = <&'a mut HeaderSerialzier as ser::Serializer>::Ok;
     type Error = <&'a mut HeaderSerialzier as ser::Serializer>::Error;
 
-    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    fn serialize_field<T: ?Sized>(&mut self, _value: &T) -> Result<(), Self::Error>
     where
         T: Serialize,
     {
@@ -346,7 +346,7 @@ impl<'a> ser::SerializeTupleVariant for &'a mut HeaderSerialzier {
     type Ok = <&'a mut HeaderSerialzier as ser::Serializer>::Ok;
     type Error = <&'a mut HeaderSerialzier as ser::Serializer>::Error;
 
-    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    fn serialize_field<T: ?Sized>(&mut self, _value: &T) -> Result<(), Self::Error>
     where
         T: Serialize,
     {
@@ -364,8 +364,8 @@ impl<'a> ser::SerializeStructVariant for &'a mut HeaderSerialzier {
 
     fn serialize_field<T: ?Sized>(
         &mut self,
-        key: &'static str,
-        value: &T,
+        _key: &'static str,
+        _value: &T,
     ) -> Result<(), Self::Error>
     where
         T: Serialize,
@@ -394,17 +394,19 @@ mod test {
         #[serde(rename = "c_renamed")]
         c: String,
         d: u32,
+        o: Option<f32>,
+        p: Option<bool>,
     }
 
     impl ExampleHeaderStruct {
-        fn new(a: u8, b: bool, c: String, d: u32) -> Self {
-            Self { a, b, c, d }
+        fn new(a: u8, b: bool, c: String, d: u32, o: Option<f32>, p: Option<bool>) -> Self {
+            Self { a, b, c, d, o, p }
         }
     }
 
     impl Default for ExampleHeaderStruct {
         fn default() -> Self {
-            Self::new(1u8, false, "STRING".into(), 2u32)
+            Self::new(1u8, false, "STRING".into(), 2u32, None, Some(true))
         }
     }
 
@@ -412,11 +414,12 @@ mod test {
     async fn test_example_header_struct_serialize() {
         let response = {
             let mock_server = MockServer::start().await;
-            let mock = Mock::given(method("GET"))
+            let _mock = Mock::given(method("GET"))
                 .and(header("a", "1"))
                 .and(header("b", "false"))
                 .and(header("c_renamed", "STRING"))
                 .and(header("d", "2"))
+                .and(header("p", "true"))
                 .respond_with(ResponseTemplate::new(200))
                 .expect(1)
                 .mount(&mock_server)

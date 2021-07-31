@@ -1,3 +1,4 @@
+mod header_serializer;
 pub mod v2;
 
 #[cfg(test)]

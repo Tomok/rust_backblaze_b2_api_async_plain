@@ -394,17 +394,19 @@ mod test {
         #[serde(rename = "c_renamed")]
         c: String,
         d: u32,
+        o: Option<f32>,
+        p: Option<bool>,
     }
 
     impl ExampleHeaderStruct {
-        fn new(a: u8, b: bool, c: String, d: u32) -> Self {
-            Self { a, b, c, d }
+        fn new(a: u8, b: bool, c: String, d: u32, o: Option<f32>, p: Option<bool>) -> Self {
+            Self { a, b, c, d, o, p }
         }
     }
 
     impl Default for ExampleHeaderStruct {
         fn default() -> Self {
-            Self::new(1u8, false, "STRING".into(), 2u32)
+            Self::new(1u8, false, "STRING".into(), 2u32, None, Some(true))
         }
     }
 
@@ -412,11 +414,12 @@ mod test {
     async fn test_example_header_struct_serialize() {
         let response = {
             let mock_server = MockServer::start().await;
-            let mock = Mock::given(method("GET"))
+            let _mock = Mock::given(method("GET"))
                 .and(header("a", "1"))
                 .and(header("b", "false"))
                 .and(header("c_renamed", "STRING"))
                 .and(header("d", "2"))
+                .and(header("p", "true"))
                 .respond_with(ResponseTemplate::new(200))
                 .expect(1)
                 .mount(&mock_server)

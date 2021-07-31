@@ -159,11 +159,11 @@ impl<'a> ser::Serializer for &'a mut HeaderSerialzier {
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        panic!("Not supported");
     }
 
-    fn serialize_unit_struct(self, name: &'static str) -> Result<Self::Ok, Self::Error> {
-        todo!()
+    fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok, Self::Error> {
+        panic!("Not supported");
     }
 
     fn serialize_unit_variant(
@@ -172,7 +172,7 @@ impl<'a> ser::Serializer for &'a mut HeaderSerialzier {
         variant_index: u32,
         variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        panic!("Not supported");
     }
 
     fn serialize_newtype_struct<T: ?Sized>(
@@ -183,7 +183,7 @@ impl<'a> ser::Serializer for &'a mut HeaderSerialzier {
     where
         T: Serialize,
     {
-        todo!()
+        panic!("Not supported");
     }
 
     fn serialize_newtype_variant<T: ?Sized>(
@@ -246,7 +246,7 @@ impl<'a> ser::Serializer for &'a mut HeaderSerialzier {
         len: usize,
     ) -> Result<Self::SerializeStructVariant, Self::Error> {
         panic!("Not supported");
-    } //TODO
+    }
 }
 
 impl<'a> ser::SerializeStruct for &'a mut HeaderSerialzier {

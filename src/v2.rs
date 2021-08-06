@@ -42,7 +42,7 @@ pub use b2_list_file_names::{
 
 pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams, DownloadFileError};
 
-pub use b2_get_upload_url::{b2_get_upload_url, UploadParameters, GetUploadUrlError};
+pub use b2_get_upload_url::{b2_get_upload_url, GetUploadUrlError, UploadParameters};
 
 #[cfg(test)]
 mod test;

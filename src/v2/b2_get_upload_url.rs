@@ -14,9 +14,14 @@ impl<'s> From<&'s BucketId> for GetUploadUrlRequest<'s> {
     }
 }
 
-
 #[derive(Debug, Serialize, Deserialize)]
-struct UploadUrl (String);
+pub struct UploadUrl(String);
+
+impl UploadUrl {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -26,29 +31,33 @@ pub struct UploadParameters {
     authorization_token: AuthorizationToken,
 }
 
+impl UploadParameters {
+    /// Get a reference to the upload parameters's upload url.
+    pub fn upload_url(&self) -> &UploadUrl {
+        &self.upload_url
+    }
+
+    /// Get a reference to the upload parameters's bucket id.
+    pub fn bucket_id(&self) -> &BucketId {
+        &self.bucket_id
+    }
+
+    /// Get a reference to the upload parameters's authorization token.
+    pub fn authorization_token(&self) -> &AuthorizationToken {
+        &self.authorization_token
+    }
+}
 
 #[derive(Debug)]
 pub enum GetUploadUrlError {
     // TODO: update acc. to documentation
-    BadRequest {
-        raw_error: JsonErrorObj,
-    },
-    Unauthorized {
-        raw_error: JsonErrorObj,
-    },
-    /// not listed in the api in [https://www.backblaze.com/b2/docs/b2_list_buckets.html] but I assume this could happen as well
-    TransactionCapExceeded {
-        raw_error: JsonErrorObj,
-    },
-    BadAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    ExpiredAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    Unexpected {
-        raw_error: Error,
-    },
+    BadRequest { raw_error: JsonErrorObj },
+    Unauthorized { raw_error: JsonErrorObj },
+    BadAuthToken { raw_error: JsonErrorObj },
+    ExpiredAuthToken { raw_error: JsonErrorObj },
+    StorageCapExceeded { raw_error: JsonErrorObj },
+    ServiceUnavaliabe { raw_error: JsonErrorObj },
+    Unexpected { raw_error: Error },
 }
 
 impl From<reqwest::Error> for GetUploadUrlError {
@@ -67,7 +76,8 @@ impl From<JsonErrorObj> for GetUploadUrlError {
             (401, "unauthorized") => Self::Unauthorized { raw_error: e },
             (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
             (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            (403, "transaction_cap_exceeded") => Self::TransactionCapExceeded { raw_error: e },
+            (403, "storage_cap_exceeded") => Self::StorageCapExceeded { raw_error: e },
+            (503, "service_unavailable") => Self::ServiceUnavaliabe { raw_error: e },
             _ => Self::Unexpected {
                 raw_error: Error::JsonError(e),
             },
@@ -78,16 +88,14 @@ impl From<JsonErrorObj> for GetUploadUrlError {
 pub async fn b2_get_upload_url(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    bucket_id: &BucketId) -> Result<UploadParameters, GetUploadUrlError> {
-
+    bucket_id: &BucketId,
+) -> Result<UploadParameters, GetUploadUrlError> {
     let url = format!("{}/b2api/v2/b2_get_upload_url", api_url.as_str());
     let request = reqwest::Client::new()
         .post(url)
         .header("Authorization", authorization_token.as_str())
         .json(&GetUploadUrlRequest::from(bucket_id));
-    let resp = request.send()
-        .await
-        .map_err(GetUploadUrlError::from)?;
+    let resp = request.send().await.map_err(GetUploadUrlError::from)?;
     if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
         Ok(resp.json().await.map_err(GetUploadUrlError::from)?)
     } else {

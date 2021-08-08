@@ -1,4 +1,10 @@
-use std::{convert::TryFrom, fmt::Display};
+mod url_encoder;
+
+use std::{
+    convert::{TryFrom, TryInto},
+    fmt::Display,
+    str::Utf8Error,
+};
 
 use reqwest::{header::HeaderValue, RequestBuilder};
 use serde::{
@@ -7,9 +13,18 @@ use serde::{
 };
 use typed_builder::TypedBuilder;
 
+use self::url_encoder::url_encode;
+
 #[derive(Debug)]
 pub enum HeaderSerialzierError {
+    InvalidUtf8(Utf8Error),
     Custom { msg: String },
+}
+
+impl From<Utf8Error> for HeaderSerialzierError {
+    fn from(e: Utf8Error) -> Self {
+        Self::InvalidUtf8(e)
+    }
 }
 
 impl ser::Error for HeaderSerialzierError {
@@ -49,12 +64,15 @@ impl HeaderSerialzier {
         Self::builder().request_builder(request_builder).build()
     }
 
-    fn try_serialize_field_value(&mut self, value: &[u8]) -> Result<(), HeaderSerialzierError> {
-        let encoded: String = urlencoding::encode_binary(value).into_owned();
+    fn try_serialize_field_value(&mut self, value: &str) -> Result<(), HeaderSerialzierError> {
+        let encoded = url_encode(value);
         self.try_serialize_field_value_without_encoding(encoded)
     }
 
-    fn try_serialize_field_value_without_encoding<V>(&mut self, value: V) -> Result<(), HeaderSerialzierError>
+    fn try_serialize_field_value_without_encoding<V>(
+        &mut self,
+        value: V,
+    ) -> Result<(), HeaderSerialzierError>
     where
         HeaderValue: TryFrom<V>,
         <HeaderValue as TryFrom<V>>::Error: Into<http::Error>,
@@ -141,15 +159,15 @@ impl<'a> ser::Serializer for &'a mut HeaderSerialzier {
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
         let mut buf = [0u8; 4];
         let value = v.encode_utf8(&mut buf);
-        self.try_serialize_field_value(value.as_bytes())
+        self.try_serialize_field_value(value)
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value(v.as_bytes())
+        self.try_serialize_field_value(v)
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value(v)
+        self.try_serialize_field_value(std::str::from_utf8(v)?)
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {

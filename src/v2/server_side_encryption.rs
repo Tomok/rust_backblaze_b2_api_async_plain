@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use serde::{de, Deserialize};
+use serde::{de, Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ServerSideEncryption {
     None,
     SseB2,
@@ -20,6 +20,7 @@ impl Display for ServerSideEncryption {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub enum EncryptionAlgorithm {
     Aes256,
 }
@@ -79,7 +80,7 @@ impl<'de> Deserialize<'de> for ServerSideEncryption {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct ServerSideEncryptionCustomerKey {
     //TODO
 }

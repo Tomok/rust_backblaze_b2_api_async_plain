@@ -1,10 +1,6 @@
 mod url_encoder;
 
-use std::{
-    convert::{TryFrom, TryInto},
-    fmt::Display,
-    str::Utf8Error,
-};
+use std::{convert::TryFrom, fmt::Display, str::Utf8Error};
 
 use reqwest::{header::HeaderValue, RequestBuilder};
 use serde::{

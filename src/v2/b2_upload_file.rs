@@ -1,14 +1,13 @@
 use reqwest::Body;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::str::FromStr;
 use typed_builder::TypedBuilder;
 
 use crate::header_serializer::HeadersFrom;
 
 use super::{
-    server_side_encryption::EncryptionAlgorithm, AccountId, AuthorizationToken, BucketId,
-    CacheControlHeaderValue, ContentDisposition, ContentLanguage, Error, ExpiresHeaderValue,
-    FileAction, FileInformation, FileName, JsonErrorObj, Md5, Mime,
+    server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValue, ContentDisposition,
+    ContentLanguage, Error, ExpiresHeaderValue, FileInformation, FileName, JsonErrorObj, Md5, Mime,
     ServerSideEncryptionCustomerKey, Sha1, TimeStamp, UploadParameters,
 };
 

@@ -4,18 +4,11 @@ use std::{
     path::PathBuf,
 };
 
-use http::response;
 use reqwest::Body;
 use structopt::StructOpt;
 
-use backblaze_b2_async_plain::v2::{
-    b2_upload_file, AuthorizeAccountOk, FileName, ListFileNamesRequest, MaxFileCount,
-    UploadFileParameters, UploadParameters,
-};
-use tokio::{
-    fs::File,
-    io::{AsyncReadExt, AsyncSeekExt},
-};
+use backblaze_b2_async_plain::v2::{b2_upload_file, UploadFileParameters, UploadParameters};
+use tokio::io::{AsyncReadExt, AsyncSeekExt};
 use tokio_util::io::ReaderStream;
 
 #[derive(StructOpt)]
@@ -58,10 +51,11 @@ async fn main() {
             serde_yaml::from_reader(file).expect("Could not read upload url data from file");
         url
     };
-    let target_filename = p.target_filename.unwrap_or(p.file_to_upload
+    let target_filename = p.target_filename.unwrap_or(
+        p.file_to_upload
             .file_name()
             .map(|x| x.to_string_lossy().to_string())
-            .expect("Filename could not be determined")
+            .expect("Filename could not be determined"),
     );
 
     let mut file = tokio::fs::File::open(p.file_to_upload)

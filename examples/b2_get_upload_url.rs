@@ -17,9 +17,11 @@ struct Params {
     /// save the received upload url with the corresponding authorization token for later usage to file specified by save_file (default: ~/.b2_upload_url.yaml)
     save: bool,
 
-    #[structopt(long)]
+    #[structopt(long, env = "B2_UPLOAD_URL_FILE")]
     /// file to store the upload url into, requires --save otherwise nothing will be saved
     save_file: Option<String>,
+
+
 }
 
 #[tokio::main]

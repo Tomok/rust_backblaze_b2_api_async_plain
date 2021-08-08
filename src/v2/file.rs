@@ -1,8 +1,14 @@
 use super::{AccountId, BucketId, InvalidData, ServerSideEncryption};
-use serde::{Deserialize, Serialize};
-use std::convert::TryFrom;
+use serde::{de, Deserialize, Serialize};
+use std::{convert::TryFrom, str::FromStr};
 #[derive(Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct FileName(String);
+
+impl FileName {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
 
 impl TryFrom<String> for FileName {
     type Error = InvalidData;
@@ -65,9 +71,59 @@ impl TryFrom<String> for FileId {
 }
 
 // TODO: more specific types...
-type Sha1 = String;
-type Md5 = String;
-type FileInfo = serde_json::Value;
+pub type Sha1 = String;
+pub type Md5 = String;
+pub type FileInfo = serde_json::Value;
+pub type TimeStamp = i64;
+/// Content Disposition value acc. to the grammar specified in RFC 6266
+pub type ContentDisposition = String; //TODO: create struct and check for RFC-6266 compliance
+/// Content Language value acc. to RFC 2616
+pub type ContentLanguage = String; //TODO: create struct and check for RFC compliance
+/// expires header acc. to RFC 2616
+pub type ExpiresHeaderValue = String; //TODO: create struct and check for RFC compliance
+/// expires cache-control header value acc. to RFC 2616
+pub type CacheControlHeaderValue = String; //TODO: create struct and check for RFC compliance
+/// expires content-encoding header value acc. to RFC 2616
+pub type ContentEncodingHeaderValue = String; //TODO: create struct and check for RFC compliance
+
+/// own Mime type based on [http_types::Mime] to add Serde Support
+#[derive(Debug, PartialEq, Eq)]
+pub struct Mime(http_types::Mime);
+
+impl FromStr for Mime {
+    type Err = http_types::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(http_types::Mime::from_str(s)?))
+    }
+}
+
+impl Mime {
+    pub fn to_string(&self) -> String {
+        self.0.to_string()
+    }
+}
+
+impl Serialize for Mime {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.0.to_string().serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Mime {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        http_types::Mime::from_str(&s)
+            .map(|m| Self(m))
+            .map_err(|_e| de::Error::invalid_value(de::Unexpected::Str(&s), &"Valid Mime type"))
+    }
+}
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -78,10 +134,10 @@ pub struct FileInformation {
     content_length: u64,
     content_sha1: Option<Sha1>,
     content_md5: Option<Md5>,
-    content_type: Option<String>,
+    content_type: Option<Mime>,
     file_id: Option<FileId>,
     file_info: FileInfo,
     file_name: String,
     server_side_encryption: Option<ServerSideEncryption>,
-    upload_timestamp: i64,
+    upload_timestamp: TimeStamp,
 }

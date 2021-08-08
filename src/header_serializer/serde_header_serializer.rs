@@ -49,7 +49,12 @@ impl HeaderSerialzier {
         Self::builder().request_builder(request_builder).build()
     }
 
-    fn try_serialize_field_value<V>(&mut self, value: V) -> Result<(), HeaderSerialzierError>
+    fn try_serialize_field_value(&mut self, value: &[u8]) -> Result<(), HeaderSerialzierError> {
+        let encoded: String = urlencoding::encode_binary(value).into_owned();
+        self.try_serialize_field_value_without_encoding(encoded)
+    }
+
+    fn try_serialize_field_value_without_encoding<V>(&mut self, value: V) -> Result<(), HeaderSerialzierError>
     where
         HeaderValue: TryFrom<V>,
         <HeaderValue as TryFrom<V>>::Error: Into<http::Error>,
@@ -64,11 +69,11 @@ impl HeaderSerialzier {
         }
     }
 
-    fn try_serialize_field_value_as_string<V: ToString>(
+    fn try_serialize_field_value_as_string_without_encoding<V: ToString>(
         &mut self,
         value: V,
     ) -> Result<(), HeaderSerialzierError> {
-        self.try_serialize_field_value(value.to_string())
+        self.try_serialize_field_value_without_encoding(value.to_string())
     }
 
     pub fn done(mut self) -> RequestBuilder {
@@ -90,55 +95,57 @@ impl<'a> ser::Serializer for &'a mut HeaderSerialzier {
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         let v_str = if v { self.bool_true } else { self.bool_false };
-        self.try_serialize_field_value(v_str)
+        self.try_serialize_field_value_without_encoding(v_str)
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value_as_string(v)
+        self.try_serialize_field_value_as_string_without_encoding(v)
     }
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value(v)
+        self.try_serialize_field_value_without_encoding(v)
     }
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value(v)
+        self.try_serialize_field_value_without_encoding(v)
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value(v)
+        self.try_serialize_field_value_without_encoding(v)
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value_as_string(v)
+        self.try_serialize_field_value_as_string_without_encoding(v)
     }
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value(v)
+        self.try_serialize_field_value_without_encoding(v)
     }
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value(v)
+        self.try_serialize_field_value_without_encoding(v)
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value(v)
+        self.try_serialize_field_value_without_encoding(v)
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value_as_string(v)
+        self.try_serialize_field_value_as_string_without_encoding(v)
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value_as_string(v)
+        self.try_serialize_field_value_as_string_without_encoding(v)
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value_as_string(v)
+        let mut buf = [0u8; 4];
+        let value = v.encode_utf8(&mut buf);
+        self.try_serialize_field_value(value.as_bytes())
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        self.try_serialize_field_value(v)
+        self.try_serialize_field_value(v.as_bytes())
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
@@ -178,12 +185,13 @@ impl<'a> ser::Serializer for &'a mut HeaderSerialzier {
     fn serialize_newtype_struct<T: ?Sized>(
         self,
         _name: &'static str,
-        _value: &T,
+        value: &T,
     ) -> Result<Self::Ok, Self::Error>
     where
         T: Serialize,
     {
-        panic!("Not supported");
+        //ignore the newtype, just serialize the value
+        value.serialize(self)
     }
 
     fn serialize_newtype_variant<T: ?Sized>(

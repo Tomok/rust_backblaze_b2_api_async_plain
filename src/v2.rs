@@ -6,6 +6,7 @@ mod b2_download_file_by_id;
 mod b2_get_upload_url;
 mod b2_list_buckets;
 mod b2_list_file_names;
+mod b2_upload_file;
 mod buckets;
 mod file;
 mod server_side_encryption;
@@ -30,7 +31,7 @@ pub use buckets::{
 };
 
 pub use common_structs::*;
-pub use file::{FileId, FileName};
+pub use file::*;
 pub use server_side_encryption::{ServerSideEncryption, ServerSideEncryptionCustomerKey};
 
 pub use b2_list_buckets::b2_list_buckets;
@@ -40,9 +41,11 @@ pub use b2_list_file_names::{
     b2_list_file_names, ListFileNamesError, ListFileNamesOk, ListFileNamesRequest, MaxFileCount,
 };
 
-pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams, DownloadFileError};
+pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadFileError, DownloadParams};
 
 pub use b2_get_upload_url::{b2_get_upload_url, GetUploadUrlError, UploadParameters};
+
+pub use b2_upload_file::{b2_upload_file, UploadFileParameters};
 
 #[cfg(test)]
 mod test;

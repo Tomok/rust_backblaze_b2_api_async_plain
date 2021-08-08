@@ -1,6 +1,6 @@
 use backblaze_b2_async_plain::v2::{b2_get_upload_url, AuthorizeAccountOk, BucketId};
 use std::convert::TryFrom;
-use std::io::{self, stdout, BufRead, Write};
+use std::io::{self, Write};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -20,8 +20,6 @@ struct Params {
     #[structopt(long, env = "B2_UPLOAD_URL_FILE")]
     /// file to store the upload url into, requires --save otherwise nothing will be saved
     save_file: Option<String>,
-
-
 }
 
 #[tokio::main]

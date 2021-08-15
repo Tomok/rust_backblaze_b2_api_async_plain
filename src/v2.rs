@@ -3,6 +3,7 @@ mod common_structs;
 
 mod b2_authorize_account;
 mod b2_download_file_by_id;
+mod b2_get_upload_part_url;
 mod b2_get_upload_url;
 mod b2_list_buckets;
 mod b2_list_file_names;
@@ -50,6 +51,7 @@ pub use b2_get_upload_url::{b2_get_upload_url, GetUploadUrlError, UploadParamete
 
 pub use b2_upload_file::{b2_upload_file, UploadFileParameters};
 
+pub use b2_get_upload_part_url::{b2_get_upload_part_url, UploadPartParameters};
 pub use b2_start_large_file::{b2_start_large_file, StartLargeFileError, StartLargeFileParameters};
 
 #[cfg(test)]

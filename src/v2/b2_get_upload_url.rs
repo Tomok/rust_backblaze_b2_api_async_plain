@@ -14,6 +14,7 @@ impl<'s> From<&'s BucketId> for GetUploadUrlRequest<'s> {
     }
 }
 
+//TODO: since this is used by [crate::v2::b2_get_upload_part_url] as well, move to somewhere else?
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UploadUrl(String);
 
@@ -48,6 +49,7 @@ impl UploadParameters {
     }
 }
 
+//TODO: since this is used by [crate::v2::b2_get_upload_part_url] as well, move to somewhere else?
 #[derive(Debug)]
 pub enum GetUploadUrlError {
     // TODO: update acc. to documentation

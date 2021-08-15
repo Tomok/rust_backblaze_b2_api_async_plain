@@ -138,8 +138,8 @@ pub struct FileInformation {
     file_id: Option<FileId>,
     file_info: FileInfo,
     file_name: String,
-    file_retention: FileRetention,
-    legal_hold: LegalHold,
+    file_retention: Option<FileRetention>,
+    legal_hold: Option<LegalHold>,
     server_side_encryption: Option<ServerSideEncryption>,
     upload_timestamp: TimeStamp,
 }

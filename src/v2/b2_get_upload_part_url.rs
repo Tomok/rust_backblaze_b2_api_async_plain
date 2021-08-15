@@ -5,11 +5,29 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UploadPartParameters {
+pub struct UploadPartUrlParameters {
     file_id: FileId,
     upload_url: UploadUrl,
     authorization_token: AuthorizationToken,
 }
+
+impl UploadPartUrlParameters {
+    /// Get a reference to the upload part url parameters's upload url.
+    pub fn upload_url(&self) -> &UploadUrl {
+        &self.upload_url
+    }
+
+    /// Get a reference to the upload part url parameters's authorization token.
+    pub fn authorization_token(&self) -> &AuthorizationToken {
+        &self.authorization_token
+    }
+
+    /// Get a reference to the upload part url parameters's file id.
+    pub fn file_id(&self) -> &FileId {
+        &self.file_id
+    }
+}
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct GetUploadPartUrlRequest<'a> {
@@ -26,7 +44,7 @@ pub async fn b2_get_upload_part_url(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
     file_id: &FileId,
-) -> Result<UploadPartParameters, GetUploadUrlError> {
+) -> Result<UploadPartUrlParameters, GetUploadUrlError> {
     let url = format!("{}/b2api/v2/b2_get_upload_part_url", api_url.as_str());
     let request = reqwest::Client::new()
         .post(url)

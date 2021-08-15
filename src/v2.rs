@@ -9,9 +9,11 @@ mod b2_list_buckets;
 mod b2_list_file_names;
 mod b2_start_large_file;
 mod b2_upload_file;
+mod b2_upload_part;
 mod buckets;
 mod file;
 mod file_lock;
+mod file_part;
 mod server_side_encryption;
 
 pub use b2_authorize_account::{AuthorizeAccountOk, AuthorizeError};
@@ -51,8 +53,10 @@ pub use b2_get_upload_url::{b2_get_upload_url, GetUploadUrlError, UploadParamete
 
 pub use b2_upload_file::{b2_upload_file, UploadFileParameters};
 
-pub use b2_get_upload_part_url::{b2_get_upload_part_url, UploadPartParameters};
+pub use b2_get_upload_part_url::{b2_get_upload_part_url, UploadPartUrlParameters};
 pub use b2_start_large_file::{b2_start_large_file, StartLargeFileError, StartLargeFileParameters};
+pub use b2_upload_part::{b2_upload_part, UploadPartError, UploadPartOk, UploadPartParameters};
+pub use file_part::PartNumber;
 
 #[cfg(test)]
 mod test;

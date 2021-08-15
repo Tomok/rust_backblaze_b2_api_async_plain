@@ -6,9 +6,11 @@ mod b2_download_file_by_id;
 mod b2_get_upload_url;
 mod b2_list_buckets;
 mod b2_list_file_names;
+mod b2_start_large_file;
 mod b2_upload_file;
 mod buckets;
 mod file;
+mod file_lock;
 mod server_side_encryption;
 
 pub use b2_authorize_account::{AuthorizeAccountOk, AuthorizeError};
@@ -32,6 +34,7 @@ pub use buckets::{
 
 pub use common_structs::*;
 pub use file::*;
+pub use file_lock::*;
 pub use server_side_encryption::{ServerSideEncryption, ServerSideEncryptionCustomerKey};
 
 pub use b2_list_buckets::b2_list_buckets;
@@ -46,6 +49,8 @@ pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadFileError, Down
 pub use b2_get_upload_url::{b2_get_upload_url, GetUploadUrlError, UploadParameters};
 
 pub use b2_upload_file::{b2_upload_file, UploadFileParameters};
+
+pub use b2_start_large_file::{b2_start_large_file, StartLargeFileError, StartLargeFileParameters};
 
 #[cfg(test)]
 mod test;

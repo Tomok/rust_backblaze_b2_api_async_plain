@@ -26,6 +26,7 @@ structopt = "0.3.21"
 home = "0.5.3"
 sha1 = "0.6.0"
 tokio-util = {version = "0.6.7", features = ["io"] }
+num-integer = "0.1"
 
 [[example]]
 name = "b2_authorize_account"

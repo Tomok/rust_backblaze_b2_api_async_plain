@@ -24,6 +24,7 @@ pub struct StartLargeFileParameters {
     server_side_encryption: Option<ServerSideEncryptionCustomerKey>, // <- TODO: right type??
 }
 
+#[derive(Debug)]
 pub enum StartLargeFileError {
     BadRequest { raw_error: JsonErrorObj },
     BadBucketId { raw_error: JsonErrorObj },

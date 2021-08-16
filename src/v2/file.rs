@@ -143,3 +143,10 @@ pub struct FileInformation {
     server_side_encryption: Option<ServerSideEncryption>,
     upload_timestamp: TimeStamp,
 }
+
+impl FileInformation {
+    /// Get a reference to the file information's file id.
+    pub fn file_id(&self) -> Option<&FileId> {
+        self.file_id.as_ref()
+    }
+}

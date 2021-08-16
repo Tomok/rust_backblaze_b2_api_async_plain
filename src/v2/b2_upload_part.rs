@@ -42,9 +42,11 @@ pub enum UploadPartError {
     Unauthorized {
         raw_error: JsonErrorObj,
     },
+    /// acc. to documentaion: Call [b2_get_upload_part_url] again to get a new auth token
     BadAuthToken {
         raw_error: JsonErrorObj,
     },
+    /// acc. to documentaion: Call [b2_get_upload_part_url] again to get a new auth token
     ExpiredAuthToken {
         raw_error: JsonErrorObj,
     },
@@ -52,7 +54,7 @@ pub enum UploadPartError {
     RequestTimeout {
         raw_error: JsonErrorObj,
     },
-    /// acc. to documentaion: Call [b2_get_upload_url] again to get a new auth token
+    /// acc. to documentaion: Call [b2_get_upload_part_url] again to get a new auth token
     ServiceUnavailable {
         raw_error: JsonErrorObj,
     },

@@ -274,6 +274,17 @@ impl B2MockServer {
                 "src_last_modified_millis": "1536964184056"
               },
               "fileName": "testing.txt",
+              "file_retention": {
+                "isClientAuthorizedToRead": true,
+                "value": {
+                    "mode": null,
+                    "retainUntilTimestamp": null,
+                },
+              },
+              "legal_hold": {
+                "isClientAuthorizedToRead": true,
+                "value": null,
+              },
               "serverSideEncryption": {
                 "algorithm": "AES256",
                 "mode": "SSE-C"

@@ -37,7 +37,7 @@ impl ServerSideEncryption {
 
 #[derive(Debug, Deserialize)]
 struct SerializeableServerSideEncryption<'s> {
-    mode: &'s str,
+    mode: Option<&'s str>,
     algorithm: Option<&'s str>,
 }
 
@@ -63,16 +63,16 @@ impl<'de> Deserialize<'de> for ServerSideEncryption {
     {
         let sse = SerializeableServerSideEncryption::deserialize(deserializer)?;
         match sse.mode {
-            "SSE-B2" => is_aes_encryption_algorithm(sse.algorithm).map(|_| Self::SseB2),
-            "SSE-C" => is_aes_encryption_algorithm(sse.algorithm).map(|_| Self::SseC),
-            "none" => {
+            Some("SSE-B2") => is_aes_encryption_algorithm(sse.algorithm).map(|_| Self::SseB2),
+            Some("SSE-C") => is_aes_encryption_algorithm(sse.algorithm).map(|_| Self::SseC),
+            None | Some("none") => {
                 if sse.algorithm.is_none() {
                     Ok(Self::None)
                 } else {
                     Err(de::Error::unknown_field(&"algorithm", &[]))
                 }
             }
-            mode => Err(de::Error::unknown_variant(
+            Some(mode) => Err(de::Error::unknown_variant(
                 mode,
                 &["none", "SSE-B2", "SSE-C"],
             )),

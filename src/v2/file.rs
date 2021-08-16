@@ -1,4 +1,4 @@
-use super::{AccountId, BucketId, InvalidData, ServerSideEncryption};
+use super::{AccountId, BucketId, FileRetention, InvalidData, LegalHold, ServerSideEncryption};
 use serde::{de, Deserialize, Serialize};
 use std::{convert::TryFrom, str::FromStr};
 #[derive(Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
@@ -138,6 +138,15 @@ pub struct FileInformation {
     file_id: Option<FileId>,
     file_info: FileInfo,
     file_name: String,
+    file_retention: Option<FileRetention>,
+    legal_hold: Option<LegalHold>,
     server_side_encryption: Option<ServerSideEncryption>,
     upload_timestamp: TimeStamp,
+}
+
+impl FileInformation {
+    /// Get a reference to the file information's file id.
+    pub fn file_id(&self) -> Option<&FileId> {
+        self.file_id.as_ref()
+    }
 }

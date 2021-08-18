@@ -2,7 +2,6 @@ use super::{
     buckets::{BucketId, BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes},
     AccountId, ApiUrl, AuthorizationToken, Error, JsonErrorObj,
 };
-use http_types::StatusCode;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 

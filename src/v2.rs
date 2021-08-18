@@ -2,6 +2,7 @@
 mod common_structs;
 
 mod b2_authorize_account;
+mod b2_cancel_large_file;
 mod b2_download_file_by_id;
 mod b2_finish_large_file;
 mod b2_get_upload_part_url;
@@ -53,6 +54,7 @@ pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadFileError, Down
 pub use b2_get_upload_url::{b2_get_upload_url, GetUploadUrlError, UploadParameters};
 pub use b2_upload_file::{b2_upload_file, UploadFileParameters};
 
+pub use b2_cancel_large_file::{b2_cancel_large_file, CancelFileOk};
 pub use b2_finish_large_file::b2_finish_large_file;
 pub use b2_get_upload_part_url::{b2_get_upload_part_url, UploadPartUrlParameters};
 pub use b2_start_large_file::{b2_start_large_file, StartLargeFileError, StartLargeFileParameters};

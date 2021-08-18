@@ -101,6 +101,20 @@ impl From<reqwest::Error> for ListBucketsError {
     }
 }
 
+impl From<JsonErrorObj> for ListBucketsError {
+    fn from(e: JsonErrorObj) -> Self {
+        match (e.status as usize, e.code.as_str()) {
+            (400, "bad_request") => Self::BadRequest { raw_error: e },
+            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
+            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
+            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
+            _ => Self::Unexpected {
+                raw_error: Error::JsonError(e),
+            },
+        }
+    }
+}
+
 pub async fn b2_list_buckets(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
@@ -117,25 +131,7 @@ pub async fn b2_list_buckets(
         Ok(auth_ok)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(ListBucketsError::from)?;
-        let err = match (raw_error.status, raw_error.code.as_str()) {
-            (StatusCode::BadRequest, "bad_request") => ListBucketsError::BadRequest { raw_error },
-            (StatusCode::Unauthorized, "unauthorized") => {
-                ListBucketsError::Unauthorized { raw_error }
-            }
-            (StatusCode::Unauthorized, "bad_auth_token") => {
-                ListBucketsError::BadAuthToken { raw_error }
-            }
-            (StatusCode::Unauthorized, "expired_auth_token") => {
-                ListBucketsError::ExpiredAuthToken { raw_error }
-            }
-            (StatusCode::Forbidden, "transaction_cap_exceeded") => {
-                ListBucketsError::TransactionCapExceeded { raw_error }
-            }
-            _ => ListBucketsError::Unexpected {
-                raw_error: Error::JsonError(raw_error),
-            },
-        };
-        Err(err)
+        Err(raw_error.into())
     }
 }
 

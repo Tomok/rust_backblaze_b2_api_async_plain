@@ -9,6 +9,7 @@ mod b2_get_upload_part_url;
 mod b2_get_upload_url;
 mod b2_list_buckets;
 mod b2_list_file_names;
+mod b2_list_parts;
 mod b2_list_unfinished_large_files;
 mod b2_start_large_file;
 mod b2_upload_file;
@@ -58,6 +59,7 @@ pub use b2_upload_file::{b2_upload_file, UploadFileParameters};
 pub use b2_cancel_large_file::{b2_cancel_large_file, CancelFileOk};
 pub use b2_finish_large_file::b2_finish_large_file;
 pub use b2_get_upload_part_url::{b2_get_upload_part_url, UploadPartUrlParameters};
+pub use b2_list_parts::{b2_list_parts, ListPartsOk, ListPartsRequest, MaxPartCount, Part};
 pub use b2_list_unfinished_large_files::{
     b2_list_unfinished_large_files, ListUnfinishedLargeFilesRequest, MaxUnfinishedLargeFileCount,
 };

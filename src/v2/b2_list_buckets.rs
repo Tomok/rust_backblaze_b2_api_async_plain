@@ -70,6 +70,8 @@ pub struct Bucket {
     bucket_info: BucketInfo,
     #[serde(default)]
     cors_rules: serde_json::Value, // it's not part of the example, so maybe optional???                 //todo!!!
+    #[serde(default)]
+    file_lock_configuration: serde_json::Value, // todo!
     default_server_side_encryption: serde_json::Value, //todo !!!
     lifecycle_rules: serde_json::Value,
     #[serde(default)]

@@ -92,7 +92,7 @@ pub struct Mime(http_types::Mime);
 
 impl Mime {
     /// Use this mime type to have the server determine the mime type by file extension.
-    /// The content type mappings can be found here: [https://www.backblaze.com/b2/docs/content-types.html]:
+    /// The content type mappings can be found here: <https://www.backblaze.com/b2/docs/content-types.html>:
     pub fn auto() -> Self {
         Self::from_str("b2/auto").unwrap()
     }

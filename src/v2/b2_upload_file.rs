@@ -81,7 +81,7 @@ pub enum UploadFileError {
     RequestTimeout {
         raw_error: JsonErrorObj,
     },
-    /// acc. to documentaion: Call [b2_get_upload_url] again to get a new auth token
+    /// acc. to documentaion: Call b2_get_upload_url again to get a new auth token
     ServiceUnavailable {
         raw_error: JsonErrorObj,
     },

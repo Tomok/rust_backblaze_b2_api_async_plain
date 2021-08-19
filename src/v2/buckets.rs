@@ -75,7 +75,7 @@ pub enum BucketType {
 }
 
 impl BucketType {
-    /// Returns `true` if the bucket_type is [`Other`], i.e. this library does not know it
+    /// Returns `true` if the bucket_type is Other, i.e. this library does not know it
     pub fn is_other(&self) -> bool {
         matches!(self, Self::Other { .. })
     }

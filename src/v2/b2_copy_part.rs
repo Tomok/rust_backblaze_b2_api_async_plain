@@ -9,7 +9,7 @@ pub struct CopyPartRequest {
     ///The ID of the source file being copied.
     source_file_id: FileId,
 
-    ///The ID of the large file the part will belong to, as returned by [b2_start_large_file]. 
+    ///The ID of the large file the part will belong to, as returned by b2_start_large_file. 
     large_file_id: FileId,
 
     ///A number from 1 to 10000. The parts uploaded for one file must have contiguous numbers, starting with 1. 

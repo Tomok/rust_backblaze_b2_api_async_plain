@@ -30,17 +30,17 @@ pub struct UploadPartParameters {
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Algorithm")]
     #[builder(default, setter(strip_option))]
-    /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption algorithm requested via [b2_start_large_file].
+    /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption algorithm requested via b2_start_large_file.
     server_side_encryption_algorithm: Option<EncryptionAlgorithm>,
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key")]
     #[builder(default, setter(strip_option))]
-    /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKey requested via [b2_start_large_file].
+    /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKey requested via b2_start_large_file.
     server_side_encryption_customer_key: Option<ServerSideEncryptionCustomerKey>,
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
     #[builder(default, setter(strip_option))]
-    /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKeyMd5 requested via [b2_start_large_file].
+    /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKeyMd5 requested via b2_start_large_file.
     server_side_encryption_customer_key_md5: Option<Md5>,
 }
 
@@ -52,11 +52,11 @@ pub enum UploadPartError {
     Unauthorized {
         raw_error: JsonErrorObj,
     },
-    /// acc. to documentaion: Call [b2_get_upload_part_url] again to get a new auth token
+    /// acc. to documentaion: Call b2_get_upload_part_url again to get a new auth token
     BadAuthToken {
         raw_error: JsonErrorObj,
     },
-    /// acc. to documentaion: Call [b2_get_upload_part_url] again to get a new auth token
+    /// acc. to documentaion: Call b2_get_upload_part_url again to get a new auth token
     ExpiredAuthToken {
         raw_error: JsonErrorObj,
     },
@@ -64,7 +64,7 @@ pub enum UploadPartError {
     RequestTimeout {
         raw_error: JsonErrorObj,
     },
-    /// acc. to documentaion: Call [b2_get_upload_part_url] again to get a new auth token
+    /// acc. to documentaion: Call b2_get_upload_part_url again to get a new auth token
     ServiceUnavailable {
         raw_error: JsonErrorObj,
     },

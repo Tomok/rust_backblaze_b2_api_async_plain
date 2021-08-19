@@ -96,7 +96,7 @@ impl ListFileNamesRequest {
 
 /// Error returned by b2_list_file_names
 ///
-/// based on (official documentation for b2_list_file_names)[https://www.backblaze.com/b2/docs/b2_list_file_names.html]
+/// based on <https://www.backblaze.com/b2/docs/b2_list_file_names.html>
 /// intentionally does not include out_of_range, as this should be prevented by [MaxFileCount], if it is received [ListFileNamesError::Unexpected] will be used
 #[derive(Debug)]
 pub enum ListFileNamesError {
@@ -111,7 +111,7 @@ pub enum ListFileNamesError {
     Unauthorized {
         raw_error: JsonErrorObj,
     },
-    /// not listed in the api in (official documentation)[https://www.backblaze.com/b2/docs/b2_list_file_names.html] but I assume this could happen as well
+    /// not listed in the api in <https://www.backblaze.com/b2/docs/b2_list_file_names.html> but I assume this could happen as well
     TransactionCapExceeded {
         raw_error: JsonErrorObj,
     },

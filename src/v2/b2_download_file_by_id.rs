@@ -26,7 +26,7 @@ pub enum DownloadFileError {
     Unauthorized {
         raw_error: JsonErrorObj,
     },
-    /// not listed in the api in [https://www.backblaze.com/b2/docs/b2_list_buckets.html] but I assume this could happen as well
+    /// not listed in the api in <https://www.backblaze.com/b2/docs/b2_list_buckets.html> but I assume this could happen as well
     TransactionCapExceeded {
         raw_error: JsonErrorObj,
     },

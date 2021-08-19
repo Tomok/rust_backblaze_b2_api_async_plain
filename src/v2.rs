@@ -4,6 +4,8 @@ mod common_structs;
 mod b2_authorize_account;
 mod b2_cancel_large_file;
 mod b2_copy_file;
+mod b2_copy_part;
+mod b2_create_bucket;
 mod b2_download_file_by_id;
 mod b2_finish_large_file;
 mod b2_get_upload_part_url;
@@ -20,7 +22,6 @@ mod file;
 mod file_lock;
 mod file_part;
 mod server_side_encryption;
-mod b2_copy_part;
 
 pub use b2_authorize_account::{AuthorizeAccountOk, AuthorizeError};
 /// Authorize account function see [official documentation](https://www.backblaze.com/b2/docs/b2_authorize_account.html)
@@ -46,6 +47,7 @@ pub use file::*;
 pub use file_lock::*;
 pub use server_side_encryption::{ServerSideEncryption, ServerSideEncryptionCustomerKey};
 
+pub use b2_create_bucket::{b2_create_bucket, CreateBucketError, CreateBucketRequest};
 pub use b2_list_buckets::b2_list_buckets;
 pub use b2_list_buckets::{ListBucketsError, ListBucketsOk, ListBucketsRequest};
 

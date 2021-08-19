@@ -20,6 +20,7 @@ mod file;
 mod file_lock;
 mod file_part;
 mod server_side_encryption;
+mod b2_copy_part;
 
 pub use b2_authorize_account::{AuthorizeAccountOk, AuthorizeError};
 /// Authorize account function see [official documentation](https://www.backblaze.com/b2/docs/b2_authorize_account.html)
@@ -69,6 +70,7 @@ pub use b2_upload_part::{b2_upload_part, UploadPartError, UploadPartOk, UploadPa
 pub use file_part::PartNumber;
 
 pub use b2_copy_file::{b2_copy_file, CopyFileError, CopyFileRequest, MetadataDirective, Range};
+pub use b2_copy_part::{b2_copy_part, CopyPartRequest};
 
 #[cfg(test)]
 mod test;

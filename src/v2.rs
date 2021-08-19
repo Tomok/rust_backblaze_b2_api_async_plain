@@ -3,6 +3,7 @@ mod common_structs;
 
 mod b2_authorize_account;
 mod b2_cancel_large_file;
+mod b2_copy_file;
 mod b2_download_file_by_id;
 mod b2_finish_large_file;
 mod b2_get_upload_part_url;
@@ -66,6 +67,8 @@ pub use b2_list_unfinished_large_files::{
 pub use b2_start_large_file::{b2_start_large_file, StartLargeFileError, StartLargeFileParameters};
 pub use b2_upload_part::{b2_upload_part, UploadPartError, UploadPartOk, UploadPartParameters};
 pub use file_part::PartNumber;
+
+pub use b2_copy_file::{b2_copy_file, CopyFileError, CopyFileRequest, MetadataDirective, Range};
 
 #[cfg(test)]
 mod test;

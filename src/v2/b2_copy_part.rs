@@ -1,7 +1,10 @@
 use serde::Serialize;
 use typed_builder::TypedBuilder;
 
-use super::{ApiUrl, AuthorizationToken, CopyFileError, FileId, JsonErrorObj, PartNumber, Range, ServerSideEncryptionCustomerKey, UploadPartOk};
+use super::{
+    ApiUrl, AuthorizationToken, CopyFileError, FileId, JsonErrorObj, PartNumber, Range,
+    ServerSideEncryptionCustomerKey, UploadPartOk,
+};
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
@@ -9,12 +12,11 @@ pub struct CopyPartRequest {
     ///The ID of the source file being copied.
     source_file_id: FileId,
 
-    ///The ID of the large file the part will belong to, as returned by b2_start_large_file. 
+    ///The ID of the large file the part will belong to, as returned by b2_start_large_file.
     large_file_id: FileId,
 
-    ///A number from 1 to 10000. The parts uploaded for one file must have contiguous numbers, starting with 1. 
+    ///A number from 1 to 10000. The parts uploaded for one file must have contiguous numbers, starting with 1.
     part_number: PartNumber,
-
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -9,14 +9,19 @@ pub enum ServerSideEncryption {
     SseC,
 }
 
-impl Display for ServerSideEncryption {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
+impl ServerSideEncryption {
+    fn as_str(&self) -> &'static str {
+        match self {
             ServerSideEncryption::None => "none",
             ServerSideEncryption::SseB2 => "SSE-B2",
             ServerSideEncryption::SseC => "SSE-C",
-        };
-        f.write_str(s)
+        }
+    }
+}
+
+impl Display for ServerSideEncryption {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 
@@ -35,10 +40,32 @@ impl ServerSideEncryption {
     }
 }
 
-#[derive(Debug, Deserialize)]
+impl Serialize for ServerSideEncryption {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let serializable: SerializeableServerSideEncryption = self.into();
+        serializable.serialize(serializer)
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 struct SerializeableServerSideEncryption<'s> {
     mode: Option<&'s str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     algorithm: Option<&'s str>,
+}
+
+impl<'s> From<&'s ServerSideEncryption> for SerializeableServerSideEncryption<'static> {
+    fn from(sse: &'s ServerSideEncryption) -> Self {
+        let mode = Some(sse.as_str());
+        let algorithm = match sse {
+            ServerSideEncryption::None => None,
+            ServerSideEncryption::SseB2 | ServerSideEncryption::SseC => Some("AES256"),
+        };
+        Self { mode, algorithm }
+    }
 }
 
 /// small helper function that checks, if a is Some("AES256"), if not it raises a matching deserialization error

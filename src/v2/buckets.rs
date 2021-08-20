@@ -1,5 +1,6 @@
 ///! types for B2 buckets, based on https://www.backblaze.com/b2/docs/buckets.html
 use std::hash::{Hash, Hasher};
+use std::num::NonZeroU64;
 use std::{
     collections::{HashMap, HashSet},
     convert::TryFrom,
@@ -13,7 +14,7 @@ use serde::{
     Deserialize, Serialize,
 };
 
-use super::InvalidData;
+use super::{FileName, InvalidData};
 
 #[derive(Debug)]
 pub struct InvalidCharacterError {
@@ -403,4 +404,12 @@ impl TryFrom<String> for BucketId {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Ok(Self(value))
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LifeCycleRule {
+    days_from_hiding_to_deleting: Option<NonZeroU64>,
+    days_from_uploading_to_hiding: Option<NonZeroU64>,
+    file_name_prefix: FileName,
 }

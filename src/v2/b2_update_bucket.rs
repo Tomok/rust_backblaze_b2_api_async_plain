@@ -2,8 +2,10 @@ use serde::Serialize;
 use typed_builder::TypedBuilder;
 
 use super::{
-    b2_list_buckets::Bucket, buckets::BucketRevision, AccountId, ApiUrl, AuthorizationToken,
-    BucketId, BucketInfo, BucketType, Error, JsonErrorObj, ServerSideEncryption,
+    b2_list_buckets::Bucket,
+    buckets::{BucketRevision, LifeCycleRule},
+    AccountId, ApiUrl, AuthorizationToken, BucketId, BucketInfo, BucketType, Error, JsonErrorObj,
+    ServerSideEncryption,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -40,7 +42,7 @@ pub struct UpdateBucketRequest {
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The initial list of lifecycle rules for this bucket.
-    lifecycle_rules: Option<serde_json::Value>, //TODO
+    lifecycle_rules: Option<Vec<LifeCycleRule>>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -1,5 +1,7 @@
 use super::{
-    buckets::{BucketId, BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes},
+    buckets::{
+        BucketId, BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes, LifeCycleRule,
+    },
     AccountId, ApiUrl, AuthorizationToken, Error, JsonErrorObj,
 };
 use serde::{Deserialize, Serialize};
@@ -73,7 +75,7 @@ pub struct Bucket {
     #[serde(default)]
     file_lock_configuration: serde_json::Value, // todo!
     default_server_side_encryption: serde_json::Value, //todo !!!
-    lifecycle_rules: serde_json::Value,
+    lifecycle_rules: Vec<LifeCycleRule>,
     #[serde(default)]
     revision: Option<BucketRevision>, // it's not part of the example, so maybe optional???
     #[serde(default)]

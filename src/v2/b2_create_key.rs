@@ -1,11 +1,9 @@
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-use crate::v2::JsonErrorObj;
-
 use super::{
     AccountId, ApiUrl, ApplicationKey, ApplicationKeyId, AuthorizationToken, BucketId,
-    Capabilities, FileName, KeyName, ListBucketsError, TimeStamp,
+    Capabilities, FileName, JsonErrorObj, KeyName, ListBucketsError, TimeStamp,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]

@@ -8,6 +8,7 @@ mod b2_copy_part;
 mod b2_create_bucket;
 mod b2_create_key;
 mod b2_delete_bucket;
+mod b2_delete_file_version;
 mod b2_download_file_by_id;
 mod b2_finish_large_file;
 mod b2_get_upload_part_url;
@@ -82,6 +83,10 @@ pub use file_part::PartNumber;
 
 pub use b2_copy_file::{b2_copy_file, CopyFileError, CopyFileRequest, MetadataDirective, Range};
 pub use b2_copy_part::{b2_copy_part, CopyPartRequest};
+
+pub use b2_delete_file_version::{
+    b2_delete_file_version, DeleteFileVersionError, DeleteFileVersionOk, DeleteFileVersionRequest,
+};
 
 pub use b2_create_key::{b2_create_key, CreateKeyRequest, CreatedKeyInformation};
 

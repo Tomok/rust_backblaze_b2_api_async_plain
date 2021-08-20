@@ -22,6 +22,7 @@ mod b2_list_parts;
 mod b2_list_unfinished_large_files;
 mod b2_start_large_file;
 mod b2_update_bucket;
+mod b2_update_file_legal_hold;
 mod b2_upload_file;
 mod b2_upload_part;
 mod buckets;
@@ -97,6 +98,11 @@ pub use b2_hide_file::b2_hide_file;
 
 pub use b2_create_key::{b2_create_key, CreateKeyRequest, CreatedKeyInformation};
 pub use b2_delete_key::{b2_delete_key, KeyInformation};
+
+pub use b2_update_file_legal_hold::{
+    b2_update_file_legal_hold, UpdateFileLegalHoldError, UpdateFileLegalHoldOk,
+    UpdateFileLegalHoldRequest,
+};
 
 #[cfg(test)]
 mod test;

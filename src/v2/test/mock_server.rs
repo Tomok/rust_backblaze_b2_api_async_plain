@@ -205,14 +205,27 @@ impl B2MockServer {
                 \"bucketInfo\": {},
                 \"bucketName\" : \"Kitten-Videos\",
                 \"bucketType\": \"allPrivate\",
-            \"defaultServerSideEncryption\": {
+                \"defaultServerSideEncryption\": {
                   \"isClientAuthorizedToRead\" : true,
                   \"value\": {
                     \"algorithm\" : \"AES256\",
                     \"mode\" : \"SSE-B2\"
                   }
                 },
-                \"lifecycleRules\": []
+                \"fileLockConfiguration\": {
+                    \"isClientAuthorizedToRead\": true,
+                    \"value\": {
+                      \"defaultRetention\": {
+                        \"mode\": null,
+                        \"period\": null
+                      },
+                      \"isFileLockEnabled\": true
+                    }
+                },
+                \"lifecycleRules\": [],
+                \"options\": [],
+                \"revision\": 3
+                
             },
             {
                 \"accountId\": \"30f20426f0b1\",
@@ -227,7 +240,19 @@ impl B2MockServer {
                     \"mode\" : null
                   }
                 },
-                \"lifecycleRules\": []
+                \"fileLockConfiguration\": {
+                    \"isClientAuthorizedToRead\": true,
+                    \"value\": {
+                      \"defaultRetention\": {
+                        \"mode\": null,
+                        \"period\": null
+                      },
+                      \"isFileLockEnabled\": true
+                    }
+                },
+                \"lifecycleRules\": [],
+                \"options\": [],
+                \"revision\": 32222222
             },
             {
                 \"accountId\": \"30f20426f0b1\",
@@ -242,7 +267,13 @@ impl B2MockServer {
                     \"mode\" : null
                   }
                 },
-                \"lifecycleRules\": []
+                \"fileLockConfiguration\": {
+                    \"isClientAuthorizedToRead\": false,
+                    \"value\":  null
+                },
+                \"lifecycleRules\": [],
+                \"options\": [],
+                \"revision\": 2
             } ]
         }",
         );

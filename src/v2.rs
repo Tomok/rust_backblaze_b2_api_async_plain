@@ -6,6 +6,7 @@ mod b2_cancel_large_file;
 mod b2_copy_file;
 mod b2_copy_part;
 mod b2_create_bucket;
+mod b2_create_key;
 mod b2_download_file_by_id;
 mod b2_finish_large_file;
 mod b2_get_upload_part_url;
@@ -18,10 +19,15 @@ mod b2_start_large_file;
 mod b2_upload_file;
 mod b2_upload_part;
 mod buckets;
+mod capabilities;
 mod file;
 mod file_lock;
 mod file_part;
 mod server_side_encryption;
+
+pub type KeyName = String; //TODO
+pub type ApplicationKey = String; //TODO
+pub type ApplicationKeyId = String; //TODO
 
 pub use b2_authorize_account::{AuthorizeAccountOk, AuthorizeError};
 /// Authorize account function see [official documentation](https://www.backblaze.com/b2/docs/b2_authorize_account.html)
@@ -42,6 +48,7 @@ pub use buckets::{
     BucketId, BucketInfo, BucketInfoKey, BucketInfoValue, BucketName, BucketType, BucketTypes,
 };
 
+pub use capabilities::{Capabilities, Capability};
 pub use common_structs::*;
 pub use file::*;
 pub use file_lock::*;
@@ -73,6 +80,8 @@ pub use file_part::PartNumber;
 
 pub use b2_copy_file::{b2_copy_file, CopyFileError, CopyFileRequest, MetadataDirective, Range};
 pub use b2_copy_part::{b2_copy_part, CopyPartRequest};
+
+pub use b2_create_key::{b2_create_key, CreateKeyRequest, CreatedKeyInformation};
 
 #[cfg(test)]
 mod test;

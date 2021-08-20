@@ -16,6 +16,8 @@ http-types = "2.10"
 typed-builder = "0.9.0"
 http-range = "0.1.4"
 http = "0.2.4"
+enumset = { version="1.0", features=["serde"] }
+
 
 [dev-dependencies]
 wiremock = "0.5"

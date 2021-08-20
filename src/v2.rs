@@ -21,6 +21,7 @@ mod b2_list_file_names;
 mod b2_list_parts;
 mod b2_list_unfinished_large_files;
 mod b2_start_large_file;
+mod b2_update_bucket;
 mod b2_upload_file;
 mod b2_upload_part;
 mod buckets;
@@ -63,6 +64,7 @@ pub use b2_create_bucket::{b2_create_bucket, CreateBucketError, CreateBucketRequ
 pub use b2_delete_bucket::b2_delete_bucket;
 pub use b2_list_buckets::b2_list_buckets;
 pub use b2_list_buckets::{ListBucketsError, ListBucketsOk, ListBucketsRequest};
+pub use b2_update_bucket::{b2_update_bucket, UpdateBucketError, UpdateBucketRequest};
 
 pub use b2_get_file_info::{b2_get_file_info, GetFileInfoError};
 pub use b2_list_file_names::{

@@ -9,6 +9,7 @@ mod b2_create_bucket;
 mod b2_create_key;
 mod b2_delete_bucket;
 mod b2_delete_file_version;
+mod b2_delete_key;
 mod b2_download_file_by_id;
 mod b2_finish_large_file;
 mod b2_get_upload_part_url;
@@ -89,6 +90,7 @@ pub use b2_delete_file_version::{
 };
 
 pub use b2_create_key::{b2_create_key, CreateKeyRequest, CreatedKeyInformation};
+pub use b2_delete_key::{b2_delete_key, KeyInformation};
 
 #[cfg(test)]
 mod test;

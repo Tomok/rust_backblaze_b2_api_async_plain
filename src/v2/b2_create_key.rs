@@ -47,7 +47,7 @@ pub struct CreatedKeyInformation {
     ///The account that this application key is for.
     account_id: AccountId,
 
-    expiration_timestamp: TimeStamp,
+    expiration_timestamp: Option<TimeStamp>,
 
     /// When present, restricts access to one bucket.
     bucket_id: Option<BucketId>,

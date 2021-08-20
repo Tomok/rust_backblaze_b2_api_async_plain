@@ -7,6 +7,7 @@ mod b2_copy_file;
 mod b2_copy_part;
 mod b2_create_bucket;
 mod b2_create_key;
+mod b2_delete_bucket;
 mod b2_download_file_by_id;
 mod b2_finish_large_file;
 mod b2_get_upload_part_url;
@@ -55,6 +56,7 @@ pub use file_lock::*;
 pub use server_side_encryption::{ServerSideEncryption, ServerSideEncryptionCustomerKey};
 
 pub use b2_create_bucket::{b2_create_bucket, CreateBucketError, CreateBucketRequest};
+pub use b2_delete_bucket::b2_delete_bucket;
 pub use b2_list_buckets::b2_list_buckets;
 pub use b2_list_buckets::{ListBucketsError, ListBucketsOk, ListBucketsRequest};
 

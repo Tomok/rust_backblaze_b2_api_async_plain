@@ -2,7 +2,7 @@ use super::{
     buckets::{
         BucketId, BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes, LifeCycleRule,
     },
-    AccountId, ApiUrl, AuthorizationToken, Error, JsonErrorObj,
+    AccountId, ApiUrl, AuthorizationToken, Error, FileLockConfiguration, JsonErrorObj,
 };
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
@@ -72,8 +72,7 @@ pub struct Bucket {
     bucket_info: BucketInfo,
     #[serde(default)]
     cors_rules: serde_json::Value, // it's not part of the example, so maybe optional???                 //todo!!!
-    #[serde(default)]
-    file_lock_configuration: serde_json::Value, // todo!
+    file_lock_configuration: FileLockConfiguration,
     default_server_side_encryption: serde_json::Value, //todo !!!
     lifecycle_rules: Vec<LifeCycleRule>,
     #[serde(default)]

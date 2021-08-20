@@ -4,8 +4,8 @@ use typed_builder::TypedBuilder;
 use super::{
     b2_list_buckets::Bucket,
     buckets::{BucketRevision, LifeCycleRule},
-    AccountId, ApiUrl, AuthorizationToken, BucketId, BucketInfo, BucketType, Error, JsonErrorObj,
-    ServerSideEncryption,
+    AccountId, ApiUrl, AuthorizationToken, BucketId, BucketInfo, BucketType, DefaultFileRetention,
+    Error, JsonErrorObj, ServerSideEncryption,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -32,7 +32,7 @@ pub struct UpdateBucketRequest {
     /// The default File Lock retention settings for this bucket.
     ///
     ///If specified, the existing default bucket retention settings will be replaced with the new settings. If not specified, setting will remain unchanged. Setting the value requires the writeBucketRetentions capability and that the bucket is File Lock-enabled.  
-    default_retention: Option<serde_json::Value>, //TODO
+    default_retention: Option<DefaultFileRetention>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -1,7 +1,8 @@
 use serde::Serialize;
 
 use super::{
-    ApiUrl, AuthorizationToken, BucketId, FileInformation, FileName, GetFileInfoError, JsonErrorObj,
+    errors::GetFileInfoError, ApiUrl, AuthorizationToken, BucketId, FileInformation, FileName,
+    JsonErrorObj,
 };
 
 #[derive(Debug, Serialize)]

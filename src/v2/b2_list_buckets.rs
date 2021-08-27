@@ -2,7 +2,8 @@ use super::{
     buckets::{
         BucketId, BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes, LifeCycleRule,
     },
-    AccountId, ApiUrl, AuthorizationToken, Error, FileLockConfiguration, JsonErrorObj,
+    errors::ListBucketsError,
+    AccountId, ApiUrl, AuthorizationToken, FileLockConfiguration, JsonErrorObj,
 };
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
@@ -39,29 +40,6 @@ impl<'a> ListBucketsRequest<'a> {
     }
 }
 
-#[derive(Debug)]
-pub enum ListBucketsError {
-    BadRequest {
-        raw_error: JsonErrorObj,
-    },
-    Unauthorized {
-        raw_error: JsonErrorObj,
-    },
-    /// not listed in the api in <https://www.backblaze.com/b2/docs/b2_list_buckets.html> but I assume this could happen as well
-    TransactionCapExceeded {
-        raw_error: JsonErrorObj,
-    },
-    BadAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    ExpiredAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    Unexpected {
-        raw_error: Error,
-    },
-}
-
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Bucket {
@@ -91,29 +69,6 @@ impl ListBucketsOk {
     /// Get a reference to the buckets
     pub fn buckets(&self) -> &[Bucket] {
         &self.buckets
-    }
-}
-
-impl From<reqwest::Error> for ListBucketsError {
-    fn from(err: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        ListBucketsError::Unexpected {
-            raw_error: Error::ReqwestError(err),
-        }
-    }
-}
-
-impl From<JsonErrorObj> for ListBucketsError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
     }
 }
 

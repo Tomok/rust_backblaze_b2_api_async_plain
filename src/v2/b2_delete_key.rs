@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    AccountId, ApiUrl, ApplicationKeyId, AuthorizationToken, BucketId, Capabilities, FileName,
-    JsonErrorObj, KeyName, ListBucketsError, TimeStamp,
+    errors::ListBucketsError, AccountId, ApiUrl, ApplicationKeyId, AuthorizationToken, BucketId,
+    Capabilities, FileName, JsonErrorObj, KeyName, TimeStamp,
 };
 
 #[derive(Debug, Serialize)]

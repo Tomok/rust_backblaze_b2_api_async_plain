@@ -2,8 +2,8 @@ use serde::Serialize;
 use typed_builder::TypedBuilder;
 
 use super::{
-    b2_list_buckets::Bucket, buckets::LifeCycleRule, AccountId, ApiUrl, AuthorizationToken,
-    BucketInfo, BucketName, BucketType, Error, JsonErrorObj, ServerSideEncryption,
+    b2_list_buckets::Bucket, buckets::LifeCycleRule, errors::CreateBucketError, AccountId, ApiUrl,
+    AuthorizationToken, BucketInfo, BucketName, BucketType, JsonErrorObj, ServerSideEncryption,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -39,42 +39,6 @@ pub struct CreateBucketRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The default server-side encryption settings for this bucket.
     default_server_side_encryption: Option<ServerSideEncryption>,
-}
-
-#[derive(Debug)]
-pub enum CreateBucketError {
-    BadRequest { raw_error: JsonErrorObj },
-    TooManyBuckets { raw_error: JsonErrorObj },
-    DuplicateBucketName { raw_error: JsonErrorObj },
-    Unauthorized { raw_error: JsonErrorObj },
-    BadAuthToken { raw_error: JsonErrorObj },
-    ExpiredAuthToken { raw_error: JsonErrorObj },
-    Unexpected { raw_error: Error },
-}
-
-impl From<reqwest::Error> for CreateBucketError {
-    fn from(err: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        Self::Unexpected {
-            raw_error: Error::ReqwestError(err),
-        }
-    }
-}
-
-impl From<JsonErrorObj> for CreateBucketError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (400, "too_many_buckets") => Self::TooManyBuckets { raw_error: e },
-            (400, "duplicate_bucket_name") => Self::DuplicateBucketName { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
-    }
 }
 
 pub async fn b2_create_bucket(

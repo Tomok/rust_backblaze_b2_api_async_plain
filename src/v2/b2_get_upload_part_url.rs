@@ -1,6 +1,8 @@
 use crate::v2::JsonErrorObj;
 
-use super::{b2_get_upload_url::UploadUrl, ApiUrl, AuthorizationToken, FileId, GetUploadUrlError};
+use super::{
+    b2_get_upload_url::UploadUrl, errors::GetUploadUrlError, ApiUrl, AuthorizationToken, FileId,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]

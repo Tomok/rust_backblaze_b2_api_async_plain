@@ -1,7 +1,7 @@
 use std::{convert::TryFrom, num::NonZeroU16};
 
 use super::{
-    ApiUrl, AuthorizationToken, FileId, InvalidData, JsonErrorObj, ListBucketsError, Md5,
+    errors::ListBucketsError, ApiUrl, AuthorizationToken, FileId, InvalidData, JsonErrorObj, Md5,
     PartNumber, ServerSideEncryption, Sha1, TimeStamp,
 };
 

@@ -2,7 +2,7 @@ use serde::Serialize;
 use typed_builder::TypedBuilder;
 
 use super::{
-    ApiUrl, AuthorizationToken, BucketId, Error, FileId, FileInfo, FileInformation, FileName,
+    errors, ApiUrl, AuthorizationToken, BucketId, FileId, FileInfo, FileInformation, FileName,
     FileRetention, JsonErrorObj, LegalHold, Mime, ServerSideEncryptionCustomerKey,
 };
 
@@ -93,85 +93,11 @@ pub struct CopyFileRequest {
     destination_server_side_encryption: Option<ServerSideEncryptionCustomerKey>,
 }
 
-#[derive(Debug)]
-pub enum CopyFileError {
-    ///The request had the wrong fields or illegal values. The message returned with the error will describe the problem.
-    BadRequest {
-        raw_error: JsonErrorObj,
-    },
-
-    ///The auth token used is valid, but does not authorize this call with these parameters. The capabilities of an auth token are determined by the application key used with b2_authorize_account.
-    Unauthorized {
-        raw_error: JsonErrorObj,
-    },
-    ///The auth token used is not valid. Call b2_authorize_account again to either get a new one, or an error message describing the problem.
-    BadAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    ///The auth token used has expired. Call b2_authorize_account again to get a new one.
-    ExpiredAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    ///The provided customer-managed encryption key is wrong.
-    AccessDenied {
-        raw_error: JsonErrorObj,
-    },
-    ///Usage cap exceeded.
-    CapExceeded {
-        raw_error: JsonErrorObj,
-    },
-    ///File is not in B2 Cloud Storage.
-    NotFound {
-        raw_error: JsonErrorObj,
-    },
-    // Only POST is supported - Skipped as call enforces POST
-    // method_not_allowed
-    /// The service timed out reading the uploaded file
-    RequestTimeout {
-        raw_error: JsonErrorObj,
-    },
-    ///The Range header in the request is valid but cannot be satisfied for the file.
-    RangeNotSatisfiable {
-        raw_error: JsonErrorObj,
-    },
-    Unexpected {
-        raw_error: Error,
-    },
-}
-
-impl From<reqwest::Error> for CopyFileError {
-    fn from(e: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        Self::Unexpected {
-            raw_error: Error::ReqwestError(e),
-        }
-    }
-}
-
-impl From<JsonErrorObj> for CopyFileError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            (403, "access_denied") => Self::AccessDenied { raw_error: e },
-            (403, "cap_exceeded") => Self::CapExceeded { raw_error: e },
-            (404, "not_found") => Self::NotFound { raw_error: e },
-            (408, "request_timeout") => Self::RequestTimeout { raw_error: e },
-            (416, "range_not_satisfiable") => Self::RangeNotSatisfiable { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
-    }
-}
-
 pub async fn b2_copy_file(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
     request: &CopyFileRequest,
-) -> Result<FileInformation, CopyFileError> {
+) -> Result<FileInformation, errors::CopyFileError> {
     let url = format!("{}/b2api/v2/b2_copy_file", api_url.as_str());
     let request = reqwest::Client::new()
         .post(url)

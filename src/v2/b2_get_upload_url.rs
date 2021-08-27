@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{ApiUrl, AuthorizationToken, BucketId, Error, JsonErrorObj};
+use super::{errors::GetUploadUrlError, ApiUrl, AuthorizationToken, BucketId, JsonErrorObj};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -46,44 +46,6 @@ impl UploadParameters {
     /// Get a reference to the upload parameters's authorization token.
     pub fn authorization_token(&self) -> &AuthorizationToken {
         &self.authorization_token
-    }
-}
-
-//TODO: since this is used by [crate::v2::b2_get_upload_part_url] as well, move to somewhere else?
-#[derive(Debug)]
-pub enum GetUploadUrlError {
-    // TODO: update acc. to documentation
-    BadRequest { raw_error: JsonErrorObj },
-    Unauthorized { raw_error: JsonErrorObj },
-    BadAuthToken { raw_error: JsonErrorObj },
-    ExpiredAuthToken { raw_error: JsonErrorObj },
-    StorageCapExceeded { raw_error: JsonErrorObj },
-    ServiceUnavaliabe { raw_error: JsonErrorObj },
-    Unexpected { raw_error: Error },
-}
-
-impl From<reqwest::Error> for GetUploadUrlError {
-    fn from(e: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        Self::Unexpected {
-            raw_error: Error::ReqwestError(e),
-        }
-    }
-}
-
-impl From<JsonErrorObj> for GetUploadUrlError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            (403, "storage_cap_exceeded") => Self::StorageCapExceeded { raw_error: e },
-            (503, "service_unavailable") => Self::ServiceUnavaliabe { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
     }
 }
 

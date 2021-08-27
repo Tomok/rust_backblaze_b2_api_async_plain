@@ -1,8 +1,8 @@
 use std::{convert::TryFrom, num::NonZeroU16};
 
 use super::{
-    file::FileInformation, ApiUrl, AuthorizationToken, BucketId, Error, FileName, InvalidData,
-    JsonErrorObj,
+    errors::ListFileNamesError, file::FileInformation, ApiUrl, AuthorizationToken, BucketId,
+    FileName, InvalidData, JsonErrorObj,
 };
 
 use serde::{Deserialize, Serialize};
@@ -91,67 +91,6 @@ impl ListFileNamesRequest {
     /// Get a reference to the list file names request's bucket id.
     pub fn bucket_id(&self) -> &BucketId {
         &self.bucket_id
-    }
-}
-
-/// Error returned by b2_list_file_names
-///
-/// based on <https://www.backblaze.com/b2/docs/b2_list_file_names.html>
-/// intentionally does not include out_of_range, as this should be prevented by [MaxFileCount], if it is received [ListFileNamesError::Unexpected] will be used
-#[derive(Debug)]
-pub enum ListFileNamesError {
-    /// The request had the wrong fields or illegal values. The message returned with the error will describe the problem.
-    BadRequest {
-        raw_error: JsonErrorObj,
-    },
-    InvalidBucketId {
-        raw_error: JsonErrorObj,
-    },
-
-    Unauthorized {
-        raw_error: JsonErrorObj,
-    },
-    /// not listed in the api in <https://www.backblaze.com/b2/docs/b2_list_file_names.html> but I assume this could happen as well
-    TransactionCapExceeded {
-        raw_error: JsonErrorObj,
-    },
-    BadAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    ExpiredAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    /// Timed out while iterating and skipping files
-    BadRequestTimeout {
-        raw_error: JsonErrorObj,
-    },
-    Unexpected {
-        raw_error: Error,
-    },
-}
-
-impl From<JsonErrorObj> for ListFileNamesError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (400, "invalid_bucket_id") => Self::InvalidBucketId { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            (403, "transaction_cap_exceeded") => Self::TransactionCapExceeded { raw_error: e },
-            (503, "bad_request") => Self::BadRequestTimeout { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
-    }
-}
-impl From<reqwest::Error> for ListFileNamesError {
-    fn from(err: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        Self::Unexpected {
-            raw_error: Error::ReqwestError(err),
-        }
     }
 }
 

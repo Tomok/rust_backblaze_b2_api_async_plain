@@ -6,7 +6,7 @@ use typed_builder::TypedBuilder;
 use crate::v2::JsonErrorObj;
 
 use super::{
-    ApiUrl, AuthorizationToken, BucketId, FileId, FileName, InvalidData, ListBucketsError,
+    errors::ListBucketsError, ApiUrl, AuthorizationToken, BucketId, FileId, FileName, InvalidData,
     ListFileNamesOk,
 };
 

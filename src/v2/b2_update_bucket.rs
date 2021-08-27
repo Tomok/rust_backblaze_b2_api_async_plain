@@ -4,8 +4,9 @@ use typed_builder::TypedBuilder;
 use super::{
     b2_list_buckets::Bucket,
     buckets::{BucketRevision, LifeCycleRule},
+    errors::UpdateBucketError,
     AccountId, ApiUrl, AuthorizationToken, BucketId, BucketInfo, BucketType, DefaultFileRetention,
-    Error, JsonErrorObj, ServerSideEncryption,
+    JsonErrorObj, ServerSideEncryption,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -48,53 +49,6 @@ pub struct UpdateBucketRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// When set, the update will only happen if the revision number stored in the B2 service matches the one passed in. This can be used to avoid having simultaneous updates make conflicting changes.
     if_revision_is: Option<BucketRevision>,
-}
-
-#[derive(Debug)]
-pub enum UpdateBucketError {
-    BadRequest {
-        raw_error: JsonErrorObj,
-    },
-    Unauthorized {
-        raw_error: JsonErrorObj,
-    },
-    BadAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    ExpiredAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    /// The ifRevisionIs test failed.
-    Conflict {
-        raw_error: JsonErrorObj,
-    },
-    Unexpected {
-        raw_error: Error,
-    },
-}
-
-impl From<reqwest::Error> for UpdateBucketError {
-    fn from(err: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        Self::Unexpected {
-            raw_error: Error::ReqwestError(err),
-        }
-    }
-}
-
-impl From<JsonErrorObj> for UpdateBucketError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            (409, "conflict") => Self::Conflict { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
-    }
 }
 
 pub async fn b2_update_bucket(

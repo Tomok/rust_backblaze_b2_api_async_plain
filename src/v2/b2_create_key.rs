@@ -2,8 +2,8 @@ use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
 use super::{
-    AccountId, ApiUrl, ApplicationKey, ApplicationKeyId, AuthorizationToken, BucketId,
-    Capabilities, FileName, JsonErrorObj, KeyName, ListBucketsError, TimeStamp,
+    errors::ListBucketsError, AccountId, ApiUrl, ApplicationKey, ApplicationKeyId,
+    AuthorizationToken, BucketId, Capabilities, FileName, JsonErrorObj, KeyName, TimeStamp,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]

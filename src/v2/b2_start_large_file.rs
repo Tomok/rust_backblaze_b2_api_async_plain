@@ -1,6 +1,6 @@
 use super::{
-    ApiUrl, AuthorizationToken, BucketId, Error, FileInfo, FileInformation, FileName,
-    FileRetention, JsonErrorObj, LegalHold, Mime, ServerSideEncryptionCustomerKey,
+    errors::StartLargeFileError, ApiUrl, AuthorizationToken, BucketId, FileInfo, FileInformation,
+    FileName, FileRetention, JsonErrorObj, LegalHold, Mime, ServerSideEncryptionCustomerKey,
 };
 
 use serde::Serialize;
@@ -22,39 +22,6 @@ pub struct StartLargeFileParameters {
     legal_hold: Option<LegalHold>,
     #[builder(default, setter(strip_option))]
     server_side_encryption: Option<ServerSideEncryptionCustomerKey>, // <- TODO: right type??
-}
-
-#[derive(Debug)]
-pub enum StartLargeFileError {
-    BadRequest { raw_error: JsonErrorObj },
-    BadBucketId { raw_error: JsonErrorObj },
-    Unauthorized { raw_error: JsonErrorObj },
-    BadAuthToken { raw_error: JsonErrorObj },
-    ExpiredAuthToken { raw_error: JsonErrorObj },
-    Unexpected { raw_error: Error },
-}
-
-impl From<reqwest::Error> for StartLargeFileError {
-    fn from(e: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        Self::Unexpected {
-            raw_error: Error::ReqwestError(e),
-        }
-    }
-}
-impl From<JsonErrorObj> for StartLargeFileError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (400, "bad_bucket_id") => Self::BadBucketId { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
-    }
 }
 
 pub async fn b2_start_large_file(

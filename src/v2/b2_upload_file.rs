@@ -6,9 +6,9 @@ use typed_builder::TypedBuilder;
 use crate::header_serializer::HeadersFrom;
 
 use super::{
-    server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValue, ContentDisposition,
-    ContentLanguage, Error, ExpiresHeaderValue, FileInformation, FileName, JsonErrorObj, Md5, Mime,
-    ServerSideEncryptionCustomerKey, Sha1, TimeStamp, UploadParameters,
+    errors::UploadFileError, server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValue,
+    ContentDisposition, ContentLanguage, ExpiresHeaderValue, FileInformation, FileName,
+    JsonErrorObj, Md5, Mime, ServerSideEncryptionCustomerKey, Sha1, TimeStamp, UploadParameters,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -58,62 +58,6 @@ pub struct UploadFileParameters {
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
     #[builder(default, setter(strip_option))]
     server_side_encryption_customer_key_md5: Option<Md5>,
-}
-
-#[derive(Debug)]
-pub enum UploadFileError {
-    BadRequest {
-        raw_error: JsonErrorObj,
-    },
-    Unauthorized {
-        raw_error: JsonErrorObj,
-    },
-    BadAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    ExpiredAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    CapExceeded {
-        raw_error: JsonErrorObj,
-    },
-    // Method Not allowed listed in documentation, but skipped here, as the request method forces POST
-    RequestTimeout {
-        raw_error: JsonErrorObj,
-    },
-    /// acc. to documentaion: Call b2_get_upload_url again to get a new auth token
-    ServiceUnavailable {
-        raw_error: JsonErrorObj,
-    },
-    Unexpected {
-        raw_error: Error,
-    },
-}
-
-impl From<reqwest::Error> for UploadFileError {
-    fn from(e: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        Self::Unexpected {
-            raw_error: Error::ReqwestError(e),
-        }
-    }
-}
-
-impl From<JsonErrorObj> for UploadFileError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            (403, "cap_exceeded") => Self::CapExceeded { raw_error: e },
-            (408, "request_timeout") => Self::RequestTimeout { raw_error: e },
-            (503, "service_unavailable") => Self::ServiceUnavailable { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
-    }
 }
 
 pub async fn b2_upload_file<T: Into<Body>>(

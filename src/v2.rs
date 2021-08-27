@@ -27,6 +27,7 @@ mod b2_upload_file;
 mod b2_upload_part;
 mod buckets;
 mod capabilities;
+pub mod errors;
 mod file;
 mod file_lock;
 mod file_part;

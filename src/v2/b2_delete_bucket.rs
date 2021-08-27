@@ -1,8 +1,8 @@
 use serde::Serialize;
 
 use super::{
-    b2_list_buckets::Bucket, AccountId, ApiUrl, AuthorizationToken, BucketId, JsonErrorObj,
-    ListBucketsError,
+    b2_list_buckets::Bucket, errors::ListBucketsError, AccountId, ApiUrl, AuthorizationToken,
+    BucketId, JsonErrorObj,
 };
 
 #[derive(Debug, Serialize)]

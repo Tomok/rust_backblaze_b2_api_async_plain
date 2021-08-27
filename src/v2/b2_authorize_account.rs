@@ -1,5 +1,4 @@
-use super::{AccountId, ApiUrl, AuthorizationToken, DownloadUrl, Error, JsonErrorObj};
-use http_types::StatusCode;
+use super::{errors, AccountId, ApiUrl, AuthorizationToken, DownloadUrl, JsonErrorObj};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -63,29 +62,11 @@ pub struct AuthorizeAccountAllowed {
     pub name_prefix: Option<String>,
 }
 
-#[derive(Debug)]
-pub enum AuthorizeError {
-    BadRequest { raw_error: JsonErrorObj },
-    Unauthorized { raw_error: JsonErrorObj },
-    Unsupported { raw_error: JsonErrorObj },
-    TransactionCapExceeded { raw_error: JsonErrorObj },
-    Unexpected { raw_error: Error },
-}
-
-impl From<reqwest::Error> for AuthorizeError {
-    fn from(err: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        AuthorizeError::Unexpected {
-            raw_error: Error::ReqwestError(err),
-        }
-    }
-}
-
 pub async fn b2_authorize_account(
     basic_uri: &str,
     application_key_id: &str,
     application_key: &str,
-) -> Result<AuthorizeAccountOk, AuthorizeError> {
+) -> Result<AuthorizeAccountOk, errors::AuthorizeError> {
     let url = format!("{}/b2api/v2/b2_authorize_account", basic_uri);
     dbg!(&url);
     //https://api.backblazeb2.com
@@ -93,27 +74,13 @@ pub async fn b2_authorize_account(
         .get(url)
         .basic_auth(application_key_id, Some(application_key))
         .send()
-        .await
-        .map_err(AuthorizeError::from)?;
+        .await?;
     if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
-        let auth_ok: AuthorizeAccountOk = resp.json().await.map_err(AuthorizeError::from)?;
+        let auth_ok: AuthorizeAccountOk = resp.json().await?;
         Ok(auth_ok)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(AuthorizeError::from)?;
-        let auth_error = match (raw_error.status, raw_error.code.as_str()) {
-            (StatusCode::BadRequest, "bad_request") => AuthorizeError::BadRequest { raw_error },
-            (StatusCode::Unauthorized, "unauthorized") => {
-                AuthorizeError::Unauthorized { raw_error }
-            }
-            (StatusCode::Unauthorized, "unsupported") => AuthorizeError::Unsupported { raw_error },
-            (StatusCode::Forbidden, "transaction_cap_exceeded") => {
-                AuthorizeError::TransactionCapExceeded { raw_error }
-            }
-            _ => AuthorizeError::Unexpected {
-                raw_error: Error::JsonError(raw_error),
-            },
-        };
-        Err(auth_error)
+        let raw_error: JsonErrorObj = resp.json().await?;
+        Err(raw_error.into())
     }
 }
 #[cfg(test)]
@@ -138,6 +105,6 @@ mod test {
         mock.register_default_auth_handler().await;
         let res = b2_authorize_account(&mock.uri(), FAKE_APPLICATION_KEY_ID, "Invalid Key").await;
         let err = res.unwrap_err();
-        assert!(matches!(err, AuthorizeError::Unauthorized { .. }));
+        assert!(matches!(err, errors::AuthorizeError::Unauthorized { .. }));
     }
 }

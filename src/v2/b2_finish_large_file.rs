@@ -1,6 +1,8 @@
 use crate::v2::JsonErrorObj;
 
-use super::{ApiUrl, AuthorizationToken, FileId, FileInformation, Sha1, StartLargeFileError};
+use super::{
+    errors::StartLargeFileError, ApiUrl, AuthorizationToken, FileId, FileInformation, Sha1,
+};
 use serde::Serialize;
 
 #[derive(Serialize)]

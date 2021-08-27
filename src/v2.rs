@@ -37,12 +37,12 @@ pub type KeyName = String; //TODO
 pub type ApplicationKey = String; //TODO
 pub type ApplicationKeyId = String; //TODO
 
-pub use b2_authorize_account::{AuthorizeAccountOk, AuthorizeError};
+pub use b2_authorize_account::AuthorizeAccountOk;
 /// Authorize account function see [official documentation](https://www.backblaze.com/b2/docs/b2_authorize_account.html)
 pub async fn b2_authorize_account(
     application_key_id: &str,
     application_key: &str,
-) -> Result<AuthorizeAccountOk, AuthorizeError> {
+) -> Result<AuthorizeAccountOk, errors::AuthorizeError> {
     // call the real function with the basic_uri filled in (needes to be changeable for testing)
     b2_authorize_account::b2_authorize_account(
         "https://api.backblazeb2.com",
@@ -62,20 +62,20 @@ pub use file::*;
 pub use file_lock::*;
 pub use server_side_encryption::{ServerSideEncryption, ServerSideEncryptionCustomerKey};
 
-pub use b2_create_bucket::{b2_create_bucket, CreateBucketError, CreateBucketRequest};
+pub use b2_create_bucket::{b2_create_bucket, CreateBucketRequest};
 pub use b2_delete_bucket::b2_delete_bucket;
 pub use b2_list_buckets::b2_list_buckets;
-pub use b2_list_buckets::{ListBucketsError, ListBucketsOk, ListBucketsRequest};
-pub use b2_update_bucket::{b2_update_bucket, UpdateBucketError, UpdateBucketRequest};
+pub use b2_list_buckets::{ListBucketsOk, ListBucketsRequest};
+pub use b2_update_bucket::{b2_update_bucket, UpdateBucketRequest};
 
-pub use b2_get_file_info::{b2_get_file_info, GetFileInfoError};
+pub use b2_get_file_info::b2_get_file_info;
 pub use b2_list_file_names::{
-    b2_list_file_names, ListFileNamesError, ListFileNamesOk, ListFileNamesRequest, MaxFileCount,
+    b2_list_file_names, ListFileNamesOk, ListFileNamesRequest, MaxFileCount,
 };
 
-pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadFileError, DownloadParams};
+pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams};
 
-pub use b2_get_upload_url::{b2_get_upload_url, GetUploadUrlError, UploadParameters};
+pub use b2_get_upload_url::{b2_get_upload_url, UploadParameters};
 pub use b2_upload_file::{b2_upload_file, UploadFileParameters};
 
 pub use b2_cancel_large_file::{b2_cancel_large_file, CancelFileOk};
@@ -85,15 +85,15 @@ pub use b2_list_parts::{b2_list_parts, ListPartsOk, ListPartsRequest, MaxPartCou
 pub use b2_list_unfinished_large_files::{
     b2_list_unfinished_large_files, ListUnfinishedLargeFilesRequest, MaxUnfinishedLargeFileCount,
 };
-pub use b2_start_large_file::{b2_start_large_file, StartLargeFileError, StartLargeFileParameters};
-pub use b2_upload_part::{b2_upload_part, UploadPartError, UploadPartOk, UploadPartParameters};
+pub use b2_start_large_file::{b2_start_large_file, StartLargeFileParameters};
+pub use b2_upload_part::{b2_upload_part, UploadPartOk, UploadPartParameters};
 pub use file_part::PartNumber;
 
-pub use b2_copy_file::{b2_copy_file, CopyFileError, CopyFileRequest, MetadataDirective, Range};
+pub use b2_copy_file::{b2_copy_file, CopyFileRequest, MetadataDirective, Range};
 pub use b2_copy_part::{b2_copy_part, CopyPartRequest};
 
 pub use b2_delete_file_version::{
-    b2_delete_file_version, DeleteFileVersionError, DeleteFileVersionOk, DeleteFileVersionRequest,
+    b2_delete_file_version, DeleteFileVersionOk, DeleteFileVersionRequest,
 };
 pub use b2_hide_file::b2_hide_file;
 
@@ -101,8 +101,7 @@ pub use b2_create_key::{b2_create_key, CreateKeyRequest, CreatedKeyInformation};
 pub use b2_delete_key::{b2_delete_key, KeyInformation};
 
 pub use b2_update_file_legal_hold::{
-    b2_update_file_legal_hold, UpdateFileLegalHoldError, UpdateFileLegalHoldOk,
-    UpdateFileLegalHoldRequest,
+    b2_update_file_legal_hold, UpdateFileLegalHoldOk, UpdateFileLegalHoldRequest,
 };
 
 #[cfg(test)]

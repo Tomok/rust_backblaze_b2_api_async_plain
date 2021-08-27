@@ -1,5 +1,6 @@
 use super::{
-    AuthorizationToken, DownloadUrl, Error, FileId, JsonErrorObj, ServerSideEncryptionCustomerKey,
+    errors::DownloadFileError, AuthorizationToken, DownloadUrl, FileId, JsonErrorObj,
+    ServerSideEncryptionCustomerKey,
 };
 
 use http_range::HttpRange;
@@ -17,53 +18,6 @@ pub struct DownloadParams<'s> {
     server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey>,
 }
 
-#[derive(Debug)]
-pub enum DownloadFileError {
-    // TODO: update acc. to documentation
-    BadRequest {
-        raw_error: JsonErrorObj,
-    },
-    Unauthorized {
-        raw_error: JsonErrorObj,
-    },
-    /// not listed in the api in <https://www.backblaze.com/b2/docs/b2_list_buckets.html> but I assume this could happen as well
-    TransactionCapExceeded {
-        raw_error: JsonErrorObj,
-    },
-    BadAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    ExpiredAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    Unexpected {
-        raw_error: Error,
-    },
-}
-
-impl From<reqwest::Error> for DownloadFileError {
-    fn from(e: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        Self::Unexpected {
-            raw_error: Error::ReqwestError(e),
-        }
-    }
-}
-
-impl From<JsonErrorObj> for DownloadFileError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            (403, "transaction_cap_exceeded") => Self::TransactionCapExceeded { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
-    }
-}
 /// downloads a file by ID, does return a reqwest::Response object, if the server returned http status OK (200).
 pub async fn b2_download_file_by_id(
     download_url: &DownloadUrl,

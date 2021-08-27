@@ -5,8 +5,8 @@ use typed_builder::TypedBuilder;
 use crate::header_serializer::HeadersFrom;
 
 use super::{
-    server_side_encryption::EncryptionAlgorithm, Error, FileId, JsonErrorObj, Md5, PartNumber,
-    ServerSideEncryption, ServerSideEncryptionCustomerKey, Sha1, TimeStamp,
+    errors::UploadPartError, server_side_encryption::EncryptionAlgorithm, FileId, JsonErrorObj,
+    Md5, PartNumber, ServerSideEncryption, ServerSideEncryptionCustomerKey, Sha1, TimeStamp,
     UploadPartUrlParameters,
 };
 
@@ -42,60 +42,6 @@ pub struct UploadPartParameters {
     #[builder(default, setter(strip_option))]
     /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKeyMd5 requested via b2_start_large_file.
     server_side_encryption_customer_key_md5: Option<Md5>,
-}
-
-#[derive(Debug)]
-pub enum UploadPartError {
-    BadRequest {
-        raw_error: JsonErrorObj,
-    },
-    Unauthorized {
-        raw_error: JsonErrorObj,
-    },
-    /// acc. to documentaion: Call b2_get_upload_part_url again to get a new auth token
-    BadAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    /// acc. to documentaion: Call b2_get_upload_part_url again to get a new auth token
-    ExpiredAuthToken {
-        raw_error: JsonErrorObj,
-    },
-    // Method Not allowed listed in documentation, but skipped here, as the request method forces POST
-    RequestTimeout {
-        raw_error: JsonErrorObj,
-    },
-    /// acc. to documentaion: Call b2_get_upload_part_url again to get a new auth token
-    ServiceUnavailable {
-        raw_error: JsonErrorObj,
-    },
-    Unexpected {
-        raw_error: Error,
-    },
-}
-
-impl From<reqwest::Error> for UploadPartError {
-    fn from(e: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        Self::Unexpected {
-            raw_error: Error::ReqwestError(e),
-        }
-    }
-}
-
-impl From<JsonErrorObj> for UploadPartError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            (408, "request_timeout") => Self::RequestTimeout { raw_error: e },
-            (503, "service_unavailable") => Self::ServiceUnavailable { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
-    }
 }
 
 #[derive(Debug, Deserialize)]

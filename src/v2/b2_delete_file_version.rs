@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-use super::{ApiUrl, AuthorizationToken, Error, FileId, FileName, JsonErrorObj};
+use super::{
+    errors::DeleteFileVersionError, ApiUrl, AuthorizationToken, FileId, FileName, JsonErrorObj,
+};
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
@@ -14,45 +16,6 @@ pub struct DeleteFileVersionRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Must be specified and set to true if deleting a file version protected by File Lock governance mode retention settings. Setting the value requires the bypassGovernance application key capability.
     bypass_governance: Option<bool>,
-}
-
-#[derive(Debug)]
-pub enum DeleteFileVersionError {
-    BadRequest { raw_error: JsonErrorObj },
-    BadBucketId { raw_error: JsonErrorObj },
-    FileNotPresent { raw_error: JsonErrorObj },
-    Unauthorized { raw_error: JsonErrorObj },
-    BadAuthToken { raw_error: JsonErrorObj },
-    ExpiredAuthToken { raw_error: JsonErrorObj },
-    AccessDenied { raw_error: JsonErrorObj },
-
-    Unexpected { raw_error: Error },
-}
-
-impl From<reqwest::Error> for DeleteFileVersionError {
-    fn from(e: reqwest::Error) -> Self {
-        //TODO separate error for network / timeouts??
-        Self::Unexpected {
-            raw_error: Error::ReqwestError(e),
-        }
-    }
-}
-
-impl From<JsonErrorObj> for DeleteFileVersionError {
-    fn from(e: JsonErrorObj) -> Self {
-        match (e.status as usize, e.code.as_str()) {
-            (400, "bad_request") => Self::BadRequest { raw_error: e },
-            (400, "bad_bucket_id") => Self::BadBucketId { raw_error: e },
-            (400, "file_not_present") => Self::FileNotPresent { raw_error: e },
-            (401, "unauthorized") => Self::Unauthorized { raw_error: e },
-            (401, "bad_auth_token") => Self::BadAuthToken { raw_error: e },
-            (401, "expired_auth_token") => Self::ExpiredAuthToken { raw_error: e },
-            (401, "access_denied") => Self::AccessDenied { raw_error: e },
-            _ => Self::Unexpected {
-                raw_error: Error::JsonError(e),
-            },
-        }
-    }
 }
 
 #[derive(Debug, Deserialize)]

@@ -1,6 +1,8 @@
 use crate::v2::JsonErrorObj;
 
-use super::{AccountId, ApiUrl, AuthorizationToken, BucketId, FileId, FileName, ListBucketsError};
+use super::{
+    errors::ListBucketsError, AccountId, ApiUrl, AuthorizationToken, BucketId, FileId, FileName,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]

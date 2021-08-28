@@ -2,7 +2,7 @@ use super::{
     buckets::{
         BucketId, BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes, LifeCycleRule,
     },
-    errors::ListBucketsError,
+    errors::GenericB2Error,
     AccountId, ApiUrl, AuthorizationToken, FileLockConfiguration, JsonErrorObj,
 };
 use serde::{Deserialize, Serialize};
@@ -76,18 +76,18 @@ pub async fn b2_list_buckets(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
     request_body: &ListBucketsRequest<'_>,
-) -> Result<ListBucketsOk, ListBucketsError> {
+) -> Result<ListBucketsOk, GenericB2Error> {
     let url = format!("{}/b2api/v2/b2_list_buckets", api_url.as_str());
     let request = reqwest::Client::new()
         .post(url)
         .header("Authorization", authorization_token.as_str())
         .json(request_body);
-    let resp = request.send().await.map_err(ListBucketsError::from)?;
+    let resp = request.send().await.map_err(GenericB2Error::from)?;
     if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
-        let auth_ok: ListBucketsOk = resp.json().await.map_err(ListBucketsError::from)?;
+        let auth_ok: ListBucketsOk = resp.json().await.map_err(GenericB2Error::from)?;
         Ok(auth_ok)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(ListBucketsError::from)?;
+        let raw_error: JsonErrorObj = resp.json().await.map_err(GenericB2Error::from)?;
         Err(raw_error.into())
     }
 }

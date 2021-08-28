@@ -1,5 +1,5 @@
 use super::{
-    errors::StartLargeFileError, ApiUrl, AuthorizationToken, BucketId, FileInfo, FileInformation,
+    errors::LargeFileError, ApiUrl, AuthorizationToken, BucketId, FileInfo, FileInformation,
     FileName, FileRetention, JsonErrorObj, LegalHold, Mime, ServerSideEncryptionCustomerKey,
 };
 
@@ -28,7 +28,7 @@ pub async fn b2_start_large_file(
     api_url: &ApiUrl,
     authorization: &AuthorizationToken,
     params: &StartLargeFileParameters,
-) -> Result<FileInformation, StartLargeFileError> {
+) -> Result<FileInformation, LargeFileError> {
     let url = format!("{}/b2api/v2/b2_start_large_file", api_url.as_str());
     let resp = reqwest::Client::new()
         .post(url)
@@ -36,11 +36,11 @@ pub async fn b2_start_large_file(
         .json(&params)
         .send()
         .await
-        .map_err(StartLargeFileError::from)?;
+        .map_err(LargeFileError::from)?;
     if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
-        Ok(resp.json().await.map_err(StartLargeFileError::from)?)
+        Ok(resp.json().await.map_err(LargeFileError::from)?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(StartLargeFileError::from)?;
+        let raw_error: JsonErrorObj = resp.json().await.map_err(LargeFileError::from)?;
         Err(raw_error.into())
     }
 }

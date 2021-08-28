@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use super::{
-    b2_list_buckets::Bucket, errors::ListBucketsError, AccountId, ApiUrl, AuthorizationToken,
+    b2_list_buckets::Bucket, errors::GenericB2Error, AccountId, ApiUrl, AuthorizationToken,
     BucketId, JsonErrorObj,
 };
 
@@ -17,7 +17,7 @@ pub async fn b2_delete_bucket(
     authorization_token: &AuthorizationToken,
     account_id: &AccountId,
     bucket_id: &BucketId,
-) -> Result<Bucket, ListBucketsError> {
+) -> Result<Bucket, GenericB2Error> {
     let url = format!("{}/b2api/v2/b2_delete_bucket", api_url.as_str());
     let delete_bucket_request = DeleteBucketRequest {
         account_id,

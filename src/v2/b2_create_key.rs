@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors::ListBucketsError, AccountId, ApiUrl, ApplicationKey, ApplicationKeyId,
+    errors::GenericB2Error, AccountId, ApiUrl, ApplicationKey, ApplicationKeyId,
     AuthorizationToken, BucketId, Capabilities, FileName, JsonErrorObj, KeyName, TimeStamp,
 };
 
@@ -63,7 +63,7 @@ pub async fn b2_create_key(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
     request: &CreateKeyRequest,
-) -> Result<CreatedKeyInformation, ListBucketsError> {
+) -> Result<CreatedKeyInformation, GenericB2Error> {
     let url = format!("{}/b2api/v2/b2_create_key", api_url.as_str());
     let request = reqwest::Client::new()
         .post(url)

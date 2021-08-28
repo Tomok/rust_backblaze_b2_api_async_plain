@@ -40,7 +40,7 @@ error_enum!(AuthorizeError {
     (403, "transaction_cap_exceeded", TransactionCapExceeded),
 });
 
-error_enum!(CopyFileError {
+error_enum!(CopyError {
     (400, "bad_request", BadRequest),
     (401, "unauthorized", Unauthorized),
     (401, "bad_auth_token", BadAuthToken),
@@ -96,7 +96,8 @@ error_enum!(GetUploadUrlError {
     (503, "service_unavailable", ServiceUnavaliabe),
 });
 
-error_enum!(ListBucketsError {
+//Generic Error caused by backblaze, error value for multiple functions
+error_enum!(GenericB2Error {
     (400, "bad_request", BadRequest),
     (401, "unauthorized", Unauthorized),
     (401, "bad_auth_token", BadAuthToken),
@@ -113,7 +114,7 @@ error_enum!(ListFileNamesError {
     (503, "bad_request", BadRequestTimeout),
 });
 
-error_enum!(StartLargeFileError {
+error_enum!(LargeFileError {
     (400, "bad_request", BadRequest),
     (400, "bad_bucket_id", BadBucketId),
     (401, "unauthorized", Unauthorized),

@@ -75,7 +75,9 @@ impl<'de> Deserialize<'de> for DefaultFileRetention {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DeserialiableDefaultFileRetention {
+    #[serde(default)]
     mode: Option<FileRetentionMode>,
+    #[serde(default)]
     period: Option<Period>,
 }
 
@@ -89,8 +91,8 @@ pub enum FileRetentionMode {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FileRetention {
-    mode: FileRetentionMode,
-    retain_until_timestamp: TimeStamp,
+    mode: Option<FileRetentionMode>,
+    retain_until_timestamp: Option<TimeStamp>,
 }
 
 #[derive(Debug, Deserialize)]

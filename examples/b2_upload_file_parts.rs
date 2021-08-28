@@ -133,9 +133,10 @@ async fn main() {
             {
                 let body = Body::from(buf);
 
-                let part_upload_resp = b2_upload_part(&mut upload_url_params, &upload_params, body)
-                    .await
-                    .expect("Uploading part failed");
+                let _part_upload_resp =
+                    b2_upload_part(&mut upload_url_params, &upload_params, body)
+                        .await
+                        .expect("Uploading part failed");
             }
         }
     }

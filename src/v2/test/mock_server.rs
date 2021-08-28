@@ -43,7 +43,7 @@ impl Match for AuthorizationHeaderMatch {
                     (credentials.user_id == self.username_expected)
                         && (credentials.password == self.password_expected)
                 }
-                Err(e) => false,
+                Err(_e) => false,
             }
         } else {
             // no auth header
@@ -127,10 +127,6 @@ impl B2MockServer {
     }
 
     pub async fn register_default_auth_handler(&self) {
-        let auth_key = base64::encode(format!(
-            "Basic {}:{}",
-            FAKE_APPLICATION_KEY_ID, FAKE_APPLICATION_KEY
-        ));
         let ok_body = dedent("
         {
             \"absoluteMinimumPartSize\": 5000000,

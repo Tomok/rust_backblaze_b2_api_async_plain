@@ -38,6 +38,48 @@ pub struct KeyInformation {
     options: serde_json::Value,
 }
 
+impl KeyInformation {
+    /// Get a reference to the key information's key name.
+    pub fn key_name(&self) -> &KeyName {
+        &self.key_name
+    }
+
+    /// Get a reference to the key information's application key id.
+    pub fn application_key_id(&self) -> &ApplicationKeyId {
+        &self.application_key_id
+    }
+
+    /// Get a reference to the key information's capabilities.
+    pub fn capabilities(&self) -> &Capabilities {
+        &self.capabilities
+    }
+
+    /// Get a reference to the key information's account id.
+    pub fn account_id(&self) -> &AccountId {
+        &self.account_id
+    }
+
+    /// Get a reference to the key information's expiration timestamp.
+    pub fn expiration_timestamp(&self) -> Option<&TimeStamp> {
+        self.expiration_timestamp.as_ref()
+    }
+
+    /// Get a reference to the key information's bucket id.
+    pub fn bucket_id(&self) -> Option<&BucketId> {
+        self.bucket_id.as_ref()
+    }
+
+    /// Get a reference to the key information's name prefix.
+    pub fn name_prefix(&self) -> Option<&FileName> {
+        self.name_prefix.as_ref()
+    }
+
+    /// Get a reference to the key information's options.
+    pub fn options(&self) -> &serde_json::Value {
+        &self.options
+    }
+}
+
 pub async fn b2_delete_key(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,

@@ -30,6 +30,18 @@ pub struct ListKeysOk {
     next_application_key_id: Option<ApplicationKeyId>,
 }
 
+impl ListKeysOk {
+    /// Get a reference to the list keys ok's next application key id.
+    pub fn next_application_key_id(&self) -> Option<&ApplicationKeyId> {
+        self.next_application_key_id.as_ref()
+    }
+
+    /// Get a reference to the list keys ok's keys.
+    pub fn keys(&self) -> &[KeyInformation] {
+        self.keys.as_slice()
+    }
+}
+
 pub async fn b2_list_keys<'a>(
     api_url: &'a ApiUrl,
     authorization_token: &'a AuthorizationToken,

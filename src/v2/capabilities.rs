@@ -30,3 +30,25 @@ pub enum Capability {
 }
 
 pub type Capabilities = EnumSet<Capability>;
+
+/// all capabilities that are allowed for a key that is limited to a bucket
+/// (from b2_create_key documentation)
+pub fn all_per_bucket_capabilites() -> Capabilities {
+    Capability::ListAllBucketNames
+        | Capability::ListBuckets
+        | Capability::ReadBuckets
+        | Capability::ReadBucketEncryption
+        | Capability::WriteBucketEncryption
+        | Capability::ReadBucketRetentions
+        | Capability::WriteBucketRetentions
+        | Capability::ListFiles
+        | Capability::ReadFiles
+        | Capability::ShareFiles
+        | Capability::WriteFiles
+        | Capability::DeleteFiles
+        | Capability::ReadFileLegalHolds
+        | Capability::WriteFileLegalHolds
+        | Capability::ReadFileRetentions
+        | Capability::WriteFileRetentions
+        | Capability::BypassGovernance
+}

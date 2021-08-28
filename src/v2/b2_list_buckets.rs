@@ -15,21 +15,21 @@ pub struct ListBucketsRequest<'a> {
     account_id: &'a AccountId,
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    bucket_id: Option<BucketId>,
+    bucket_id: Option<&'a BucketId>,
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    bucket_name: Option<BucketName>,
+    bucket_name: Option<&'a BucketName>,
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    bucket_types: Option<BucketTypes>,
+    bucket_types: Option<&'a BucketTypes>,
 }
 
 impl<'a> ListBucketsRequest<'a> {
     pub fn new(
         account_id: &'a AccountId,
-        bucket_id: Option<BucketId>,
-        bucket_name: Option<BucketName>,
-        bucket_types: Option<BucketTypes>,
+        bucket_id: Option<&'a BucketId>,
+        bucket_name: Option<&'a BucketName>,
+        bucket_types: Option<&'a BucketTypes>,
     ) -> Self {
         Self {
             account_id,
@@ -57,6 +57,48 @@ pub struct Bucket {
     revision: Option<BucketRevision>, // it's not part of the example, so maybe optional???
     #[serde(default)]
     options: Option<serde_json::Value>, //todo!!!
+}
+
+impl Bucket {
+    /// Get a reference to the bucket's account id.
+    pub fn account_id(&self) -> &AccountId {
+        &self.account_id
+    }
+
+    /// Get a reference to the bucket's bucket id.
+    pub fn bucket_id(&self) -> &BucketId {
+        &self.bucket_id
+    }
+
+    /// Get a reference to the bucket's bucket name.
+    pub fn bucket_name(&self) -> &BucketName {
+        &self.bucket_name
+    }
+
+    /// Get a reference to the bucket's bucket type.
+    pub fn bucket_type(&self) -> &BucketType {
+        &self.bucket_type
+    }
+
+    /// Get a reference to the bucket's bucket info.
+    pub fn bucket_info(&self) -> &BucketInfo {
+        &self.bucket_info
+    }
+
+    /// Get a reference to the bucket's file lock configuration.
+    pub fn file_lock_configuration(&self) -> &FileLockConfiguration {
+        &self.file_lock_configuration
+    }
+
+    /// Get a reference to the bucket's lifecycle rules.
+    pub fn lifecycle_rules(&self) -> &[LifeCycleRule] {
+        self.lifecycle_rules.as_slice()
+    }
+
+    /// Get a reference to the bucket's revision.
+    pub fn revision(&self) -> Option<&BucketRevision> {
+        self.revision.as_ref()
+    }
 }
 
 #[derive(Debug, Deserialize)]

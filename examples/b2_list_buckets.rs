@@ -67,8 +67,12 @@ async fn main() {
     };
 
     //usually it is a good idea to use [ListBucketsRequest::builder] instead of new() here, but since we have all parameters
-    let request_params =
-        ListBucketsRequest::new(auth_data.account_id(), bucket_id, bucket_name, bucket_types);
+    let request_params = ListBucketsRequest::new(
+        auth_data.account_id(),
+        bucket_id.as_ref(),
+        bucket_name.as_ref(),
+        bucket_types.as_ref(),
+    );
 
     dbg!(serde_json::to_string_pretty(&request_params).unwrap());
 

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    errors::ListBucketsError, AccountId, ApiUrl, ApplicationKeyId, AuthorizationToken, BucketId,
+    errors::GenericB2Error, AccountId, ApiUrl, ApplicationKeyId, AuthorizationToken, BucketId,
     Capabilities, FileName, JsonErrorObj, KeyName, TimeStamp,
 };
 
@@ -40,7 +40,7 @@ pub async fn b2_delete_key(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
     application_key_id: &ApplicationKeyId,
-) -> Result<KeyInformation, ListBucketsError> {
+) -> Result<KeyInformation, GenericB2Error> {
     let request_body = DeleteKeyRequest { application_key_id };
     let url = format!("{}/b2api/v2/b2_delete_key", api_url.as_str());
     let resp = reqwest::Client::new()

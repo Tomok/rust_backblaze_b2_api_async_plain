@@ -96,7 +96,8 @@ error_enum!(GetUploadUrlError {
     (503, "service_unavailable", ServiceUnavaliabe),
 });
 
-error_enum!(ListBucketsError {
+//Generic Error caused by backblaze, error value for multiple functions
+error_enum!(GenericB2Error {
     (400, "bad_request", BadRequest),
     (401, "unauthorized", Unauthorized),
     (401, "bad_auth_token", BadAuthToken),

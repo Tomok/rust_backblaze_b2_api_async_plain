@@ -6,7 +6,7 @@ use typed_builder::TypedBuilder;
 use crate::v2::JsonErrorObj;
 
 use super::{
-    errors::ListBucketsError, ApiUrl, AuthorizationToken, BucketId, FileId, FileName, InvalidData,
+    errors::GenericB2Error, ApiUrl, AuthorizationToken, BucketId, FileId, FileName, InvalidData,
     ListFileNamesOk,
 };
 
@@ -56,9 +56,7 @@ pub async fn b2_list_unfinished_large_files(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
     request_parameters: &ListUnfinishedLargeFilesRequest,
-) -> Result<ListFileNamesOk, ListBucketsError> {
-    //TODO: ListBucketsError has the right fields ... but a very bad name in this case ... move and fix naming
-
+) -> Result<ListFileNamesOk, GenericB2Error> {
     let url = format!(
         "{}/b2api/v2/b2_list_unfinished_large_files",
         api_url.as_str()

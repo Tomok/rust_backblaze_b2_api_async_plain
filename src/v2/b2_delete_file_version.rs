@@ -19,6 +19,7 @@ pub struct DeleteFileVersionRequest {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DeleteFileVersionOk {
     file_id: FileId,
     file_name: FileName,

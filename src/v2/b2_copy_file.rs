@@ -97,7 +97,7 @@ pub async fn b2_copy_file(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
     request: &CopyFileRequest,
-) -> Result<FileInformation, errors::CopyFileError> {
+) -> Result<FileInformation, errors::CopyError> {
     let url = format!("{}/b2api/v2/b2_copy_file", api_url.as_str());
     let request = reqwest::Client::new()
         .post(url)

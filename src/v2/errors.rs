@@ -40,7 +40,7 @@ error_enum!(AuthorizeError {
     (403, "transaction_cap_exceeded", TransactionCapExceeded),
 });
 
-error_enum!(CopyFileError {
+error_enum!(CopyError {
     (400, "bad_request", BadRequest),
     (401, "unauthorized", Unauthorized),
     (401, "bad_auth_token", BadAuthToken),

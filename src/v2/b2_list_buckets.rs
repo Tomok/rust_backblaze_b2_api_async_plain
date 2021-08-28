@@ -153,7 +153,6 @@ mod test {
                 .build(),
         )
         .await;
-        dbg!(&res);
         assert!(res.is_ok());
     }
 }

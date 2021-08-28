@@ -68,7 +68,6 @@ async fn main() {
         delimiter,
     );
 
-    dbg!(serde_json::to_string_pretty(&request_params).unwrap());
     let mut request_counter = 1usize;
     loop {
         let res = b2_list_file_names(

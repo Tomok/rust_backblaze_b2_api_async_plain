@@ -68,7 +68,6 @@ pub async fn b2_authorize_account(
     application_key: &str,
 ) -> Result<AuthorizeAccountOk, errors::AuthorizeError> {
     let url = format!("{}/b2api/v2/b2_authorize_account", basic_uri);
-    dbg!(&url);
     //https://api.backblazeb2.com
     let resp = reqwest::Client::new()
         .get(url)
@@ -95,7 +94,6 @@ mod test {
         mock.register_default_auth_handler().await;
         let res =
             b2_authorize_account(&mock.uri(), FAKE_APPLICATION_KEY_ID, FAKE_APPLICATION_KEY).await;
-        dbg!(&res);
         assert_eq!(true, res.is_ok());
     }
 

@@ -85,7 +85,6 @@ async fn main() {
         .await
         .expect("Could not go to start of upload file");
 
-    dbg!(&sha1);
     let upload_params = UploadFileParameters::builder()
         .file_name(
             target_filename

@@ -38,20 +38,14 @@ impl Match for AuthorizationHeaderMatch {
     fn matches(&self, request: &wiremock::Request) -> bool {
         if let Some(auth_header) = request.headers.get(&"authorization".try_into().unwrap()) {
             let h = auth_header.get(0).unwrap().to_string();
-            dbg!(&h);
             match http_auth_basic::Credentials::from_header(h) {
                 Ok(credentials) => {
-                    dbg!(&credentials);
                     (credentials.user_id == self.username_expected)
                         && (credentials.password == self.password_expected)
                 }
-                Err(e) => {
-                    dbg!(e);
-                    false
-                }
+                Err(e) => false,
             }
         } else {
-            dbg!("not found");
             // no auth header
             false
         }
@@ -71,7 +65,6 @@ impl JsonBodyMatch {
 impl Match for JsonBodyMatch {
     fn matches(&self, request: &wiremock::Request) -> bool {
         if let Ok(body) = String::from_utf8(request.body.clone()) {
-            dbg!(&body);
             if let Ok(input) = serde_json::from_str::<serde_json::Value>(&body) {
                 let res = input == self.json_obj;
                 if !res {
@@ -138,7 +131,6 @@ impl B2MockServer {
             "Basic {}:{}",
             FAKE_APPLICATION_KEY_ID, FAKE_APPLICATION_KEY
         ));
-        dbg!(&auth_key);
         let ok_body = dedent("
         {
             \"absoluteMinimumPartSize\": 5000000,

@@ -56,7 +56,6 @@ impl<'de> Deserialize<'de> for DefaultFileRetention {
         D: serde::Deserializer<'de>,
     {
         let deserialized = DeserialiableDefaultFileRetention::deserialize(deserializer)?;
-        dbg!(&deserialized);
         match deserialized.mode {
             None => match deserialized.period {
                 Some(_) => Err(de::Error::invalid_value(de::Unexpected::Option, &"None")),
@@ -113,7 +112,6 @@ impl<'de> Deserialize<'de> for FileLockConfiguration {
         D: serde::Deserializer<'de>,
     {
         let deserialized = DeserializeableFileLockConfiguration::deserialize(deserializer)?;
-        dbg!(&deserialized);
         if deserialized.is_client_authorized_to_read {
             match deserialized.value {
                 None => Err(de::Error::invalid_value(

@@ -74,8 +74,6 @@ async fn main() {
         bucket_types.as_ref(),
     );
 
-    dbg!(serde_json::to_string_pretty(&request_params).unwrap());
-
     let res = b2_list_buckets(
         &auth_data.api_url(),
         &auth_data.authorization_token(),

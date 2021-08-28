@@ -244,5 +244,10 @@ async fn main() {
 
     let test_bucket = create_test_bucket(&root_authorization_data, &test_bucket_name).await;
     let test_key = create_test_key(&root_authorization_data, &test_bucket, &test_key_name).await;
-    dbg!(test_key);
+
+    let test_key_auth =
+        b2_authorize_account(test_key.application_key_id(), test_key.application_key())
+            .await
+            .expect("Could not login with test key");
+
 }

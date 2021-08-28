@@ -1,8 +1,6 @@
 use crate::v2::JsonErrorObj;
 
-use super::{
-    errors::StartLargeFileError, ApiUrl, AuthorizationToken, FileId, FileInformation, Sha1,
-};
+use super::{errors::LargeFileError, ApiUrl, AuthorizationToken, FileId, FileInformation, Sha1};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -12,13 +10,13 @@ struct FinishLargeFileRequest<'shas, 'file_id> {
     part_sha1_array: &'shas [Sha1],
 }
 
-//todo: error cases are the same as StartLargeFileError ... rename and move that struct ...
+//todo: error cases are the same as LargeFileError ... rename and move that struct ...
 pub async fn b2_finish_large_file(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
     file_id: &FileId,
     part_sha1s: &[Sha1],
-) -> Result<FileInformation, StartLargeFileError> {
+) -> Result<FileInformation, LargeFileError> {
     let request_data = FinishLargeFileRequest {
         file_id,
         part_sha1_array: part_sha1s,

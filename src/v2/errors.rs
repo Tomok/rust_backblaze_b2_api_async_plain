@@ -114,7 +114,7 @@ error_enum!(ListFileNamesError {
     (503, "bad_request", BadRequestTimeout),
 });
 
-error_enum!(StartLargeFileError {
+error_enum!(LargeFileError {
     (400, "bad_request", BadRequest),
     (400, "bad_bucket_id", BadBucketId),
     (401, "unauthorized", Unauthorized),

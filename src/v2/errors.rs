@@ -158,6 +158,15 @@ error_enum!(UploadPartError {
     (503, "service_unavailable", ServiceUnavailable),
 });
 
+error_enum!(ListFileVersionsError {
+    (400, "out_of_range",	OutOfRange),
+    (400, "invalid_file_id", InvalidFileId),
+    (401, "unauthorized", Unauthorized),
+    (401, "bad_auth_token", BadAuthToken),
+    (401, "expired_auth_token", ExpiredAuthToken),
+    (503, "bad_request", BadRequest),
+});
+
 #[cfg(test)]
 mod test {
 

@@ -18,6 +18,7 @@ mod b2_get_upload_url;
 mod b2_hide_file;
 mod b2_list_buckets;
 mod b2_list_file_names;
+mod b2_list_file_versions;
 mod b2_list_keys;
 mod b2_list_parts;
 mod b2_list_unfinished_large_files;
@@ -73,6 +74,9 @@ pub use b2_update_bucket::{b2_update_bucket, UpdateBucketRequest};
 pub use b2_get_file_info::b2_get_file_info;
 pub use b2_list_file_names::{
     b2_list_file_names, ListFileNamesOk, ListFileNamesRequest, MaxFileCount,
+};
+pub use b2_list_file_versions::{
+    b2_list_file_versions, ListFileVersionsOk, ListFileVersionsRequest,
 };
 
 pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams};

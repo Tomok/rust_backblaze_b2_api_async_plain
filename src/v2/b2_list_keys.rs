@@ -22,6 +22,20 @@ pub struct ListKeysRequest<'s> {
     start_application_key_id: Option<&'s ApplicationKeyId>,
 }
 
+impl<'s> ListKeysRequest<'s> {
+    pub fn new(
+        account_id: &'s AccountId,
+        max_key_count: Option<NonZeroU16>,
+        start_application_key_id: Option<&'s ApplicationKeyId>,
+    ) -> Self {
+        Self {
+            account_id,
+            max_key_count,
+            start_application_key_id,
+        }
+    }
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ListKeysOk {

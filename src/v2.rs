@@ -18,6 +18,7 @@ mod b2_get_upload_url;
 mod b2_hide_file;
 mod b2_list_buckets;
 mod b2_list_file_names;
+mod b2_list_keys;
 mod b2_list_parts;
 mod b2_list_unfinished_large_files;
 mod b2_start_large_file;
@@ -99,6 +100,7 @@ pub use b2_hide_file::b2_hide_file;
 
 pub use b2_create_key::{b2_create_key, CreateKeyRequest, CreatedKeyInformation};
 pub use b2_delete_key::{b2_delete_key, KeyInformation};
+pub use b2_list_keys::{b2_list_keys, ListKeysOk, ListKeysRequest};
 
 pub use b2_update_file_legal_hold::{
     b2_update_file_legal_hold, UpdateFileLegalHoldOk, UpdateFileLegalHoldRequest,

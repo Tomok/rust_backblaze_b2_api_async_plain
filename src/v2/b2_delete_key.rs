@@ -10,6 +10,8 @@ use super::{
 struct DeleteKeyRequest<'s> {
     application_key_id: &'s ApplicationKeyId,
 }
+
+//TODO: used by list_keys as well, maybe move?
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KeyInformation {

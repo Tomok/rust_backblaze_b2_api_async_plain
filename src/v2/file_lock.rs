@@ -22,10 +22,14 @@ impl Period {
 #[derive(Debug, Serialize)]
 #[serde(tag = "mode", rename_all = "camelCase")]
 pub enum DefaultFileRetention {
-    #[serde(rename="null")]
+    #[serde(rename = "null")]
     None,
-    Compliance { period: Period },
-    Governance { period: Period },
+    Compliance {
+        period: Period,
+    },
+    Governance {
+        period: Period,
+    },
 }
 
 impl DefaultFileRetention {
@@ -93,7 +97,7 @@ pub struct FileRetention {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FileLockConfigurationValue {
-    default_retention: DefaultFileRetention, 
+    default_retention: DefaultFileRetention,
     is_file_lock_enabled: bool,
 }
 

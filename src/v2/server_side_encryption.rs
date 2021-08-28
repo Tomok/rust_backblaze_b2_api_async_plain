@@ -89,9 +89,7 @@ impl<'de> Deserialize<'de> for ServerSideEncryption {
     where
         D: serde::Deserializer<'de>,
     {
-        dbg!("THL1");
         let sse = SerializeableServerSideEncryption::deserialize(deserializer)?;
-        dbg!(&sse);
         match sse.mode {
             Some("SSE-B2") => is_aes_encryption_algorithm(sse.algorithm).map(|_| Self::SseB2),
             Some("SSE-C") => is_aes_encryption_algorithm(sse.algorithm).map(|_| Self::SseC),

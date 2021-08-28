@@ -8,22 +8,22 @@ use super::{
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateBucketRequest {
+pub struct CreateBucketRequest<'s> {
     /// Your account ID.
-    account_id: AccountId,
+    account_id: &'s AccountId,
     /// The name to give the new bucket.
-    bucket_name: BucketName,
+    bucket_name: &'s BucketName,
     bucket_type: BucketType, // TODO: use differnt type, that allows all private / all public only
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// User-defined information to be stored with the bucket: a JSON object mapping names to values. See Buckets.
     ///Cache-Control policies can be set here on a global level for all the files in the bucket.
-    bucket_info: Option<BucketInfo>,
+    bucket_info: Option<&'s BucketInfo>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    cors_rules: Option<serde_json::Value>, //TODO...
+    cors_rules: Option<&'s serde_json::Value>, //TODO...
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -33,7 +33,7 @@ pub struct CreateBucketRequest {
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The initial list of lifecycle rules for this bucket.
-    lifecycle_rules: Option<Vec<LifeCycleRule>>,
+    lifecycle_rules: Option<&'s Vec<LifeCycleRule>>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -41,10 +41,10 @@ pub struct CreateBucketRequest {
     default_server_side_encryption: Option<ServerSideEncryption>,
 }
 
-pub async fn b2_create_bucket(
-    api_url: &ApiUrl,
+pub async fn b2_create_bucket<'a>(
+    api_url: &'a ApiUrl,
     authorization_token: &AuthorizationToken,
-    request: &CreateBucketRequest,
+    request: &'a CreateBucketRequest<'a>,
 ) -> Result<Bucket, CreateBucketError> {
     let url = format!("{}/b2api/v2/b2_create_bucket", api_url.as_str());
     let request = reqwest::Client::new()

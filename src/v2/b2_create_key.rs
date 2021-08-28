@@ -3,16 +3,17 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors::GenericB2Error, AccountId, ApiUrl, ApplicationKey, ApplicationKeyId,
-    AuthorizationToken, BucketId, Capabilities, FileName, JsonErrorObj, KeyName, TimeStamp,
+    AuthorizationToken, BucketId, Capabilities, FileName, JsonErrorObj, KeyName, KeyNameRef,
+    TimeStamp,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateKeyRequest {
-    account_id: AccountId,
-    capabilities: Capabilities,
+pub struct CreateKeyRequest<'s> {
+    account_id: &'s AccountId,
+    capabilities: &'s Capabilities,
     /// A name for this key. There is no requirement that the name be unique. The name cannot be used to look up the key. Names can contain letters, numbers, and "-", and are limited to 100 characters.
-    key_name: KeyName,
+    key_name: KeyNameRef<'s>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -22,12 +23,12 @@ pub struct CreateKeyRequest {
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// When present, the new key can only access this bucket. When set, only these capabilities can be specified: listAllBucketNames, listBuckets, readBuckets, readBucketEncryption, writeBucketEncryption, readBucketRetentions, writeBucketRetentions, listFiles, readFiles, shareFiles, writeFiles, deleteFiles, readFileLegalHolds, writeFileLegalHolds, readFileRetentions, writeFileRetentions, and bypassGovernance.
-    bucket_id: Option<BucketId>,
+    bucket_id: Option<&'s BucketId>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     ///When present, restricts access to files whose names start with the prefix. You must set bucketId when setting this.
-    name_prefix: Option<FileName>,
+    name_prefix: Option<&'s FileName>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -59,10 +60,10 @@ pub struct CreatedKeyInformation {
     options: serde_json::Value,
 }
 
-pub async fn b2_create_key(
-    api_url: &ApiUrl,
-    authorization_token: &AuthorizationToken,
-    request: &CreateKeyRequest,
+pub async fn b2_create_key<'a>(
+    api_url: &'a ApiUrl,
+    authorization_token: &'a AuthorizationToken,
+    request: &'a CreateKeyRequest<'a>,
 ) -> Result<CreatedKeyInformation, GenericB2Error> {
     let url = format!("{}/b2api/v2/b2_create_key", api_url.as_str());
     let request = reqwest::Client::new()

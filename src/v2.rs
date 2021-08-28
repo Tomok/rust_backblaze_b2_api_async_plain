@@ -35,6 +35,7 @@ mod file_part;
 mod server_side_encryption;
 
 pub type KeyName = String; //TODO
+pub type KeyNameRef<'a> = &'a str; //TODO
 pub type ApplicationKey = String; //TODO
 pub type ApplicationKeyId = String; //TODO
 
@@ -57,7 +58,7 @@ pub use buckets::{
     BucketId, BucketInfo, BucketInfoKey, BucketInfoValue, BucketName, BucketType, BucketTypes,
 };
 
-pub use capabilities::{Capabilities, Capability};
+pub use capabilities::{all_per_bucket_capabilites, Capabilities, Capability};
 pub use common_structs::*;
 pub use file::*;
 pub use file_lock::*;
@@ -66,7 +67,7 @@ pub use server_side_encryption::{ServerSideEncryption, ServerSideEncryptionCusto
 pub use b2_create_bucket::{b2_create_bucket, CreateBucketRequest};
 pub use b2_delete_bucket::b2_delete_bucket;
 pub use b2_list_buckets::b2_list_buckets;
-pub use b2_list_buckets::{ListBucketsOk, ListBucketsRequest};
+pub use b2_list_buckets::{Bucket, ListBucketsOk, ListBucketsRequest};
 pub use b2_update_bucket::{b2_update_bucket, UpdateBucketRequest};
 
 pub use b2_get_file_info::b2_get_file_info;

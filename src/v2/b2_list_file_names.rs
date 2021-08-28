@@ -8,7 +8,7 @@ use super::{
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct MaxFileCount(NonZeroU16);
 
 impl TryFrom<u16> for MaxFileCount {
@@ -30,29 +30,29 @@ impl TryFrom<u16> for MaxFileCount {
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
-pub struct ListFileNamesRequest {
-    bucket_id: BucketId,
+pub struct ListFileNamesRequest<'s> {
+    bucket_id: &'s BucketId,
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    start_file_name: Option<FileName>,
+    start_file_name: Option<&'s FileName>,
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     max_file_count: Option<MaxFileCount>,
     #[builder(default, setter(strip_option, into))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    prefix: Option<String>,
+    prefix: Option<&'s str>,
     #[builder(default, setter(strip_option, into))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    delimiter: Option<String>,
+    delimiter: Option<&'s str>,
 }
 
-impl ListFileNamesRequest {
+impl<'s> ListFileNamesRequest<'s> {
     pub fn new(
-        bucket_id: BucketId,
-        start_file_name: Option<FileName>,
+        bucket_id: &'s BucketId,
+        start_file_name: Option<&'s FileName>,
         max_file_count: Option<MaxFileCount>,
-        prefix: Option<String>,
-        delimiter: Option<String>,
+        prefix: Option<&'s str>,
+        delimiter: Option<&'s str>,
     ) -> Self {
         Self {
             bucket_id,
@@ -61,36 +61,6 @@ impl ListFileNamesRequest {
             prefix,
             delimiter,
         }
-    }
-
-    /// Set the list file names request's start file name.
-    pub fn set_start_file_name(&mut self, start_file_name: Option<FileName>) {
-        self.start_file_name = start_file_name;
-    }
-
-    /// Set the list file names request's max file count.
-    pub fn set_max_file_count(&mut self, max_file_count: Option<MaxFileCount>) {
-        self.max_file_count = max_file_count;
-    }
-
-    /// Set the list file names request's prefix.
-    pub fn set_prefix(&mut self, prefix: Option<String>) {
-        self.prefix = prefix;
-    }
-
-    /// Set the list file names request's delimiter.
-    pub fn set_delimiter(&mut self, delimiter: Option<String>) {
-        self.delimiter = delimiter;
-    }
-
-    /// Get a reference to the list file names request's start file name.
-    pub fn start_file_name(&self) -> &Option<FileName> {
-        &self.start_file_name
-    }
-
-    /// Get a reference to the list file names request's bucket id.
-    pub fn bucket_id(&self) -> &BucketId {
-        &self.bucket_id
     }
 }
 
@@ -108,15 +78,15 @@ impl ListFileNamesOk {
     }
 
     /// Get a reference to the list file names ok's files.
-    pub fn files(&self) -> &Vec<FileInformation> {
+    pub fn files(&self) -> &[FileInformation] {
         &self.files
     }
 }
 
-pub async fn b2_list_file_names(
-    api_url: &ApiUrl,
+pub async fn b2_list_file_names<'a>(
+    api_url: &'a ApiUrl,
     authorization_token: &AuthorizationToken,
-    request_body: &ListFileNamesRequest,
+    request_body: &'a ListFileNamesRequest<'a>,
 ) -> Result<ListFileNamesOk, ListFileNamesError> {
     let url = format!("{}/b2api/v2/b2_list_file_names", api_url.as_str());
     let request = reqwest::Client::new()
@@ -150,7 +120,7 @@ mod test {
             &ApiUrl(mock_server.uri()),
             &AuthorizationToken(FAKE_AUTHORIZATION_TOKEN.into()),
             &ListFileNamesRequest::builder()
-                .bucket_id(FAKE_BUCKET_ID.to_owned().try_into().unwrap())
+                .bucket_id(&FAKE_BUCKET_ID.to_owned().try_into().unwrap())
                 .build(),
         )
         .await;

@@ -85,12 +85,12 @@ async fn main() {
         .await
         .expect("Could not go to start of upload file");
 
+    let filename = target_filename
+        .try_into()
+        .expect("Filename not b2 compatible");
+
     let upload_params = UploadFileParameters::builder()
-        .file_name(
-            target_filename
-                .try_into()
-                .expect("Filename not b2 compatible"),
-        )
+        .file_name(&filename)
         .content_length(file_len)
         .content_sha1(sha1.to_string())
         .build();

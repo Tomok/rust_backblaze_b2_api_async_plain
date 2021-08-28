@@ -1,25 +1,24 @@
 use reqwest::Body;
 use serde::Serialize;
-use std::str::FromStr;
 use typed_builder::TypedBuilder;
 
 use crate::header_serializer::HeadersFrom;
 
 use super::{
     errors::UploadFileError, server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValue,
-    ContentDisposition, ContentLanguage, ExpiresHeaderValue, FileInformation, FileName,
+    ContentDispositionRef, ContentLanguageRef, ExpiresHeaderValueRef, FileInformation, FileName,
     JsonErrorObj, Md5, Mime, ServerSideEncryptionCustomerKey, Sha1, TimeStamp, UploadParameters,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
-pub struct UploadFileParameters {
+pub struct UploadFileParameters<'s> {
     #[serde(rename = "X-Bz-File-Name")]
-    file_name: FileName,
+    file_name: &'s FileName,
 
     /// content type parameter, if not set "b2/x-auto" will be sent, causing backblaze to determine the right type
     #[serde(rename = "Content-Type", default = "b2_content_type_default")]
-    #[builder(default=Mime::from_str("b2/x-auto").unwrap())]
-    content_type: Mime,
+    #[builder(default=Mime::auto())]
+    content_type: &'s Mime,
 
     #[serde(rename = "Content-Length")]
     content_length: u64,
@@ -33,15 +32,15 @@ pub struct UploadFileParameters {
 
     #[serde(rename = "X-Bz-Info-b2-content-disposition")]
     #[builder(default, setter(strip_option))]
-    content_disposition: Option<ContentDisposition>,
+    content_disposition: Option<ContentDispositionRef<'s>>,
 
     #[serde(rename = "X-Bz-Info-b2-content-language")]
     #[builder(default, setter(strip_option))]
-    content_language: Option<ContentLanguage>,
+    content_language: Option<ContentLanguageRef<'s>>,
 
     #[serde(rename = "X-Bz-Info-b2-expires")]
     #[builder(default, setter(strip_option))]
-    expires: Option<ExpiresHeaderValue>,
+    expires: Option<ExpiresHeaderValueRef<'s>>,
 
     #[serde(rename = "X-Bz-Info-b2-cache-control")]
     #[builder(default, setter(strip_option))]
@@ -60,9 +59,9 @@ pub struct UploadFileParameters {
     server_side_encryption_customer_key_md5: Option<Md5>,
 }
 
-pub async fn b2_upload_file<T: Into<Body>>(
-    uploader_params: &mut UploadParameters,
-    upload_file_params: &UploadFileParameters,
+pub async fn b2_upload_file<'a, T: Into<Body>>(
+    uploader_params: &'a mut UploadParameters,
+    upload_file_params: &'a UploadFileParameters<'a>,
     file_contents: T,
 ) -> Result<FileInformation, UploadFileError> {
     let resp = reqwest::Client::new()

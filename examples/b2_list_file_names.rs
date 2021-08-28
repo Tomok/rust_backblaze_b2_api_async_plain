@@ -60,16 +60,17 @@ async fn main() {
     let delimiter = p.delimiter;
 
     //usually it is a good idea to use [ListBucketsRequest::builder] instead of new() here, but since we have all parameters
-    let mut request_params = ListFileNamesRequest::new(
-        bucket_id,
-        start_file_name,
-        max_file_count,
-        prefix,
-        delimiter,
-    );
-
     let mut request_counter = 1usize;
+    let mut next_file_name = start_file_name;
     loop {
+        let request_params = ListFileNamesRequest::new(
+            &bucket_id,
+            next_file_name.as_ref(),
+            max_file_count,
+            prefix.as_deref(),
+            delimiter.as_deref(),
+        );
+
         let res = b2_list_file_names(
             &auth_data.api_url(),
             &auth_data.authorization_token(),
@@ -83,14 +84,13 @@ async fn main() {
         } else {
             println!("Result Request No {}: {:#?}", request_counter, res);
 
-            let next_file_name = match res {
+            next_file_name = match res {
                 std::result::Result::Ok(r) => (*r.next_file_name()).clone(),
                 std::result::Result::Err(_) => None,
             };
             if next_file_name.is_none() {
                 break;
             } else {
-                request_params.set_start_file_name(next_file_name);
                 request_counter += 1;
             }
         }

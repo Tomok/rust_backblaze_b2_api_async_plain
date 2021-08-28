@@ -1,6 +1,5 @@
 use std::num::NonZeroU16;
 
-use http_types::cookies::Key;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 

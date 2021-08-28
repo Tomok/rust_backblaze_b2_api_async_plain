@@ -93,6 +93,9 @@ async fn delete_test_bucket(auth_data: &AuthorizeAccountOk, test_bucket_name: &B
     .await
     .expect("Listing test bucket failed");
     for bucket in buckets.buckets() {
+        print!("Deleting files in test bucket ... ");
+        delete_all_files_in_bucket(auth_data, bucket).await;
+        println!("Done");
         print!("Deleting test bucket ... ");
         b2_delete_bucket(
             auth_data.api_url(),
@@ -105,6 +108,50 @@ async fn delete_test_bucket(auth_data: &AuthorizeAccountOk, test_bucket_name: &B
         println!("done");
     }
     println!("Listing test bucket ... done");
+}
+
+async fn delete_all_files_in_bucket(auth_data: &AuthorizeAccountOk, bucket: &Bucket) -> () {
+    let mut start_file_name = None;
+    let mut start_file_id = None;
+    loop {
+        //loops until all files were deleted
+        let file_version_request = ListFileVersionsRequest::new(
+            bucket.bucket_id(),
+            start_file_name.as_ref(),
+            start_file_id.as_ref(),
+            Some(MaxFileCount::try_from(1000).unwrap()),
+            None,
+            None,
+        );
+        let files = b2_list_file_versions(
+            auth_data.api_url(),
+            auth_data.authorization_token(),
+            &file_version_request,
+        )
+        .await
+        .expect("Could not list files");
+        for file in files.files() {
+            if let Some(file_id) = file.file_id() {
+                dbg!(file.file_name());
+                dbg!(file.action());
+                let delete_request =
+                    DeleteFileVersionRequest::new(file.file_name(), file_id, Some(true));
+                b2_delete_file_version(
+                    auth_data.api_url(),
+                    auth_data.authorization_token(),
+                    &delete_request,
+                )
+                .await
+                .expect("Could not delete file version");
+            }
+        }
+        if let Some(filename) = files.next_file_name() {
+            start_file_name = Some(filename.to_owned());
+            start_file_id = files.next_file_id().map(|f| f.clone());
+        } else {
+            break;
+        }
+    }
 }
 
 //cleanup after the test / before creating keys

@@ -1,10 +1,10 @@
-use std::{
-    convert::TryInto,
-    io::{self, BufRead, Write},
-};
-
 ///! This example goes through all implemented calls creating a test bucket
 use backblaze_b2_async_plain::v2::*;
+use lazy_static::lazy_static;
+use std::{
+    convert::{TryFrom, TryInto},
+    io::{self, BufRead, Write},
+};
 use structopt::StructOpt;
 
 #[derive(StructOpt)]
@@ -210,6 +210,38 @@ async fn create_test_key(
     res
 }
 
+lazy_static! {
+    static ref UPLOAD_FILE_NAME: FileName = "UploadedFile".to_owned().try_into().unwrap();
+}
+const UPLOAD_FILE_CONTENTS: &'static [u8] = &[42u8; 4096];
+
+async fn upload_file(test_key_auth: &AuthorizeAccountOk, test_bucket: &Bucket) -> FileInformation {
+    let mut upload_params = b2_get_upload_url(
+        test_key_auth.api_url(),
+        test_key_auth.authorization_token(),
+        test_bucket.bucket_id(),
+    )
+    .await
+    .expect("Could not get upload url");
+
+    let mut hasher = sha1::Sha1::new();
+    hasher.update(UPLOAD_FILE_CONTENTS);
+
+    let upload_file_params = UploadFileParameters::builder()
+        .file_name(&UPLOAD_FILE_NAME)
+        .content_length(UPLOAD_FILE_CONTENTS.len() as u64)
+        .content_sha1(hasher.digest().to_string())
+        .build();
+
+    b2_upload_file(
+        &mut upload_params,
+        &upload_file_params,
+        UPLOAD_FILE_CONTENTS,
+    )
+    .await
+    .expect("Uploading test file failed")
+}
+
 #[tokio::main]
 /// WARNING: this example uses blocking stdin/out without generating a separate thread this is generally a bad idea, but
 /// done here to keep the example simple
@@ -250,4 +282,6 @@ async fn main() {
             .await
             .expect("Could not login with test key");
 
+    let uploaded_file = upload_file(&test_key_auth, &test_bucket).await;
+    dbg!(uploaded_file);
 }

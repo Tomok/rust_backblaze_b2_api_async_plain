@@ -60,6 +60,48 @@ pub struct CreatedKeyInformation {
     options: serde_json::Value,
 }
 
+impl CreatedKeyInformation {
+    /// Get a reference to the created key information's key name.
+    pub fn key_name(&self) -> &KeyName {
+        &self.key_name
+    }
+
+    /// Get a reference to the created key information's application key id.
+    pub fn application_key_id(&self) -> &ApplicationKeyId {
+        &self.application_key_id
+    }
+
+    /// Get a reference to the created key information's application key.
+    pub fn application_key(&self) -> &ApplicationKey {
+        &self.application_key
+    }
+
+    /// Get a reference to the created key information's capabilities.
+    pub fn capabilities(&self) -> &Capabilities {
+        &self.capabilities
+    }
+
+    /// Get a reference to the created key information's account id.
+    pub fn account_id(&self) -> &AccountId {
+        &self.account_id
+    }
+
+    /// Get a reference to the created key information's expiration timestamp.
+    pub fn expiration_timestamp(&self) -> Option<&TimeStamp> {
+        self.expiration_timestamp.as_ref()
+    }
+
+    /// Get a reference to the created key information's bucket id.
+    pub fn bucket_id(&self) -> Option<&BucketId> {
+        self.bucket_id.as_ref()
+    }
+
+    /// Get a reference to the created key information's name prefix.
+    pub fn name_prefix(&self) -> Option<&FileName> {
+        self.name_prefix.as_ref()
+    }
+}
+
 pub async fn b2_create_key<'a>(
     api_url: &'a ApiUrl,
     authorization_token: &'a AuthorizationToken,

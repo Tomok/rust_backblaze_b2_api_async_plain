@@ -128,7 +128,7 @@ async fn main() {
             let upload_params = UploadPartParameters::builder()
                 .part_number(chunk_id.try_into().unwrap())
                 .content_length(size)
-                .content_sha1(sha1)
+                .content_sha1(&sha1)
                 .build();
             {
                 let body = Body::from(buf);
@@ -140,11 +140,12 @@ async fn main() {
             }
         }
     }
+    let sha1sum_references: Vec<&str> = sha1sums.iter().map(|s| s.as_str()).collect();
     let res = b2_finish_large_file(
         auth_data.api_url(),
         auth_data.authorization_token(),
         file_information.file_id().unwrap(),
-        sha1sums.as_slice(),
+        sha1sum_references.as_slice(),
     )
     .await;
     println!("finish large file result: {:#?}", res);

@@ -11,7 +11,7 @@ use super::{
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
-pub struct UploadPartParameters {
+pub struct UploadPartParameters<'s> {
     #[serde(rename = "X-Bz-Part-Number")]
     /// A number from 1 to 10000. The parts uploaded for one file must have contiguous numbers, starting with 1.
     part_number: PartNumber,
@@ -26,7 +26,7 @@ pub struct UploadPartParameters {
     /// The SHA1 checksum of the this part of the file. B2 will check this when the part is uploaded, to make sure that the data arrived correctly.
     /// The same SHA1 checksum must be passed to b2_finish_large_file.
     /// You may optionally provide the SHA1 at the end of the upload.
-    content_sha1: Sha1,
+    content_sha1: &'s Sha1,
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Algorithm")]
     #[builder(default, setter(strip_option))]
@@ -36,12 +36,12 @@ pub struct UploadPartParameters {
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key")]
     #[builder(default, setter(strip_option))]
     /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKey requested via b2_start_large_file.
-    server_side_encryption_customer_key: Option<ServerSideEncryptionCustomerKey>,
+    server_side_encryption_customer_key: Option<&'s ServerSideEncryptionCustomerKey>,
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
     #[builder(default, setter(strip_option))]
     /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKeyMd5 requested via b2_start_large_file.
-    server_side_encryption_customer_key_md5: Option<Md5>,
+    server_side_encryption_customer_key_md5: Option<&'s Md5>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -56,9 +56,9 @@ pub struct UploadPartOk {
     upload_timestamp: TimeStamp,
 }
 
-pub async fn b2_upload_part<T: Into<Body>>(
-    uploader_params: &mut UploadPartUrlParameters,
-    upload_part_params: &UploadPartParameters,
+pub async fn b2_upload_part<'a, T: Into<Body>>(
+    uploader_params: &'a mut UploadPartUrlParameters,
+    upload_part_params: &'a UploadPartParameters<'a>,
     file_contents: T,
 ) -> Result<UploadPartOk, UploadPartError> {
     let resp = reqwest::Client::new()

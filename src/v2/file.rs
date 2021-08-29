@@ -74,6 +74,7 @@ impl TryFrom<String> for FileId {
 
 // TODO: more specific types...
 pub type Sha1 = String;
+pub type Sha1Ref<'s> = &'s str;
 pub type Md5 = String;
 pub type FileInfo = serde_json::Value;
 pub type TimeStamp = i64;

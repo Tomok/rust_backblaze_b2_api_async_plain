@@ -219,6 +219,7 @@ fn sha1sum(data: &[u8]) -> String {
 const UPLOAD_FILE_CONTENTS: &'static [u8] = &[42u8; 4096];
 lazy_static! {
     static ref UPLOAD_FILE_NAME: FileName = "UploadedFile".to_owned().try_into().unwrap();
+    static ref COPY_FILE_NAME: FileName = "CopiedFile".to_owned().try_into().unwrap();
     static ref UPLOAD_FILE_CONTENTS_SHA1: String = sha1sum(UPLOAD_FILE_CONTENTS);
 }
 
@@ -254,6 +255,24 @@ lazy_static! {
         "UploadedLargeFile".to_owned().try_into().unwrap();
 }
 const LARGE_FILE_PART1_SIZE: usize = 5 * 1024 * 1024;
+
+async fn start_large_file(
+    test_key_auth: &AuthorizeAccountOk,
+    test_bucket: &Bucket,
+) -> FileInformation {
+    let params = StartLargeFileParameters::builder()
+        .bucket_id(test_bucket.bucket_id())
+        .file_name(&LARGE_UPLOAD_FILE_NAME)
+        .build();
+    b2_start_large_file(
+        test_key_auth.api_url(),
+        test_key_auth.authorization_token(),
+        &params,
+    )
+    .await
+    .expect("Could not start large file")
+}
+
 /// builds a large file using various calls related to parted file upload, copy,...
 async fn build_large_file(
     test_key_auth: &AuthorizeAccountOk,
@@ -261,19 +280,7 @@ async fn build_large_file(
     test_copy_source_file: &FileInformation,
 ) -> FileInformation {
     println!("Building a file from parts ... ");
-    let file = {
-        let params = StartLargeFileParameters::builder()
-            .bucket_id(test_bucket.bucket_id())
-            .file_name(&LARGE_UPLOAD_FILE_NAME)
-            .build();
-        b2_start_large_file(
-            test_key_auth.api_url(),
-            test_key_auth.authorization_token(),
-            &params,
-        )
-        .await
-        .expect("Could not start large file")
-    };
+    let file = start_large_file(test_key_auth, test_bucket).await;
     let file_id = file
         .file_id()
         .expect("Created large file did not have a file id");
@@ -385,6 +392,60 @@ async fn build_large_file(
     res
 }
 
+async fn cancel_large_file(test_key_auth: &AuthorizeAccountOk, test_bucket: &Bucket) {
+    print!("Starting large file ...");
+    let file = start_large_file(test_key_auth, test_bucket).await;
+    print!(" cancelling that file ... ");
+    b2_cancel_large_file(
+        test_key_auth.api_url(),
+        test_key_auth.authorization_token(),
+        file.file_id()
+            .expect("Started large file did not have a FileId"),
+    )
+    .await
+    .expect("Could not cancel file");
+    println!("done");
+}
+
+async fn copy_file(
+    test_key_auth: &AuthorizeAccountOk,
+    source_file: &FileInformation,
+    test_bucket: &Bucket,
+) -> FileInformation {
+    print!("Copying file ... ");
+    let params = CopyFileRequest::builder()
+        .source_file_id(
+            source_file
+                .file_id()
+                .expect("Source File did not have an FileId"),
+        )
+        .destination_bucket_id(test_bucket.bucket_id())
+        .file_name(&*COPY_FILE_NAME)
+        .build();
+    let res = b2_copy_file(
+        test_key_auth.api_url(),
+        test_key_auth.authorization_token(),
+        &params,
+    )
+    .await
+    .expect("Could not copy file");
+    println!("done");
+    res
+}
+
+async fn hide_file(test_key_auth: &AuthorizeAccountOk, copied_file: &FileInformation) -> () {
+    print!("Hiding file ... ");
+    b2_hide_file(
+        test_key_auth.api_url(),
+        test_key_auth.authorization_token(),
+        copied_file.bucket_id(),
+        copied_file.file_name(),
+    )
+    .await
+    .expect("Could not hide file");
+    println!("done");
+}
+
 #[tokio::main]
 /// WARNING: this example uses blocking stdin/out without generating a separate thread this is generally a bad idea, but
 /// done here to keep the example simple
@@ -426,6 +487,8 @@ async fn main() {
             .expect("Could not login with test key");
 
     let uploaded_file = upload_file(&test_key_auth, &test_bucket).await;
-    let large_uploaded_file = build_large_file(&test_key_auth, &test_bucket, &uploaded_file).await;
-    dbg!(large_uploaded_file);
+    let _large_uploaded_file = build_large_file(&test_key_auth, &test_bucket, &uploaded_file).await;
+    cancel_large_file(&test_key_auth, &test_bucket).await;
+    let copied_file = copy_file(&test_key_auth, &uploaded_file, &test_bucket).await;
+    hide_file(&test_key_auth, &copied_file).await;
 }

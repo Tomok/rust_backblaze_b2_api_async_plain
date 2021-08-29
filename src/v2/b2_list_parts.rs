@@ -34,8 +34,8 @@ impl TryFrom<u16> for MaxPartCount {
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
-pub struct ListPartsRequest {
-    file_id: FileId,
+pub struct ListPartsRequest<'s> {
+    file_id: &'s FileId,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -53,6 +53,18 @@ pub struct ListPartsOk {
     next_part_number: Option<PartNumber>,
 }
 
+impl ListPartsOk {
+    /// Get a reference to the list parts ok's parts.
+    pub fn parts(&self) -> &[Part] {
+        self.parts.as_slice()
+    }
+
+    /// Get a reference to the list parts ok's next part number.
+    pub fn next_part_number(&self) -> Option<&PartNumber> {
+        self.next_part_number.as_ref()
+    }
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Part {
@@ -65,10 +77,47 @@ pub struct Part {
     upload_timestamp: TimeStamp,
 }
 
-pub async fn b2_list_parts(
+impl Part {
+    /// Get a reference to the part's file id.
+    pub fn file_id(&self) -> &FileId {
+        &self.file_id
+    }
+
+    /// Get a reference to the part's part number.
+    pub fn part_number(&self) -> &PartNumber {
+        &self.part_number
+    }
+
+    /// Get a reference to the part's content length.
+    pub fn content_length(&self) -> &u64 {
+        &self.content_length
+    }
+
+    /// Get a reference to the part's content sha1.
+    pub fn content_sha1(&self) -> &Sha1 {
+        &self.content_sha1
+    }
+
+    /// Get a reference to the part's content md5.
+    pub fn content_md5(&self) -> Option<&Md5> {
+        self.content_md5.as_ref()
+    }
+
+    /// Get a reference to the part's server side encryption.
+    pub fn server_side_encryption(&self) -> Option<&ServerSideEncryption> {
+        self.server_side_encryption.as_ref()
+    }
+
+    /// Get a reference to the part's upload timestamp.
+    pub fn upload_timestamp(&self) -> &TimeStamp {
+        &self.upload_timestamp
+    }
+}
+
+pub async fn b2_list_parts<'a>(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    request_parameters: &ListPartsRequest,
+    request_parameters: &ListPartsRequest<'a>,
 ) -> Result<ListPartsOk, GenericB2Error> {
     let url = format!("{}/b2api/v2/b2_list_parts", api_url.as_str());
     let request = reqwest::Client::new()

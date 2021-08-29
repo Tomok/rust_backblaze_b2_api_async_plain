@@ -36,26 +36,26 @@ impl TryFrom<u8> for MaxUnfinishedLargeFileCount {
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
-pub struct ListUnfinishedLargeFilesRequest {
-    bucket_id: BucketId,
+pub struct ListUnfinishedLargeFilesRequest<'s> {
+    bucket_id: &'s BucketId,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    name_prefix: Option<FileName>,
+    name_prefix: Option<&'s FileName>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    start_file_id: Option<FileId>,
+    start_file_id: Option<&'s FileId>,
 
     #[builder(default, setter(strip_option, into))]
     #[serde(skip_serializing_if = "Option::is_none")]
     max_file_count: Option<MaxUnfinishedLargeFileCount>,
 }
 
-pub async fn b2_list_unfinished_large_files(
+pub async fn b2_list_unfinished_large_files<'a>(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    request_parameters: &ListUnfinishedLargeFilesRequest,
+    request_parameters: &ListUnfinishedLargeFilesRequest<'a>,
 ) -> Result<ListFileNamesOk, GenericB2Error> {
     let url = format!(
         "{}/b2api/v2/b2_list_unfinished_large_files",

@@ -253,6 +253,7 @@ lazy_static! {
     static ref LARGE_UPLOAD_FILE_NAME: FileName =
         "UploadedLargeFile".to_owned().try_into().unwrap();
 }
+const LARGE_FILE_PART1_SIZE: usize = 5 * 1024 * 1024;
 /// builds a large file using various calls related to parted file upload, copy,...
 async fn build_large_file(
     test_key_auth: &AuthorizeAccountOk,
@@ -285,7 +286,7 @@ async fn build_large_file(
     .expect("Could not get file upload parts url");
 
     let sha1_part1: String = {
-        let upload_data = Vec::from([0u8; 5 * 1024 * 1024]);
+        let upload_data = Vec::from([0u8; LARGE_FILE_PART1_SIZE]);
         let sha1 = sha1sum(upload_data.as_ref());
         let params = UploadPartParameters::builder()
             .part_number(1.try_into().unwrap())
@@ -314,6 +315,61 @@ async fn build_large_file(
         )
         .await
         .expect("Could not copy parts");
+    }
+
+    //validate that partial file exists
+    {
+        let params = ListUnfinishedLargeFilesRequest::builder()
+            .bucket_id(test_bucket.bucket_id())
+            .build();
+        let unfinished_files = b2_list_unfinished_large_files(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &params,
+        )
+        .await
+        .expect("Could not list unfinished files");
+        assert_eq!(&None, unfinished_files.next_file_name(), "although only one unfinished file should exist, unfinished files returned a next file name");
+        assert_eq!(
+            1,
+            unfinished_files.files().len(),
+            "Only one unfinished file should exist"
+        );
+        assert_eq!(
+            &*LARGE_UPLOAD_FILE_NAME,
+            unfinished_files.files()[0].file_name(),
+            "Unfinished file did not have the expected name"
+        );
+    }
+    // validate the partial file has the right parts
+    {
+        let params = ListPartsRequest::builder().file_id(file_id).build();
+        let parts = b2_list_parts(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &params,
+        )
+        .await
+        .expect("Could not list file parts");
+        dbg!(&parts);
+        assert_eq!(
+            None,
+            parts.next_part_number(),
+            "Only two parts should exit, but response contained a next_part_number"
+        );
+        assert_eq!(2, parts.parts().len(), "Partial file should have two parts");
+
+        assert_eq!(
+            LARGE_FILE_PART1_SIZE as u64,
+            *parts.parts()[0].content_length()
+        );
+        assert_eq!(&sha1_part1, parts.parts()[0].content_sha1());
+
+        assert_eq!(
+            UPLOAD_FILE_CONTENTS.len() as u64,
+            *parts.parts()[1].content_length()
+        );
+        assert_eq!(&*UPLOAD_FILE_CONTENTS_SHA1, parts.parts()[1].content_sha1());
     }
 
     let sha1_part2_ref: &String = &UPLOAD_FILE_CONTENTS_SHA1;

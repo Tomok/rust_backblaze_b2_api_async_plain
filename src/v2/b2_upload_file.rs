@@ -24,7 +24,7 @@ pub struct UploadFileParameters<'s> {
     content_length: u64,
 
     #[serde(rename = "X-Bz-Content-Sha1")]
-    content_sha1: Sha1,
+    content_sha1: &'s Sha1,
 
     #[serde(rename = "X-Bz-Info-src_last_modified_millis")]
     #[builder(default, setter(strip_option))]
@@ -44,7 +44,7 @@ pub struct UploadFileParameters<'s> {
 
     #[serde(rename = "X-Bz-Info-b2-cache-control")]
     #[builder(default, setter(strip_option))]
-    cache_control: Option<CacheControlHeaderValue>,
+    cache_control: Option<&'s CacheControlHeaderValue>,
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Algorithm")]
     #[builder(default, setter(strip_option))]
@@ -52,11 +52,11 @@ pub struct UploadFileParameters<'s> {
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key")]
     #[builder(default, setter(strip_option))]
-    server_side_encryption_customer_key: Option<ServerSideEncryptionCustomerKey>,
+    server_side_encryption_customer_key: Option<&'s ServerSideEncryptionCustomerKey>,
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
     #[builder(default, setter(strip_option))]
-    server_side_encryption_customer_key_md5: Option<Md5>,
+    server_side_encryption_customer_key_md5: Option<&'s Md5>,
 }
 
 pub async fn b2_upload_file<'a, T: Into<Body>>(

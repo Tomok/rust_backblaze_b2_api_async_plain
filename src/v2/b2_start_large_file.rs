@@ -9,25 +9,25 @@ use typed_builder::TypedBuilder;
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
-pub struct StartLargeFileParameters {
-    bucket_id: BucketId,
-    file_name: FileName,
+pub struct StartLargeFileParameters<'s> {
+    bucket_id: &'s BucketId,
+    file_name: &'s FileName,
     #[builder(default=Mime::from_str("b2/x-auto").unwrap())]
     content_type: Mime,
     #[builder(default, setter(strip_option))]
-    file_info: Option<FileInfo>, // <- TODO: right type??
+    file_info: Option<&'s FileInfo>, // <- TODO: right type??
     #[builder(default, setter(strip_option))]
-    file_retention: Option<FileRetention>,
+    file_retention: Option<&'s FileRetention>,
     #[builder(default, setter(strip_option))]
-    legal_hold: Option<LegalHold>,
+    legal_hold: Option<&'s LegalHold>,
     #[builder(default, setter(strip_option))]
-    server_side_encryption: Option<ServerSideEncryptionCustomerKey>, // <- TODO: right type??
+    server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey>, // <- TODO: right type??
 }
 
-pub async fn b2_start_large_file(
-    api_url: &ApiUrl,
-    authorization: &AuthorizationToken,
-    params: &StartLargeFileParameters,
+pub async fn b2_start_large_file<'a>(
+    api_url: &'a ApiUrl,
+    authorization: &'a AuthorizationToken,
+    params: &'a StartLargeFileParameters<'a>,
 ) -> Result<FileInformation, LargeFileError> {
     let url = format!("{}/b2api/v2/b2_start_large_file", api_url.as_str());
     let resp = reqwest::Client::new()

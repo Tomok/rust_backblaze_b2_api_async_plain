@@ -195,9 +195,11 @@ async fn start_large_file(
     bucket_id: String,
     filename: String,
 ) -> FileInformation {
+    let bucket_id = bucket_id.try_into().expect("Invalid bucket id");
+    let filename = filename.try_into().expect("Invalid filename");
     let params = StartLargeFileParameters::builder()
-        .bucket_id(bucket_id.try_into().expect("Invalid bucket id"))
-        .file_name(filename.try_into().expect("Invalid filename"))
+        .bucket_id(&bucket_id)
+        .file_name(&filename)
         .build();
     b2_start_large_file(
         auth_data.api_url(),

@@ -47,6 +47,7 @@ pub enum FileAction {
     Upload,
     Hide,
     Folder,
+    Copy, //not in documentation, but was returned on b2_copy_file...
 }
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct FileId(String);

@@ -210,12 +210,20 @@ async fn create_test_key(
     res
 }
 
+fn sha1sum(data: &[u8]) -> String {
+    let mut h = sha1::Sha1::new();
+    h.update(data);
+    h.digest().to_string()
+}
+
+const UPLOAD_FILE_CONTENTS: &'static [u8] = &[42u8; 4096];
 lazy_static! {
     static ref UPLOAD_FILE_NAME: FileName = "UploadedFile".to_owned().try_into().unwrap();
+    static ref UPLOAD_FILE_CONTENTS_SHA1: String = sha1sum(UPLOAD_FILE_CONTENTS);
 }
-const UPLOAD_FILE_CONTENTS: &'static [u8] = &[42u8; 4096];
 
 async fn upload_file(test_key_auth: &AuthorizeAccountOk, test_bucket: &Bucket) -> FileInformation {
+    print!("Uploading test file ... ");
     let mut upload_params = b2_get_upload_url(
         test_key_auth.api_url(),
         test_key_auth.authorization_token(),
@@ -224,22 +232,101 @@ async fn upload_file(test_key_auth: &AuthorizeAccountOk, test_bucket: &Bucket) -
     .await
     .expect("Could not get upload url");
 
-    let mut hasher = sha1::Sha1::new();
-    hasher.update(UPLOAD_FILE_CONTENTS);
-
     let upload_file_params = UploadFileParameters::builder()
         .file_name(&UPLOAD_FILE_NAME)
         .content_length(UPLOAD_FILE_CONTENTS.len() as u64)
-        .content_sha1(hasher.digest().to_string())
+        .content_sha1(&UPLOAD_FILE_CONTENTS_SHA1)
         .build();
 
-    b2_upload_file(
+    let res = b2_upload_file(
         &mut upload_params,
         &upload_file_params,
         UPLOAD_FILE_CONTENTS,
     )
     .await
-    .expect("Uploading test file failed")
+    .expect("Uploading test file failed");
+    println!("done");
+    res
+}
+
+lazy_static! {
+    static ref LARGE_UPLOAD_FILE_NAME: FileName =
+        "UploadedLargeFile".to_owned().try_into().unwrap();
+}
+/// builds a large file using various calls related to parted file upload, copy,...
+async fn build_large_file(
+    test_key_auth: &AuthorizeAccountOk,
+    test_bucket: &Bucket,
+    test_copy_source_file: &FileInformation,
+) -> FileInformation {
+    println!("Building a file from parts ... ");
+    let file = {
+        let params = StartLargeFileParameters::builder()
+            .bucket_id(test_bucket.bucket_id())
+            .file_name(&LARGE_UPLOAD_FILE_NAME)
+            .build();
+        b2_start_large_file(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &params,
+        )
+        .await
+        .expect("Could not start large file")
+    };
+    let file_id = file
+        .file_id()
+        .expect("Created large file did not have a file id");
+    let mut upload_url = b2_get_upload_part_url(
+        test_key_auth.api_url(),
+        test_key_auth.authorization_token(),
+        file_id,
+    )
+    .await
+    .expect("Could not get file upload parts url");
+
+    let sha1_part1: String = {
+        let upload_data = Vec::from([0u8; 5 * 1024 * 1024]);
+        let sha1 = sha1sum(upload_data.as_ref());
+        let params = UploadPartParameters::builder()
+            .part_number(1.try_into().unwrap())
+            .content_length(upload_data.len() as u64)
+            .content_sha1(&sha1)
+            .build();
+
+        b2_upload_part(&mut upload_url, &params, upload_data)
+            .await
+            .expect("Uploading first part failed");
+        sha1
+    };
+    {
+        let source_file_id = test_copy_source_file
+            .file_id()
+            .expect("Copy source file had no id");
+        let params = CopyPartRequest::builder()
+            .source_file_id(source_file_id)
+            .large_file_id(file_id)
+            .part_number(2.try_into().unwrap())
+            .build();
+        b2_copy_part(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &params,
+        )
+        .await
+        .expect("Could not copy parts");
+    }
+
+    let sha1_part2_ref: &String = &UPLOAD_FILE_CONTENTS_SHA1;
+    let res = b2_finish_large_file(
+        test_key_auth.api_url(),
+        test_key_auth.authorization_token(),
+        file_id,
+        &[&sha1_part1, sha1_part2_ref],
+    )
+    .await
+    .expect("Finishing large file failed");
+    println!("Building a file from parts ...  Done");
+    res
 }
 
 #[tokio::main]
@@ -283,5 +370,6 @@ async fn main() {
             .expect("Could not login with test key");
 
     let uploaded_file = upload_file(&test_key_auth, &test_bucket).await;
-    dbg!(uploaded_file);
+    let large_uploaded_file = build_large_file(&test_key_auth, &test_bucket, &uploaded_file).await;
+    dbg!(large_uploaded_file);
 }

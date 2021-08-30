@@ -25,6 +25,9 @@ struct Params {
     /// WARNING if it exists, this will be deleted.
     /// by default "rust-backblaze-b2-api-async-plain-test-key" is used
     test_key_name: Option<String>,
+
+    /// application key id, will be requested from stdin if not given
+    application_key_id: Option<String>
 }
 
 /// reads a single line, fails with error messages if that does not work
@@ -133,8 +136,6 @@ async fn delete_all_files_in_bucket(auth_data: &AuthorizeAccountOk, bucket: &Buc
         .expect("Could not list files");
         for file in files.files() {
             if let Some(file_id) = file.file_id() {
-                dbg!(file.file_name());
-                dbg!(file.action());
                 let delete_request =
                     DeleteFileVersionRequest::new(file.file_name(), file_id, Some(true));
                 b2_delete_file_version(
@@ -359,7 +360,6 @@ async fn build_large_file(
         )
         .await
         .expect("Could not list file parts");
-        dbg!(&parts);
         assert_eq!(
             None,
             parts.next_part_number(),
@@ -491,11 +491,14 @@ async fn main() {
 
     let stdin = io::stdin();
     let mut stdout = io::stdout();
-    write!(stdout, "Please enter application key id: ").unwrap();
-    let mut stdout = io::stdout();
-    stdout.flush().unwrap();
-    let application_key_id = readline(&stdin);
-
+    let application_key_id = if let Some(key_id) = p.application_key_id {
+        key_id
+    } else {
+        write!(stdout, "Please enter application key id: ").unwrap();
+        let mut stdout = io::stdout();
+        stdout.flush().unwrap();
+        readline(&stdin)
+    };
     write!(stdout, "Please enter the application key: ").unwrap();
     stdout.flush().unwrap();
     let application_key = readline(&stdin);

@@ -1,5 +1,6 @@
 ///! This example goes through all implemented calls creating a test bucket
 use backblaze_b2_async_plain::v2::*;
+use http_range::HttpRange;
 use lazy_static::lazy_static;
 use std::{
     convert::{TryFrom, TryInto},
@@ -446,6 +447,35 @@ async fn hide_file(test_key_auth: &AuthorizeAccountOk, copied_file: &FileInforma
     println!("done");
 }
 
+/// downloads part2 of the large file (the one that is copied in [build_large_file])
+async fn download_file_by_id(
+    test_key_auth: &AuthorizeAccountOk,
+    large_uploaded_file: &FileInformation,
+) -> () {
+    let part2_range = HttpRange {
+        start: LARGE_FILE_PART1_SIZE as u64,
+        length: UPLOAD_FILE_CONTENTS.len() as u64,
+    };
+    let params = DownloadParams::builder()
+        .authorization_token(test_key_auth.authorization_token())
+        .range(&part2_range)
+        .build();
+    let resp = b2_download_file_by_id(
+        test_key_auth.download_url(),
+        large_uploaded_file
+            .file_id()
+            .expect("Large file did not have a file id"),
+        &params,
+    )
+    .await
+    .expect("Downloading file by id failed");
+    let data = resp
+        .bytes()
+        .await
+        .expect("Could not get bytes for downloaded file");
+    assert_eq!(UPLOAD_FILE_CONTENTS, data);
+}
+
 #[tokio::main]
 /// WARNING: this example uses blocking stdin/out without generating a separate thread this is generally a bad idea, but
 /// done here to keep the example simple
@@ -487,7 +517,8 @@ async fn main() {
             .expect("Could not login with test key");
 
     let uploaded_file = upload_file(&test_key_auth, &test_bucket).await;
-    let _large_uploaded_file = build_large_file(&test_key_auth, &test_bucket, &uploaded_file).await;
+    let large_uploaded_file = build_large_file(&test_key_auth, &test_bucket, &uploaded_file).await;
+    download_file_by_id(&test_key_auth, &large_uploaded_file).await;
     cancel_large_file(&test_key_auth, &test_bucket).await;
     let copied_file = copy_file(&test_key_auth, &uploaded_file, &test_bucket).await;
     hide_file(&test_key_auth, &copied_file).await;

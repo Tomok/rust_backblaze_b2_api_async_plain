@@ -18,7 +18,8 @@ pub struct DownloadParams<'s> {
     server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey>,
 }
 
-/// downloads a file by ID, does return a reqwest::Response object, if the server returned http status OK (200).
+/// downloads a file by ID, does return a reqwest::Response object, if the server returned http status OK (200)
+/// or PartialContent (206) if a range was used.
 pub async fn b2_download_file_by_id(
     download_url: &DownloadUrl,
     file_id: &FileId,

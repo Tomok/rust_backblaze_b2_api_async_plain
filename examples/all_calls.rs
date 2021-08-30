@@ -519,5 +519,17 @@ async fn main() {
     download_file_by_id(&test_key_auth, &large_uploaded_file).await;
     cancel_large_file(&test_key_auth, &test_bucket).await;
     let copied_file = copy_file(&test_key_auth, &uploaded_file, &test_bucket).await;
+    {
+        let copied_file_info = b2_get_file_info(
+            &test_key_auth.api_url(),
+            &test_key_auth.authorization_token(),
+            copied_file
+                .file_id()
+                .expect("Copied file did not have a FileId"),
+        )
+        .await
+        .expect("Getting file information failed");
+        assert_eq!(copied_file.file_name(), copied_file_info.file_name());
+    }
     hide_file(&test_key_auth, &copied_file).await;
 }

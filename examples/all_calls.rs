@@ -456,12 +456,10 @@ async fn download_file_by_id(
         start: LARGE_FILE_PART1_SIZE as u64,
         length: UPLOAD_FILE_CONTENTS.len() as u64,
     };
-    let params = DownloadParams::builder()
-        .authorization_token(test_key_auth.authorization_token())
-        .range(&part2_range)
-        .build();
+    let params = DownloadParams::builder().range(&part2_range).build();
     let resp = b2_download_file_by_id(
         test_key_auth.download_url(),
+        Some(test_key_auth.authorization_token()),
         large_uploaded_file
             .file_id()
             .expect("Large file did not have a file id"),

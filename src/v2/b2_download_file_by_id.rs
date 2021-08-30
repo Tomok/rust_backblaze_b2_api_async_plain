@@ -10,8 +10,6 @@ use typed_builder::TypedBuilder;
 #[derive(Debug, TypedBuilder)]
 pub struct DownloadParams<'s> {
     #[builder(default, setter(strip_option))]
-    authorization_token: Option<&'s AuthorizationToken>,
-    #[builder(default, setter(strip_option))]
     range: Option<&'s HttpRange>,
     //TODO: b2* header ...
     #[builder(default, setter(strip_option))]
@@ -22,13 +20,14 @@ pub struct DownloadParams<'s> {
 /// or PartialContent (206) if a range was used.
 pub async fn b2_download_file_by_id(
     download_url: &DownloadUrl,
+    authorization_token: Option<&AuthorizationToken>,
     file_id: &FileId,
     params: &DownloadParams<'_>,
 ) -> Result<reqwest::Response, DownloadFileError> {
     let url_base_str = format!("{}/b2api/v2/b2_download_file_by_id", download_url.as_str());
     let url = Url::parse_with_params(&url_base_str, &[("fileId", file_id.as_str())]).unwrap();
     let mut request_builder = reqwest::Client::new().get(url);
-    if let Some(auth) = params.authorization_token {
+    if let Some(auth) = authorization_token {
         request_builder = request_builder.header("Authorization", auth.as_str());
     }
     if let Some(range) = params.range {

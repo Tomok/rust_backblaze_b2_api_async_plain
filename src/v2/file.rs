@@ -92,8 +92,12 @@ pub type ExpiresHeaderValueRef<'s> = &'s str;
 pub type CacheControlHeaderValue = String; //TODO: create struct and check for RFC compliance
 pub type CacheControlHeaderValueRef<'s> = &'s str;
 /// expires content-encoding header value acc. to RFC 2616
-pub type ContentEncodingHeaderValue = String; //TODO: create struct and check for RFC compliance
-pub type ContentEncodingHeaderValueRef<'s> = &'s str;
+pub type ContentEncoding = String; //TODO: create struct and check for RFC compliance
+pub type ContentEncodingRef<'s> = &'s str;
+
+/// expires content-type header value acc. to RFC 2616
+pub type ContentType = String; //TODO: create struct and check for RFC compliance
+pub type ContentTypeRef<'s> = &'s str;
 
 /// own Mime type based on [http_types::Mime] to add Serde Support
 #[derive(Debug, PartialEq, Eq)]

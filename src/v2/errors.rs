@@ -79,6 +79,14 @@ error_enum!(DownloadFileError {
     (403, "transaction_cap_exceeded", TransactionCapExceeded),
 });
 
+error_enum!(GetDownloadAuthorizationError {
+    (400, "bad_request", BadRequest),
+    (401, "unauthorized", Unauthorized),
+    (401, "bad_auth_token", BadAuthToken),
+    (401, "expired_auth_token", ExpiredAuthToken),
+    (503, "service_unavailable", ServiceUnavailable),
+});
+
 error_enum!(GetFileInfoError {
     (400, "bad_request", BadRequest),
     (401, "unauthorized", Unauthorized),

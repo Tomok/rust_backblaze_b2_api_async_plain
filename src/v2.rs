@@ -12,6 +12,7 @@ mod b2_delete_file_version;
 mod b2_delete_key;
 mod b2_download_file_by_id;
 mod b2_finish_large_file;
+mod b2_get_download_authorization;
 mod b2_get_file_info;
 mod b2_get_upload_part_url;
 mod b2_get_upload_url;
@@ -80,6 +81,10 @@ pub use b2_list_file_versions::{
 };
 
 pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams};
+pub use b2_get_download_authorization::{
+    b2_get_download_authorization, GetDownloadAuthorizationOk, GetDownloadAuthorizationRequest,
+    ValidDownloadAuthorizationDurationInSeconds,
+};
 
 pub use b2_get_upload_url::{b2_get_upload_url, UploadParameters};
 pub use b2_upload_file::{b2_upload_file, UploadFileParameters};

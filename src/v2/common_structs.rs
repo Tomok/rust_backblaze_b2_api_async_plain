@@ -76,3 +76,12 @@ impl AuthorizationToken {
         &self.0
     }
 }
+
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DownloadAuthorizationToken(String);
+
+impl DownloadAuthorizationToken {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}

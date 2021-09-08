@@ -175,6 +175,7 @@ async fn create_test_bucket(
         .account_id(root_authorization_data.account_id())
         .bucket_name(test_bucket_name)
         .bucket_type(BucketType::AllPrivate)
+        .file_lock_enabled(true) // used for [update_file_legal_hold]
         .build();
     let res = b2_create_bucket(
         root_authorization_data.api_url(),
@@ -474,6 +475,64 @@ async fn download_file_by_id(
     assert_eq!(UPLOAD_FILE_CONTENTS, data);
 }
 
+/// sets and unsets file legal hold
+async fn update_file_legal_hold(test_key_auth: &AuthorizeAccountOk, file: &FileInformation) {
+    let file_id = file.file_id().expect("File did not have a fileId");
+    print!("Turning file legal hold on ... ");
+    {
+        let request = UpdateFileLegalHoldRequest::builder()
+            .file_name(file.file_name())
+            .file_id(file_id)
+            .legal_hold(LegalHoldOnOff::On)
+            .build();
+        b2_update_file_legal_hold(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &request,
+        )
+        .await
+        .expect("Turning legal hold on failed");
+    }
+    println!("done");
+    print!("Triyng to delete file ...");
+    {
+        let request = DeleteFileVersionRequest::builder()
+            .file_name(file.file_name())
+            .file_id(file_id)
+            .build();
+        let err = b2_delete_file_version(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &request,
+        )
+        .await
+        .expect_err("Attempt to delete locked file did not fail");
+        assert!(
+            matches!(err, errors::DeleteFileVersionError::AccessDenied { .. }),
+            "Expected AccessDenied error, but got: {:#?}",
+            err
+        );
+    }
+    println!("failed as expected - done");
+
+    print!("Turning file legal hold off ... ");
+    {
+        let request = UpdateFileLegalHoldRequest::builder()
+            .file_name(file.file_name())
+            .file_id(file_id)
+            .legal_hold(LegalHoldOnOff::Off)
+            .build();
+        b2_update_file_legal_hold(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &request,
+        )
+        .await
+        .expect("Turning legal hold off failed");
+    }
+    println!("done");
+}
+
 #[tokio::main]
 /// WARNING: this example uses blocking stdin/out without generating a separate thread this is generally a bad idea, but
 /// done here to keep the example simple
@@ -535,4 +594,6 @@ async fn main() {
         assert_eq!(copied_file.file_name(), copied_file_info.file_name());
     }
     hide_file(&test_key_auth, &copied_file).await;
+
+    update_file_legal_hold(&test_key_auth, &uploaded_file).await;
 }

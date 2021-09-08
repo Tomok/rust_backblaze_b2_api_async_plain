@@ -8,9 +8,9 @@ use super::{
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateFileLegalHoldRequest {
-    file_name: FileName,
-    file_id: FileId,
+pub struct UpdateFileLegalHoldRequest<'s> {
+    file_name: &'s FileName,
+    file_id: &'s FileId,
     legal_hold: LegalHoldOnOff,
 }
 
@@ -22,10 +22,10 @@ pub struct UpdateFileLegalHoldOk {
     legal_hold: LegalHoldOnOff,
 }
 
-pub async fn b2_update_file_legal_hold(
+pub async fn b2_update_file_legal_hold<'a>(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    request: &UpdateFileLegalHoldRequest,
+    request: &UpdateFileLegalHoldRequest<'a>,
 ) -> Result<UpdateFileLegalHoldOk, UpdateFileLegalHoldError> {
     let url = format!("{}/b2api/v2/b2_update_file_legal_hold", api_url.as_str());
     let request = reqwest::Client::new()

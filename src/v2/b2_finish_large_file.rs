@@ -10,7 +10,6 @@ struct FinishLargeFileRequest<'shas, 'file_id> {
     part_sha1_array: &'shas [Sha1Ref<'shas>],
 }
 
-//todo: error cases are the same as LargeFileError ... rename and move that struct ...
 pub async fn b2_finish_large_file<'a>(
     api_url: &'a ApiUrl,
     authorization_token: &'a AuthorizationToken,

@@ -27,7 +27,7 @@ struct Params {
     test_key_name: Option<String>,
 
     /// application key id, will be requested from stdin if not given
-    application_key_id: Option<String>
+    application_key_id: Option<String>,
 }
 
 /// reads a single line, fails with error messages if that does not work

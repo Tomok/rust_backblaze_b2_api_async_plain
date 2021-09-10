@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors::UpdateFileLegalHoldError, ApiUrl, AuthorizationToken, FileId, FileName, JsonErrorObj,
+    errors::UpdateFileLockError, ApiUrl, AuthorizationToken, FileId, FileName, JsonErrorObj,
     LegalHoldOnOff,
 };
 
@@ -26,7 +26,7 @@ pub async fn b2_update_file_legal_hold<'a>(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
     request: &UpdateFileLegalHoldRequest<'a>,
-) -> Result<UpdateFileLegalHoldOk, UpdateFileLegalHoldError> {
+) -> Result<UpdateFileLegalHoldOk, UpdateFileLockError> {
     let url = format!("{}/b2api/v2/b2_update_file_legal_hold", api_url.as_str());
     let request = reqwest::Client::new()
         .post(url)

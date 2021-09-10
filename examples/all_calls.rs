@@ -390,7 +390,7 @@ async fn build_large_file(
     )
     .await
     .expect("Finishing large file failed");
-    println!("Building a file from parts ...  Done");
+    println!("Done");
     res
 }
 
@@ -533,6 +533,74 @@ async fn update_file_legal_hold(test_key_auth: &AuthorizeAccountOk, file: &FileI
     println!("done");
 }
 
+const FILE_RETENTION_DURATION: TimeStamp = 1000 * 60 * 60; //1h after upload
+/// sets and unsets file legal hold
+async fn update_file_retention(test_key_auth: &AuthorizeAccountOk, file: &FileInformation) {
+    let file_id = file.file_id().expect("File did not have a fileId");
+    print!("Setting file retention to gouvernance ...");
+    {
+        let new_retention = FileRetention::new(
+            FileRetentionMode::Governance,
+            file.upload_timestamp() + FILE_RETENTION_DURATION,
+        );
+        let request = UpdateFileRetentionRequest::builder()
+            .file_id(file_id)
+            .file_name(file.file_name())
+            .file_retention(&new_retention)
+            .build();
+        let resp = b2_update_file_retention(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &request,
+        )
+        .await
+        .expect("Setting file retention failed");
+        assert_eq!(file.file_name(), resp.file_name());
+        assert_eq!(&new_retention, resp.file_retention());
+    }
+    println!("done");
+    print!("Triyng to delete file ...");
+    {
+        let request = DeleteFileVersionRequest::builder()
+            .file_name(file.file_name())
+            .file_id(file_id)
+            .build();
+        let err = b2_delete_file_version(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &request,
+        )
+        .await
+        .expect_err("Attempt to delete goverened file did not fail");
+        assert!(
+            matches!(err, errors::DeleteFileVersionError::AccessDenied { .. }),
+            "Expected AccessDenied error, but got: {:#?}",
+            err
+        );
+    }
+    println!("failed as expected - done");
+    print!("Setting file retention to None ...");
+    {
+        let new_retention = FileRetention::disabled();
+        let request = UpdateFileRetentionRequest::builder()
+            .file_id(file_id)
+            .file_name(file.file_name())
+            .file_retention(&new_retention)
+            .bypass_governance(true)
+            .build();
+        let resp = b2_update_file_retention(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &request,
+        )
+        .await
+        .expect("Setting file retention failed");
+        assert_eq!(file.file_name(), resp.file_name());
+        assert_eq!(&new_retention, resp.file_retention());
+    }
+    println!("done");
+}
+
 #[tokio::main]
 /// WARNING: this example uses blocking stdin/out without generating a separate thread this is generally a bad idea, but
 /// done here to keep the example simple
@@ -596,4 +664,5 @@ async fn main() {
     hide_file(&test_key_auth, &copied_file).await;
 
     update_file_legal_hold(&test_key_auth, &uploaded_file).await;
+    update_file_retention(&test_key_auth, &uploaded_file).await;
 }

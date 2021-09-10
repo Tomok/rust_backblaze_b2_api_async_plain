@@ -26,6 +26,7 @@ mod b2_list_unfinished_large_files;
 mod b2_start_large_file;
 mod b2_update_bucket;
 mod b2_update_file_legal_hold;
+mod b2_update_file_retention;
 mod b2_upload_file;
 mod b2_upload_part;
 mod buckets;
@@ -114,6 +115,9 @@ pub use b2_list_keys::{b2_list_keys, ListKeysOk, ListKeysRequest};
 
 pub use b2_update_file_legal_hold::{
     b2_update_file_legal_hold, UpdateFileLegalHoldOk, UpdateFileLegalHoldRequest,
+};
+pub use b2_update_file_retention::{
+    b2_update_file_retention, UpdateFileRetentionOk, UpdateFileRetentionRequest,
 };
 
 #[cfg(test)]

@@ -138,7 +138,7 @@ error_enum!(UpdateBucketError {
     (409, "conflict", Conflict),
 });
 
-error_enum!(UpdateFileLegalHoldError {
+error_enum!(UpdateFileLockError {
     (400, "bad_request", BadRequest),
     (401, "bad_auth_token", BadAuthToken),
     (401, "expired_auth_token", ExpiredAuthToken),

@@ -16,7 +16,9 @@ pub struct UpdateBucketRequest {
     account_id: AccountId,
     /// The name to give the new bucket.
     bucket_id: BucketId,
-    bucket_type: BucketType, // TODO: use differnt type, that allows all private / all public only
+    #[builder(default, setter(strip_option))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    bucket_type: Option<BucketType>, // TODO: use differnt type, that allows all private / all public only
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]

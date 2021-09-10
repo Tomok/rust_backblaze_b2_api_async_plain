@@ -3,7 +3,7 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors::UpdateFileLockError, ApiUrl, AuthorizationToken, FileId, FileName, FileRetention,
-    JsonErrorObj, LegalHoldOnOff,
+    JsonErrorObj,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]

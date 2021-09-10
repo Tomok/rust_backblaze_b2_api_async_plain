@@ -13,6 +13,7 @@ use serde::{
     ser::{SerializeMap, SerializeSeq},
     Deserialize, Serialize,
 };
+use typed_builder::TypedBuilder;
 
 use super::{FileName, InvalidData};
 
@@ -406,10 +407,26 @@ impl TryFrom<String> for BucketId {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, TypedBuilder, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct LifeCycleRule {
+    #[builder(default, setter(strip_option))]
     days_from_hiding_to_deleting: Option<NonZeroU64>,
+    #[builder(default, setter(strip_option))]
     days_from_uploading_to_hiding: Option<NonZeroU64>,
     file_name_prefix: FileName,
+}
+
+impl LifeCycleRule {
+    pub fn new(
+        days_from_hiding_to_deleting: Option<NonZeroU64>,
+        days_from_uploading_to_hiding: Option<NonZeroU64>,
+        file_name_prefix: FileName,
+    ) -> Self {
+        Self {
+            days_from_hiding_to_deleting,
+            days_from_uploading_to_hiding,
+            file_name_prefix,
+        }
+    }
 }

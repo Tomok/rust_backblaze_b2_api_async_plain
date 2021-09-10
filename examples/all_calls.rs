@@ -601,6 +601,31 @@ async fn update_file_retention(test_key_auth: &AuthorizeAccountOk, file: &FileIn
     println!("done");
 }
 
+// does not work with the test_key as that one may not write_buckets
+async fn update_bucket_life_cycle_rules(main_key_auth: &AuthorizeAccountOk, bucket: &Bucket) {
+    print!("Updating bucket life cycle rules ...");
+    let life_cycle_rule = LifeCycleRule::builder()
+        .days_from_hiding_to_deleting(1.try_into().unwrap())
+        .file_name_prefix("".to_owned().try_into().unwrap())
+        .build();
+    let life_cycle_rules = vec![life_cycle_rule];
+    let request = UpdateBucketRequest::builder()
+        .account_id(bucket.account_id())
+        .bucket_id(bucket.bucket_id())
+        .lifecycle_rules(&life_cycle_rules)
+        .build();
+    let resp = b2_update_bucket(
+        main_key_auth.api_url(),
+        main_key_auth.authorization_token(),
+        &request,
+    )
+    .await
+    .expect("Could not update bucket");
+    assert_eq!(bucket.bucket_id(), resp.bucket_id());
+    assert_eq!(life_cycle_rules.as_slice(), resp.lifecycle_rules());
+    println!("done");
+}
+
 #[tokio::main]
 /// WARNING: this example uses blocking stdin/out without generating a separate thread this is generally a bad idea, but
 /// done here to keep the example simple
@@ -637,6 +662,8 @@ async fn main() {
     clean_up(&root_authorization_data, &test_bucket_name, &test_key_name).await;
 
     let test_bucket = create_test_bucket(&root_authorization_data, &test_bucket_name).await;
+    update_bucket_life_cycle_rules(&root_authorization_data, &test_bucket).await;
+
     let test_key = create_test_key(&root_authorization_data, &test_bucket, &test_key_name).await;
 
     let test_key_auth =

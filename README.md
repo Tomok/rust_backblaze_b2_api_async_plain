@@ -40,7 +40,7 @@ Some highlights:
 |[b2_list_parts](https://www.backblaze.com/b2/docs/b2_list_parts.html)|✔️⁴|✔️|
 |[b2_list_unfinished_large_files](https://www.backblaze.com/b2/docs/b2_list_unfinished_large_files.html)|✔️⁴|✔️|
 |[b2_start_large_file](https://www.backblaze.com/b2/docs/b2_start_large_file.html)|✔️²³⁴|✔️|
-|[b2_update_bucket](https://www.backblaze.com/b2/docs/b2_update_bucket.html)|✔️³⁴|✖️|
+|[b2_update_bucket](https://www.backblaze.com/b2/docs/b2_update_bucket.html)|✔️³⁴|✔️|
 |[b2_update_file_legal_hold](https://www.backblaze.com/b2/docs/b2_update_file_legal_hold.html)|✔️⁴|✔️|
 |[b2_update_file_retention](https://www.backblaze.com/b2/docs/b2_update_file_retention.html)|✔️⁴|✔️|
 |[b2_upload_file](https://www.backblaze.com/b2/docs/b2_upload_file.html)|✔️²³⁴|✔️|

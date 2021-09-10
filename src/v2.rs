@@ -59,6 +59,7 @@ pub async fn b2_authorize_account(
 
 pub use buckets::{
     BucketId, BucketInfo, BucketInfoKey, BucketInfoValue, BucketName, BucketType, BucketTypes,
+    LifeCycleRule,
 };
 
 pub use capabilities::{all_per_bucket_capabilites, Capabilities, Capability};

@@ -81,18 +81,36 @@ struct DeserialiableDefaultFileRetention {
     period: Option<Period>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum FileRetentionMode {
     Compliance,
     Governance,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct FileRetention {
     mode: Option<FileRetentionMode>,
     retain_until_timestamp: Option<TimeStamp>,
+}
+
+impl FileRetention {
+    /// creates an enabled file retention setting
+    pub fn new(mode: FileRetentionMode, retain_until_timestamp: TimeStamp) -> Self {
+        Self {
+            mode: Some(mode),
+            retain_until_timestamp: Some(retain_until_timestamp),
+        }
+    }
+
+    /// returns the file retention setting to be used, to disable file retention
+    pub fn disabled() -> Self {
+        Self {
+            mode: None,
+            retain_until_timestamp: None,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]

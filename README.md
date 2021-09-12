@@ -34,7 +34,7 @@ Some highlights:
 |[b2_get_upload_url](https://www.backblaze.com/b2/docs/b2_get_upload_url.html)|✔️⁴|✔️|
 |[b2_hide_file](https://www.backblaze.com/b2/docs/b2_hide_file.html)|✔️³⁴|✔️|
 |[b2_list_buckets](https://www.backblaze.com/b2/docs/b2_list_buckets.html)|✔️³⁴|✔️|
-|[b2_list_file_names](https://www.backblaze.com/b2/docs/b2_list_file_names.html)|✔️³⁴|✖️|
+|[b2_list_file_names](https://www.backblaze.com/b2/docs/b2_list_file_names.html)|✔️³⁴|✔️|
 |[b2_list_file_versions](https://www.backblaze.com/b2/docs/b2_list_file_versions.html)|✔️³⁴|✔️|
 |[b2_list_keys](https://www.backblaze.com/b2/docs/b2_list_keys.html)|✔️⁴|✔️|
 |[b2_list_parts](https://www.backblaze.com/b2/docs/b2_list_parts.html)|✔️⁴|✔️|

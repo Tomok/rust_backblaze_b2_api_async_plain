@@ -692,4 +692,25 @@ async fn main() {
 
     update_file_legal_hold(&test_key_auth, &uploaded_file).await;
     update_file_retention(&test_key_auth, &uploaded_file).await;
+
+    print!("Listing file names ... ");
+    {
+        let request = ListFileNamesRequest::builder()
+            .bucket_id(test_bucket.bucket_id())
+            .build();
+        let resp = b2_list_file_names(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &request,
+        )
+        .await
+        .expect("Listing file names failed");
+        assert_eq!(&None, resp.next_file_name(), "Test bucket contained so many files, that paging needed to be used ... but those were not created");
+        assert!(
+            resp.files().len() >= 2,
+            "Expected more than two files, but file_list was \n {:#?}",
+            resp
+        );
+    }
+    println!("done");
 }

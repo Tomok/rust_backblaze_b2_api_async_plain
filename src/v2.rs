@@ -11,6 +11,7 @@ mod b2_delete_bucket;
 mod b2_delete_file_version;
 mod b2_delete_key;
 mod b2_download_file_by_id;
+mod b2_download_file_by_name;
 mod b2_finish_large_file;
 mod b2_get_download_authorization;
 mod b2_get_file_info;
@@ -83,6 +84,9 @@ pub use b2_list_file_versions::{
 };
 
 pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams};
+pub use b2_download_file_by_name::{
+    b2_download_file_by_name, get_b2_download_file_by_name_url, DownloadFileByNameRequest,
+};
 pub use b2_get_download_authorization::{
     b2_get_download_authorization, GetDownloadAuthorizationOk, GetDownloadAuthorizationRequest,
     ValidDownloadAuthorizationDurationInSeconds,

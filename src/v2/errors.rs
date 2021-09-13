@@ -71,12 +71,15 @@ error_enum!(DeleteFileVersionError {
     (401, "access_denied", AccessDenied),
 });
 
-error_enum!(DownloadFileByIdError {
+error_enum!(DownloadFileError {
     (400, "bad_request", BadRequest),
     (401, "unauthorized", Unauthorized),
     (401, "bad_auth_token", BadAuthToken),
     (401, "expired_auth_token", ExpiredAuthToken),
-    (403, "transaction_cap_exceeded", TransactionCapExceeded),
+    (403, "access_denied", AccessDenied),
+    (403, "download_cap_exceeded", DownloadCapExceeded),
+    (404, "not_found", NotFound),
+    (416, "range_not_satisfiable", RangeNotSatisfiable),
 });
 
 error_enum!(GetDownloadAuthorizationError {

@@ -10,7 +10,7 @@ use typed_builder::TypedBuilder;
 use super::{
     errors, ApiUrl, AuthorizationToken, BucketId, CacheControlHeaderValueRef,
     ContentDispositionRef, ContentEncodingRef, ContentLanguageRef, ContentTypeRef,
-    DownloadAuthorizationToken, ExpiresHeaderValueRef, FileName, JsonErrorObj,
+    DownloadOnlyAuthorizationToken, ExpiresHeaderValueRef, FileName, JsonErrorObj,
 };
 
 #[derive(Debug)]
@@ -86,7 +86,7 @@ pub struct GetDownloadAuthorizationRequest<'s> {
 pub struct GetDownloadAuthorizationOk {
     bucket_id: BucketId,
     file_name_prefix: FileName,
-    authorization_token: DownloadAuthorizationToken,
+    authorization_token: DownloadOnlyAuthorizationToken,
 }
 
 pub async fn b2_get_download_authorization<'a>(

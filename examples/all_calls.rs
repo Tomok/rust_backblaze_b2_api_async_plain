@@ -474,6 +474,42 @@ async fn download_file_by_id(
         .expect("Could not get bytes for downloaded file");
     assert_eq!(UPLOAD_FILE_CONTENTS, data);
 }
+/// downloads part2 of the large file (the one that is copied in [build_large_file])
+async fn download_file_by_name(
+    test_key_auth: &AuthorizeAccountOk,
+    test_bucket: &Bucket,
+    large_uploaded_file: &FileInformation,
+) -> () {
+    print!("Downloading file by name ... ");
+
+    {
+        let part2_range = HttpRange {
+            start: LARGE_FILE_PART1_SIZE as u64,
+            length: UPLOAD_FILE_CONTENTS.len() as u64,
+        };
+
+        let req = DownloadFileByNameRequest::builder()
+            .bucket_name(test_bucket.bucket_name())
+            .file_name(large_uploaded_file.file_name())
+            .range(&part2_range)
+            .build();
+        let resp = b2_download_file_by_name(
+            test_key_auth.download_url(),
+            Some(test_key_auth.authorization_token()),
+            &req,
+        )
+        .await
+        .expect("Downloading file by name failed");
+
+        let data = resp
+            .bytes()
+            .await
+            .expect("Could not get bytes for downloaded file");
+        assert_eq!(UPLOAD_FILE_CONTENTS, data);
+    }
+
+    println!("done")
+}
 
 /// sets and unsets file legal hold
 async fn update_file_legal_hold(test_key_auth: &AuthorizeAccountOk, file: &FileInformation) {
@@ -673,7 +709,10 @@ async fn main() {
 
     let uploaded_file = upload_file(&test_key_auth, &test_bucket).await;
     let large_uploaded_file = build_large_file(&test_key_auth, &test_bucket, &uploaded_file).await;
+
     download_file_by_id(&test_key_auth, &large_uploaded_file).await;
+    download_file_by_name(&test_key_auth, &test_bucket, &large_uploaded_file).await;
+
     cancel_large_file(&test_key_auth, &test_bucket).await;
     let copied_file = copy_file(&test_key_auth, &uploaded_file, &test_bucket).await;
     {

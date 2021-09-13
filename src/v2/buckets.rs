@@ -41,6 +41,12 @@ impl Display for InvalidCharacterError {
 /// Bucket names must be a minimum of 6 and a maximum of 50 characters long, and must be globally unique; two different B2 accounts cannot have buckets with the name name. Bucket names can consist of: letters, digits, and "-". Bucket names cannot start with "b2-"; these are reserved for internal Backblaze use.
 pub struct BucketName(String);
 
+impl BucketName {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
 impl PartialEq for BucketName {
     /// custom Eq function, since case is ignored for bucketNames
     fn eq(&self, other: &Self) -> bool {

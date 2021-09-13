@@ -1,5 +1,5 @@
 use super::{
-    errors::DownloadFileByIdError, AuthorizationToken, DownloadUrl, FileId, JsonErrorObj,
+    errors::DownloadFileError, AuthorizationToken, DownloadUrl, FileId, JsonErrorObj,
     ServerSideEncryptionCustomerKey,
 };
 
@@ -23,7 +23,7 @@ pub async fn b2_download_file_by_id(
     authorization_token: Option<&AuthorizationToken>,
     file_id: &FileId,
     params: &DownloadParams<'_>,
-) -> Result<reqwest::Response, DownloadFileByIdError> {
+) -> Result<reqwest::Response, DownloadFileError> {
     let url_base_str = format!("{}/b2api/v2/b2_download_file_by_id", download_url.as_str());
     let url = Url::parse_with_params(&url_base_str, &[("fileId", file_id.as_str())]).unwrap();
     let mut request_builder = reqwest::Client::new().get(url);
@@ -43,7 +43,7 @@ pub async fn b2_download_file_by_id(
     let resp = request_builder
         .send()
         .await
-        .map_err(DownloadFileByIdError::from)?;
+        .map_err(DownloadFileError::from)?;
     let expected_status = if params.range.is_none() {
         http_types::StatusCode::Ok
     } else {
@@ -52,7 +52,7 @@ pub async fn b2_download_file_by_id(
     if resp.status().as_u16() == expected_status as u16 {
         Ok(resp)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(DownloadFileByIdError::from)?;
+        let raw_error: JsonErrorObj = resp.json().await.map_err(DownloadFileError::from)?;
         Err(raw_error.into())
     }
 }

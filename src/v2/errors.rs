@@ -71,7 +71,7 @@ error_enum!(DeleteFileVersionError {
     (401, "access_denied", AccessDenied),
 });
 
-error_enum!(DownloadFileByIdError {
+error_enum!(DownloadFileError {
     (400, "bad_request", BadRequest),
     (401, "unauthorized", Unauthorized),
     (401, "bad_auth_token", BadAuthToken),

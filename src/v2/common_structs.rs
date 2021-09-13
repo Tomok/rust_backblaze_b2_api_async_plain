@@ -78,10 +78,26 @@ impl AuthorizationToken {
 }
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct DownloadAuthorizationToken(String);
+pub struct DownloadOnlyAuthorizationToken(String);
 
-impl DownloadAuthorizationToken {
+impl DownloadOnlyAuthorizationToken {
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+}
+
+pub trait DownloadAuthorizationToken {
+    fn download_token_as_str(&self) -> &str;
+}
+
+impl DownloadAuthorizationToken for AuthorizationToken {
+    fn download_token_as_str(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl DownloadAuthorizationToken for DownloadOnlyAuthorizationToken {
+    fn download_token_as_str(&self) -> &str {
+        self.as_str()
     }
 }

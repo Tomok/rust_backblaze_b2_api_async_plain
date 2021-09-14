@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    errors::GenericB2Error, AccountId, ApiUrl, ApplicationKeyId, AuthorizationToken, BucketId,
-    Capabilities, FileName, JsonErrorObj, KeyName, TimeStamp,
+    errors::GenericB2Error, AccountId, ApiUrl, ApplicationKeyId, ApplicationKeyIdRef,
+    AuthorizationToken, BucketId, Capabilities, FileName, JsonErrorObj, KeyName, TimeStamp,
 };
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct DeleteKeyRequest<'s> {
-    application_key_id: &'s ApplicationKeyId,
+    application_key_id: ApplicationKeyIdRef<'s>,
 }
 
 //TODO: used by list_keys as well, maybe move?
@@ -45,7 +45,7 @@ impl KeyInformation {
     }
 
     /// Get a reference to the key information's application key id.
-    pub fn application_key_id(&self) -> &ApplicationKeyId {
+    pub fn application_key_id(&self) -> super::ApplicationKeyIdRef {
         &self.application_key_id
     }
 
@@ -83,7 +83,7 @@ impl KeyInformation {
 pub async fn b2_delete_key(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    application_key_id: &ApplicationKeyId,
+    application_key_id: ApplicationKeyIdRef<'_>,
 ) -> Result<KeyInformation, GenericB2Error> {
     let request_body = DeleteKeyRequest { application_key_id };
     let url = format!("{}/b2api/v2/b2_delete_key", api_url.as_str());

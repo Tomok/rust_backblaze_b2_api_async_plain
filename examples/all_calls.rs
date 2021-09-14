@@ -49,7 +49,7 @@ async fn delete_test_keys(auth_data: &AuthorizeAccountOk, test_key_name: &str) {
         let list_key_params = ListKeysRequest::new(
             auth_data.account_id(),
             Some(1000u16.try_into().unwrap()), //1000 is the max number of keys requestable, without it counting like a second attempt
-            start_key.as_ref(),
+            start_key.as_deref(),
         );
 
         let key_listing = b2_list_keys(

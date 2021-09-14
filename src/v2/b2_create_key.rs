@@ -3,8 +3,8 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors::GenericB2Error, AccountId, ApiUrl, ApplicationKey, ApplicationKeyId,
-    AuthorizationToken, BucketId, Capabilities, FileName, JsonErrorObj, KeyName, KeyNameRef,
-    TimeStamp,
+    ApplicationKeyIdRef, AuthorizationToken, BucketId, Capabilities, FileName, JsonErrorObj,
+    KeyName, KeyNameRef, TimeStamp,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -67,7 +67,7 @@ impl CreatedKeyInformation {
     }
 
     /// Get a reference to the created key information's application key id.
-    pub fn application_key_id(&self) -> &ApplicationKeyId {
+    pub fn application_key_id(&self) -> ApplicationKeyIdRef {
         &self.application_key_id
     }
 

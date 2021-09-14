@@ -42,6 +42,7 @@ pub type KeyName = String; //TODO
 pub type KeyNameRef<'a> = &'a str; //TODO
 pub type ApplicationKey = String; //TODO
 pub type ApplicationKeyId = String; //TODO
+pub type ApplicationKeyIdRef<'a> = &'a str; //TODO
 
 pub use b2_authorize_account::AuthorizeAccountOk;
 /// Authorize account function see [official documentation](https://www.backblaze.com/b2/docs/b2_authorize_account.html)

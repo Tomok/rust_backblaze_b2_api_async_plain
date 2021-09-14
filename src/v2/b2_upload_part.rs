@@ -6,7 +6,7 @@ use crate::header_serializer::HeadersFrom;
 
 use super::{
     errors::UploadPartError, server_side_encryption::EncryptionAlgorithm, FileId, JsonErrorObj,
-    Md5, Md5Ref, PartNumber, ServerSideEncryption, ServerSideEncryptionCustomerKey, Sha1,
+    Md5, Md5Ref, PartNumber, ServerSideEncryption, ServerSideEncryptionCustomerKey, Sha1, Sha1Ref,
     TimeStamp, UploadPartUrlParameters,
 };
 
@@ -26,7 +26,7 @@ pub struct UploadPartParameters<'s> {
     /// The SHA1 checksum of the this part of the file. B2 will check this when the part is uploaded, to make sure that the data arrived correctly.
     /// The same SHA1 checksum must be passed to b2_finish_large_file.
     /// You may optionally provide the SHA1 at the end of the upload.
-    content_sha1: &'s Sha1,
+    content_sha1: Sha1Ref<'s>,
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Algorithm")]
     #[builder(default, setter(strip_option))]

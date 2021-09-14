@@ -480,8 +480,26 @@ async fn download_file_by_name(
     test_bucket: &Bucket,
     large_uploaded_file: &FileInformation,
 ) -> () {
-    print!("Downloading file by name ... ");
 
+    print!("Creating Download Authorization ... ");
+    let download_auth = {
+        let file_name_prefix: FileName = "".to_string().try_into().unwrap();
+        let req = GetDownloadAuthorizationRequest::builder()
+            .bucket_id(test_bucket.bucket_id())
+            .file_name_prefix(&file_name_prefix)
+            .valid_duration_in_seconds(600.try_into().unwrap())
+            .build();
+        b2_get_download_authorization(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &req,
+        )
+        .await
+        .expect("Could not get download authorization")
+    };
+    println!("done");
+
+    print!("Downloading file by name ... ");
     {
         let part2_range = HttpRange {
             start: LARGE_FILE_PART1_SIZE as u64,
@@ -495,7 +513,7 @@ async fn download_file_by_name(
             .build();
         let resp = b2_download_file_by_name(
             test_key_auth.download_url(),
-            Some(test_key_auth.authorization_token()),
+            Some(download_auth.authorization_token()),
             &req,
         )
         .await

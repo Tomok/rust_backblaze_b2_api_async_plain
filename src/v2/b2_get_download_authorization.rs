@@ -89,6 +89,23 @@ pub struct GetDownloadAuthorizationOk {
     authorization_token: DownloadOnlyAuthorizationToken,
 }
 
+impl GetDownloadAuthorizationOk {
+    /// Get a reference to the get download authorization ok's bucket id.
+    pub fn bucket_id(&self) -> &BucketId {
+        &self.bucket_id
+    }
+
+    /// Get a reference to the get download authorization ok's file name prefix.
+    pub fn file_name_prefix(&self) -> &FileName {
+        &self.file_name_prefix
+    }
+
+    /// Get a reference to the get download authorization ok's authorization token.
+    pub fn authorization_token(&self) -> &DownloadOnlyAuthorizationToken {
+        &self.authorization_token
+    }
+}
+
 pub async fn b2_get_download_authorization<'a>(
     api_url: &'a ApiUrl,
     authorization_token: &'a AuthorizationToken,

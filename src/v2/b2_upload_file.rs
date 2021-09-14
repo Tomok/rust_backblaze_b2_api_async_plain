@@ -7,7 +7,7 @@ use crate::header_serializer::HeadersFrom;
 use super::{
     errors::UploadFileError, server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValue,
     ContentDispositionRef, ContentLanguageRef, ExpiresHeaderValueRef, FileInformation, FileName,
-    JsonErrorObj, Md5, Mime, ServerSideEncryptionCustomerKey, Sha1, TimeStamp, UploadParameters,
+    JsonErrorObj, Md5Ref, Mime, ServerSideEncryptionCustomerKey, Sha1, TimeStamp, UploadParameters,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -56,7 +56,7 @@ pub struct UploadFileParameters<'s> {
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
     #[builder(default, setter(strip_option))]
-    server_side_encryption_customer_key_md5: Option<&'s Md5>,
+    server_side_encryption_customer_key_md5: Option<Md5Ref<'s>>,
 }
 
 pub async fn b2_upload_file<'a, T: Into<Body>>(

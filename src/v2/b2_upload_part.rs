@@ -6,8 +6,8 @@ use crate::header_serializer::HeadersFrom;
 
 use super::{
     errors::UploadPartError, server_side_encryption::EncryptionAlgorithm, FileId, JsonErrorObj,
-    Md5, PartNumber, ServerSideEncryption, ServerSideEncryptionCustomerKey, Sha1, TimeStamp,
-    UploadPartUrlParameters,
+    Md5, Md5Ref, PartNumber, ServerSideEncryption, ServerSideEncryptionCustomerKey, Sha1,
+    TimeStamp, UploadPartUrlParameters,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -41,7 +41,7 @@ pub struct UploadPartParameters<'s> {
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
     #[builder(default, setter(strip_option))]
     /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKeyMd5 requested via b2_start_large_file.
-    server_side_encryption_customer_key_md5: Option<&'s Md5>,
+    server_side_encryption_customer_key_md5: Option<Md5Ref<'s>>,
 }
 
 #[derive(Debug, Deserialize)]

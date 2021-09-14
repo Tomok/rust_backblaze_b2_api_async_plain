@@ -52,10 +52,10 @@ pub struct ListUnfinishedLargeFilesRequest<'s> {
     max_file_count: Option<MaxUnfinishedLargeFileCount>,
 }
 
-pub async fn b2_list_unfinished_large_files<'a>(
+pub async fn b2_list_unfinished_large_files(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    request_parameters: &ListUnfinishedLargeFilesRequest<'a>,
+    request_parameters: &ListUnfinishedLargeFilesRequest<'_>,
 ) -> Result<ListFileNamesOk, GenericB2Error> {
     let url = format!(
         "{}/b2api/v2/b2_list_unfinished_large_files",

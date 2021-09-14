@@ -53,10 +53,10 @@ pub struct UpdateBucketRequest<'s> {
     if_revision_is: Option<&'s BucketRevision>,
 }
 
-pub async fn b2_update_bucket<'a>(
+pub async fn b2_update_bucket(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    request: &UpdateBucketRequest<'a>,
+    request: &UpdateBucketRequest<'_>,
 ) -> Result<Bucket, UpdateBucketError> {
     let url = format!("{}/b2api/v2/b2_update_bucket", api_url.as_str());
     let request = reqwest::Client::new()

@@ -42,10 +42,10 @@ impl UpdateFileRetentionOk {
     }
 }
 
-pub async fn b2_update_file_retention<'a>(
+pub async fn b2_update_file_retention(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    request: &UpdateFileRetentionRequest<'a>,
+    request: &UpdateFileRetentionRequest<'_>,
 ) -> Result<UpdateFileRetentionOk, UpdateFileLockError> {
     let url = format!("{}/b2api/v2/b2_update_file_retention", api_url.as_str());
     let request = reqwest::Client::new()

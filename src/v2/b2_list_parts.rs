@@ -114,10 +114,10 @@ impl Part {
     }
 }
 
-pub async fn b2_list_parts<'a>(
+pub async fn b2_list_parts(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    request_parameters: &ListPartsRequest<'a>,
+    request_parameters: &ListPartsRequest<'_>,
 ) -> Result<ListPartsOk, GenericB2Error> {
     let url = format!("{}/b2api/v2/b2_list_parts", api_url.as_str());
     let request = reqwest::Client::new()

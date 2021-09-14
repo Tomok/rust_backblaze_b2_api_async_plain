@@ -1,7 +1,7 @@
 /// custom URL encoder based on [backblaze url encoding](https://www.backblaze.com/b2/docs/string_encoding.html)
 /// urlencoder crate can not be used, as for example it does encode '/' which prevents b2 from realizing it as a folder separator
 
-const ALLOWED_SPECIAL_CHARS: &'static str = "._-/~!$'()*;=:@";
+const ALLOWED_SPECIAL_CHARS: &str = "._-/~!$'()*;=:@";
 pub fn url_encode(s: &str) -> String {
     let mut res_elems = Vec::with_capacity(s.as_bytes().len());
     for c in s.chars() {

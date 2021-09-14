@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors::GenericB2Error, AccountId, ApiUrl, ApplicationKeyId, AuthorizationToken, JsonErrorObj,
-    KeyInformation,
+    errors::GenericB2Error, AccountId, ApiUrl, ApplicationKeyId, ApplicationKeyIdRef,
+    AuthorizationToken, JsonErrorObj, KeyInformation,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -18,14 +18,14 @@ pub struct ListKeysRequest<'s> {
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    start_application_key_id: Option<&'s ApplicationKeyId>,
+    start_application_key_id: Option<ApplicationKeyIdRef<'s>>,
 }
 
 impl<'s> ListKeysRequest<'s> {
     pub fn new(
         account_id: &'s AccountId,
         max_key_count: Option<NonZeroU16>,
-        start_application_key_id: Option<&'s ApplicationKeyId>,
+        start_application_key_id: Option<ApplicationKeyIdRef<'s>>,
     ) -> Self {
         Self {
             account_id,
@@ -45,8 +45,8 @@ pub struct ListKeysOk {
 
 impl ListKeysOk {
     /// Get a reference to the list keys ok's next application key id.
-    pub fn next_application_key_id(&self) -> Option<&ApplicationKeyId> {
-        self.next_application_key_id.as_ref()
+    pub fn next_application_key_id(&self) -> Option<ApplicationKeyIdRef<'_>> {
+        self.next_application_key_id.as_deref()
     }
 
     /// Get a reference to the list keys ok's keys.

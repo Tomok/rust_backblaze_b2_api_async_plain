@@ -177,15 +177,13 @@ fn determine_chunk_count_and_size(
                     PartNumber::max_part_number().try_into().unwrap(),
                     div_floor(file_size, PartNumber::max_part_number() as u64),
                 )
+            } else if default_sized_chunk_cnt > 1 {
+                (
+                    (default_sized_chunk_cnt as u16).try_into().unwrap(),
+                    DEFAULT_CHUNK_SIZE,
+                )
             } else {
-                if default_sized_chunk_cnt > 1 {
-                    (
-                        (default_sized_chunk_cnt as u16).try_into().unwrap(),
-                        DEFAULT_CHUNK_SIZE,
-                    )
-                } else {
-                    (1u16.try_into().unwrap(), file_size)
-                }
+                (1u16.try_into().unwrap(), file_size)
             }
         }
     }

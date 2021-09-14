@@ -5,9 +5,10 @@ use typed_builder::TypedBuilder;
 use crate::header_serializer::HeadersFrom;
 
 use super::{
-    errors::UploadFileError, server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValue,
-    ContentDispositionRef, ContentLanguageRef, ExpiresHeaderValueRef, FileInformation, FileName,
-    JsonErrorObj, Md5, Mime, ServerSideEncryptionCustomerKey, Sha1, TimeStamp, UploadParameters,
+    errors::UploadFileError, server_side_encryption::EncryptionAlgorithm,
+    CacheControlHeaderValueRef, ContentDispositionRef, ContentLanguageRef, ExpiresHeaderValueRef,
+    FileInformation, FileName, JsonErrorObj, Md5Ref, Mime, ServerSideEncryptionCustomerKey,
+    Sha1Ref, TimeStamp, UploadParameters,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -24,7 +25,7 @@ pub struct UploadFileParameters<'s> {
     content_length: u64,
 
     #[serde(rename = "X-Bz-Content-Sha1")]
-    content_sha1: &'s Sha1,
+    content_sha1: Sha1Ref<'s>,
 
     #[serde(rename = "X-Bz-Info-src_last_modified_millis")]
     #[builder(default, setter(strip_option))]
@@ -44,7 +45,7 @@ pub struct UploadFileParameters<'s> {
 
     #[serde(rename = "X-Bz-Info-b2-cache-control")]
     #[builder(default, setter(strip_option))]
-    cache_control: Option<&'s CacheControlHeaderValue>,
+    cache_control: Option<CacheControlHeaderValueRef<'s>>,
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Algorithm")]
     #[builder(default, setter(strip_option))]
@@ -56,7 +57,7 @@ pub struct UploadFileParameters<'s> {
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
     #[builder(default, setter(strip_option))]
-    server_side_encryption_customer_key_md5: Option<&'s Md5>,
+    server_side_encryption_customer_key_md5: Option<Md5Ref<'s>>,
 }
 
 pub async fn b2_upload_file<'a, T: Into<Body>>(

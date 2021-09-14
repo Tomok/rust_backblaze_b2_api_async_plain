@@ -38,7 +38,7 @@ fn readline(stdin: &io::Stdin) -> String {
         .next()
         .expect("No input detected")
         .expect("Error reading input");
-    println!(""); //insert line break
+    println!(); //insert line break
     res
 }
 
@@ -49,7 +49,7 @@ async fn delete_test_keys(auth_data: &AuthorizeAccountOk, test_key_name: &str) {
         let list_key_params = ListKeysRequest::new(
             auth_data.account_id(),
             Some(1000u16.try_into().unwrap()), //1000 is the max number of keys requestable, without it counting like a second attempt
-            start_key.as_ref(),
+            start_key.as_deref(),
         );
 
         let key_listing = b2_list_keys(
@@ -114,7 +114,7 @@ async fn delete_test_bucket(auth_data: &AuthorizeAccountOk, test_bucket_name: &B
     println!("Listing test bucket ... done");
 }
 
-async fn delete_all_files_in_bucket(auth_data: &AuthorizeAccountOk, bucket: &Bucket) -> () {
+async fn delete_all_files_in_bucket(auth_data: &AuthorizeAccountOk, bucket: &Bucket) {
     let mut start_file_name = None;
     let mut start_file_id = None;
     loop {
@@ -149,7 +149,7 @@ async fn delete_all_files_in_bucket(auth_data: &AuthorizeAccountOk, bucket: &Buc
         }
         if let Some(filename) = files.next_file_name() {
             start_file_name = Some(filename.to_owned());
-            start_file_id = files.next_file_id().map(|f| f.clone());
+            start_file_id = files.next_file_id().cloned();
         } else {
             break;
         }
@@ -219,7 +219,7 @@ fn sha1sum(data: &[u8]) -> String {
     h.digest().to_string()
 }
 
-const UPLOAD_FILE_CONTENTS: &'static [u8] = &[42u8; 4096];
+const UPLOAD_FILE_CONTENTS: &[u8] = &[42u8; 4096];
 lazy_static! {
     static ref UPLOAD_FILE_NAME: FileName = "UploadedFile".to_owned().try_into().unwrap();
     static ref COPY_FILE_NAME: FileName = "CopiedFile".to_owned().try_into().unwrap();
@@ -435,7 +435,7 @@ async fn copy_file(
     res
 }
 
-async fn hide_file(test_key_auth: &AuthorizeAccountOk, copied_file: &FileInformation) -> () {
+async fn hide_file(test_key_auth: &AuthorizeAccountOk, copied_file: &FileInformation) {
     print!("Hiding file ... ");
     b2_hide_file(
         test_key_auth.api_url(),
@@ -452,7 +452,7 @@ async fn hide_file(test_key_auth: &AuthorizeAccountOk, copied_file: &FileInforma
 async fn download_file_by_id(
     test_key_auth: &AuthorizeAccountOk,
     large_uploaded_file: &FileInformation,
-) -> () {
+) {
     let part2_range = HttpRange {
         start: LARGE_FILE_PART1_SIZE as u64,
         length: UPLOAD_FILE_CONTENTS.len() as u64,
@@ -479,8 +479,7 @@ async fn download_file_by_name(
     test_key_auth: &AuthorizeAccountOk,
     test_bucket: &Bucket,
     large_uploaded_file: &FileInformation,
-) -> () {
-
+) {
     print!("Creating Download Authorization ... ");
     let download_auth = {
         let file_name_prefix: FileName = "".to_string().try_into().unwrap();
@@ -735,8 +734,8 @@ async fn main() {
     let copied_file = copy_file(&test_key_auth, &uploaded_file, &test_bucket).await;
     {
         let copied_file_info = b2_get_file_info(
-            &test_key_auth.api_url(),
-            &test_key_auth.authorization_token(),
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
             copied_file
                 .file_id()
                 .expect("Copied file did not have a FileId"),

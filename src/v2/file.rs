@@ -1,7 +1,7 @@
 use super::{AccountId, BucketId, FileRetention, InvalidData, LegalHold, ServerSideEncryption};
 use lazy_static::lazy_static;
 use serde::{de, Deserialize, Serialize};
-use std::{convert::TryFrom, str::FromStr};
+use std::{convert::TryFrom, fmt::Display, str::FromStr};
 
 #[derive(Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct FileName(String);
@@ -77,6 +77,7 @@ impl TryFrom<String> for FileId {
 pub type Sha1 = String;
 pub type Sha1Ref<'s> = &'s str;
 pub type Md5 = String;
+pub type Md5Ref<'s> = &'s str;
 pub type FileInfo = serde_json::Value;
 pub type TimeStamp = i64;
 /// Content Disposition value acc. to the grammar specified in RFC 6266
@@ -123,9 +124,9 @@ impl FromStr for Mime {
     }
 }
 
-impl Mime {
-    pub fn to_string(&self) -> String {
-        self.0.to_string()
+impl Display for Mime {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
 
@@ -145,7 +146,7 @@ impl<'de> Deserialize<'de> for Mime {
     {
         let s = String::deserialize(deserializer)?;
         http_types::Mime::from_str(&s)
-            .map(|m| Self(m))
+            .map(Self)
             .map_err(|_e| de::Error::invalid_value(de::Unexpected::Str(&s), &"Valid Mime type"))
     }
 }

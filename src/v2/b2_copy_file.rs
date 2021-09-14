@@ -93,10 +93,10 @@ pub struct CopyFileRequest<'s> {
     destination_server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey>,
 }
 
-pub async fn b2_copy_file<'a>(
+pub async fn b2_copy_file(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    request: &CopyFileRequest<'a>,
+    request: &CopyFileRequest<'_>,
 ) -> Result<FileInformation, errors::CopyError> {
     let url = format!("{}/b2api/v2/b2_copy_file", api_url.as_str());
     let request = reqwest::Client::new()

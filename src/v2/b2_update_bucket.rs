@@ -45,7 +45,7 @@ pub struct UpdateBucketRequest<'s> {
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The initial list of lifecycle rules for this bucket.
-    lifecycle_rules: Option<&'s Vec<LifeCycleRule>>,
+    lifecycle_rules: Option<&'s [LifeCycleRule]>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -53,10 +53,10 @@ pub struct UpdateBucketRequest<'s> {
     if_revision_is: Option<&'s BucketRevision>,
 }
 
-pub async fn b2_update_bucket<'a>(
+pub async fn b2_update_bucket(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,
-    request: &UpdateBucketRequest<'a>,
+    request: &UpdateBucketRequest<'_>,
 ) -> Result<Bucket, UpdateBucketError> {
     let url = format!("{}/b2api/v2/b2_update_bucket", api_url.as_str());
     let request = reqwest::Client::new()

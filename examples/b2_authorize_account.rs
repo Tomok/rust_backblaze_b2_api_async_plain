@@ -26,7 +26,7 @@ fn readline(stdin: &io::Stdin) -> String {
         .next()
         .expect("No input detected")
         .expect("Error reading input");
-    println!(""); //insert line break
+    println!(); //insert line break
     res
 }
 

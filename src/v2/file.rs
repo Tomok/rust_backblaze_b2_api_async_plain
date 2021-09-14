@@ -1,7 +1,7 @@
 use super::{AccountId, BucketId, FileRetention, InvalidData, LegalHold, ServerSideEncryption};
 use lazy_static::lazy_static;
 use serde::{de, Deserialize, Serialize};
-use std::{convert::TryFrom, str::FromStr};
+use std::{convert::TryFrom, fmt::Display, str::FromStr};
 
 #[derive(Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct FileName(String);
@@ -123,9 +123,9 @@ impl FromStr for Mime {
     }
 }
 
-impl Mime {
-    pub fn to_string(&self) -> String {
-        self.0.to_string()
+impl Display for Mime {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
 

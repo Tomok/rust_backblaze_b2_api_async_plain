@@ -28,7 +28,7 @@ Some highlights:
 |[b2_download_file_by_id](https://www.backblaze.com/b2/docs/b2_download_file_by_id.html)|✔️¹²⁴|✔️|
 |[b2_download_file_by_name](https://www.backblaze.com/b2/docs/b2_download_file_by_name.html)|✔️|✔️|
 |[b2_finish_large_file](https://www.backblaze.com/b2/docs/b2_finish_large_file.html)|✔️³⁴|✔️|
-|[b2_get_download_authorization](https://www.backblaze.com/b2/docs/b2_get_download_authorization.html)|✔️⁴|✖️|
+|[b2_get_download_authorization](https://www.backblaze.com/b2/docs/b2_get_download_authorization.html)|✔️⁴|✔️|
 |[b2_get_file_info](https://www.backblaze.com/b2/docs/b2_get_file_info.html)|✔️³⁴|✔️|
 |[b2_get_upload_part_url](https://www.backblaze.com/b2/docs/b2_get_upload_part_url.html)|✔️⁴|✔️|
 |[b2_get_upload_url](https://www.backblaze.com/b2/docs/b2_get_upload_url.html)|✔️⁴|✔️|

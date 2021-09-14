@@ -45,7 +45,7 @@ pub struct UpdateBucketRequest<'s> {
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// The initial list of lifecycle rules for this bucket.
-    lifecycle_rules: Option<&'s Vec<LifeCycleRule>>,
+    lifecycle_rules: Option<&'s [LifeCycleRule]>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]

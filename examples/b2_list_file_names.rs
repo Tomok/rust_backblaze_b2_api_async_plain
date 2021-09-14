@@ -72,8 +72,8 @@ async fn main() {
         );
 
         let res = b2_list_file_names(
-            &auth_data.api_url(),
-            &auth_data.authorization_token(),
+            auth_data.api_url(),
+            auth_data.authorization_token(),
             &request_params,
         )
         .await;

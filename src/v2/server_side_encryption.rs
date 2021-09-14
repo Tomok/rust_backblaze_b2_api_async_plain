@@ -97,7 +97,7 @@ impl<'de> Deserialize<'de> for ServerSideEncryption {
                 if sse.algorithm.is_none() {
                     Ok(Self::None)
                 } else {
-                    Err(de::Error::unknown_field(&"algorithm", &[]))
+                    Err(de::Error::unknown_field("algorithm", &[]))
                 }
             }
             Some(mode) => Err(de::Error::unknown_variant(

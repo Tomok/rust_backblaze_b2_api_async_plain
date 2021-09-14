@@ -14,11 +14,11 @@ pub struct B2MockServer {
     mock_server: MockServer,
 }
 
-pub const FAKE_APPLICATION_KEY_ID: &'static str = "applicationKeyId_value";
-pub const FAKE_APPLICATION_KEY: &'static str = "applicationKey_value";
-pub const FAKE_AUTHORIZATION_TOKEN: &'static str = "authorization_token";
-pub const FAKE_ACCOUNT_ID: &'static str = "a30f20426f0b1";
-pub const FAKE_BUCKET_ID: &'static str = "b2f6f21365e1d29f6c580f18";
+pub const FAKE_APPLICATION_KEY_ID: &str = "applicationKeyId_value";
+pub const FAKE_APPLICATION_KEY: &str = "applicationKey_value";
+pub const FAKE_AUTHORIZATION_TOKEN: &str = "authorization_token";
+pub const FAKE_ACCOUNT_ID: &str = "a30f20426f0b1";
+pub const FAKE_BUCKET_ID: &str = "b2f6f21365e1d29f6c580f18";
 
 struct AuthorizationHeaderMatch {
     username_expected: String,

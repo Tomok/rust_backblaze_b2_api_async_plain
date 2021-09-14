@@ -75,8 +75,8 @@ async fn main() {
     );
 
     let res = b2_list_buckets(
-        &auth_data.api_url(),
-        &auth_data.authorization_token(),
+        auth_data.api_url(),
+        auth_data.authorization_token(),
         &request_params,
     )
     .await;

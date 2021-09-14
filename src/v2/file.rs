@@ -145,7 +145,7 @@ impl<'de> Deserialize<'de> for Mime {
     {
         let s = String::deserialize(deserializer)?;
         http_types::Mime::from_str(&s)
-            .map(|m| Self(m))
+            .map(Self)
             .map_err(|_e| de::Error::invalid_value(de::Unexpected::Str(&s), &"Valid Mime type"))
     }
 }

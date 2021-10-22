@@ -1,6 +1,5 @@
 ///! This example goes through all implemented calls creating a test bucket
 use backblaze_b2_async_plain::v2::*;
-use http_range::HttpRange;
 use lazy_static::lazy_static;
 use std::{
     convert::{TryFrom, TryInto},
@@ -453,10 +452,10 @@ async fn download_file_by_id(
     test_key_auth: &AuthorizeAccountOk,
     large_uploaded_file: &FileInformation,
 ) {
-    let part2_range = HttpRange {
-        start: LARGE_FILE_PART1_SIZE as u64,
-        length: UPLOAD_FILE_CONTENTS.len() as u64,
-    };
+    let part2_range = headers::Range::bytes(
+        LARGE_FILE_PART1_SIZE as u64..(LARGE_FILE_PART1_SIZE + UPLOAD_FILE_CONTENTS.len()) as u64,
+    )
+    .unwrap();
     let content_type = "text/html".to_owned();
     let cache_control = "no-cache".to_owned();
     let params = DownloadParams::builder()
@@ -514,10 +513,11 @@ async fn download_file_by_name(
 
     print!("Downloading file by name ... ");
     {
-        let part2_range = HttpRange {
-            start: LARGE_FILE_PART1_SIZE as u64,
-            length: UPLOAD_FILE_CONTENTS.len() as u64,
-        };
+        let part2_range = headers::Range::bytes(
+            LARGE_FILE_PART1_SIZE as u64
+                ..(LARGE_FILE_PART1_SIZE + UPLOAD_FILE_CONTENTS.len()) as u64,
+        )
+        .unwrap();
 
         let req = DownloadFileByNameRequest::builder()
             .bucket_name(test_bucket.bucket_name())

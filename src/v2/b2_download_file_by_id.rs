@@ -1,12 +1,10 @@
-use crate::http_range_serializer;
-
 use super::{
     errors::DownloadFileError, AuthorizationToken, CacheControlHeaderValueRef,
     ContentDispositionRef, ContentEncodingRef, ContentLanguageRef, ContentTypeRef, DownloadUrl,
     ExpiresHeaderValueRef, FileId, JsonErrorObj, ServerSideEncryptionCustomerKey,
 };
 
-use http_range::HttpRange;
+use headers::{HeaderMap, HeaderMapExt};
 use serde::Serialize;
 use typed_builder::TypedBuilder;
 
@@ -17,7 +15,7 @@ pub struct DownloadParams<'s> {
 
     #[builder(default, setter(strip_option))]
     #[serde(skip)] //serialized manually, as it may not be a url parameter
-    range: Option<&'s HttpRange>,
+    range: Option<&'s headers::Range>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -60,14 +58,14 @@ pub async fn b2_download_file_by_id(
         download_url.as_str(),
         serde_urlencoded::to_string(params).unwrap()
     );
-    //let url = Url::parse_with_params(&url_base_str, &[("fileId", file_id.as_str())]).unwrap();
-    let mut request_builder = reqwest::Client::new().get(url);
+    let mut headers = HeaderMap::with_capacity(1);
+    if let Some(range) = params.range {
+        headers.typed_insert(range.clone());
+    }
+
+    let mut request_builder = reqwest::Client::new().get(url).headers(headers);
     if let Some(auth) = authorization_token {
         request_builder = request_builder.header("Authorization", auth.as_str());
-    }
-    if let Some(range) = params.range {
-        request_builder =
-            request_builder.header("Range", http_range_serializer::range_as_string(range));
     }
     let resp = request_builder
         .send()

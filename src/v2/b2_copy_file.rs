@@ -1,32 +1,12 @@
+use headers::Range;
 use serde::Serialize;
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors, ApiUrl, AuthorizationToken, BucketId, FileId, FileInfo, FileInformation, FileName,
-    FileRetention, JsonErrorObj, LegalHold, Mime, ServerSideEncryptionCustomerKey,
+    errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId, FileId, FileInfo,
+    FileInformation, FileName, FileRetention, JsonErrorObj, LegalHold, Mime,
+    ServerSideEncryptionCustomerKey,
 };
-
-#[derive(Debug)]
-pub enum Range {
-    Bytes { min: u64, max: u64 },
-}
-
-impl Range {
-    pub fn bytes(min: u64, max: u64) -> Self {
-        Self::Bytes { min, max }
-    }
-}
-
-impl Serialize for Range {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            Range::Bytes { min, max } => format!("bytes={}-{}", min, max).serialize(serializer),
-        }
-    }
-}
 
 #[derive(Debug, Serialize)]
 pub enum MetadataDirective {
@@ -50,7 +30,10 @@ pub struct CopyFileRequest<'s> {
     file_name: &'s FileName,
 
     #[builder(default, setter(strip_option))]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     /// The range of bytes to copy. If not provided, the whole source file will be copied.
     range: Option<&'s Range>,
 

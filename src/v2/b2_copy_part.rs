@@ -1,8 +1,9 @@
+use headers::Range;
 use serde::Serialize;
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors, ApiUrl, AuthorizationToken, FileId, JsonErrorObj, PartNumber, Range,
+    errors, serialize_header_option, ApiUrl, AuthorizationToken, FileId, JsonErrorObj, PartNumber,
     ServerSideEncryptionCustomerKey, UploadPartOk,
 };
 
@@ -19,7 +20,10 @@ pub struct CopyPartRequest<'s> {
     part_number: PartNumber,
 
     #[builder(default, setter(strip_option))]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     /// The range of bytes to copy. If not provided, the whole source file will be copied.
     range: Option<&'s Range>,
 

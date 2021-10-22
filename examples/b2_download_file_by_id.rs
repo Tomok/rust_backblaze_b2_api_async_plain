@@ -59,11 +59,10 @@ async fn main() {
         auth_data
     };
     let file_id = FileId::try_from(p.file_id).expect("Invalid file Id");
-    let download_params = DownloadParams::builder().build();
+    let download_params = DownloadParams::builder().file_id(&file_id).build();
     let mut resp = b2_download_file_by_id(
         auth_data.download_url(),
         Some(auth_data.authorization_token()),
-        &file_id,
         &download_params,
     )
     .await;

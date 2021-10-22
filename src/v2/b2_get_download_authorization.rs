@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors, ApiUrl, AuthorizationToken, BucketId, CacheControlHeaderValueRef,
-    ContentDispositionRef, ContentEncodingRef, ContentLanguageRef, ContentTypeRef,
-    DownloadOnlyAuthorizationToken, ExpiresHeaderValueRef, FileName, JsonErrorObj,
+    errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId,
+    CacheControlHeaderValueRef, ContentDispositionRef, ContentEncodingRef, ContentLanguageRef,
+    ContentTypeRef, DownloadOnlyAuthorizationToken, ExpiresHeaderValueRef, FileName, JsonErrorObj,
 };
 
 #[derive(Debug)]
@@ -74,6 +74,10 @@ pub struct GetDownloadAuthorizationRequest<'s> {
     b2_expires: Option<ExpiresHeaderValueRef<'s>>,
 
     #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     b2_cache_control: Option<CacheControlHeaderValueRef<'s>>,
     #[builder(default, setter(strip_option))]
     b2_content_encoding: Option<ContentEncodingRef<'s>>,

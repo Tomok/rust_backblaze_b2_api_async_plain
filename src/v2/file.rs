@@ -1,4 +1,5 @@
 use super::{AccountId, BucketId, FileRetention, InvalidData, LegalHold, ServerSideEncryption};
+use headers::CacheControl;
 use lazy_static::lazy_static;
 use serde::{de, Deserialize, Serialize};
 use std::{convert::TryFrom, fmt::Display, str::FromStr};
@@ -90,8 +91,8 @@ pub type ContentLanguageRef<'s> = &'s str;
 pub type ExpiresHeaderValue = String; //TODO: create struct and check for RFC compliance
 pub type ExpiresHeaderValueRef<'s> = &'s str;
 /// expires cache-control header value acc. to RFC 2616
-pub type CacheControlHeaderValue = String; //TODO: create struct and check for RFC compliance
-pub type CacheControlHeaderValueRef<'s> = &'s str;
+pub type CacheControlHeaderValue = CacheControl;
+pub type CacheControlHeaderValueRef<'s> = &'s CacheControl;
 /// expires content-encoding header value acc. to RFC 2616
 pub type ContentEncoding = String; //TODO: create struct and check for RFC compliance
 pub type ContentEncodingRef<'s> = &'s str;

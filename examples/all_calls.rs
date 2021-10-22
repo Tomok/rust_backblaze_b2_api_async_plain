@@ -457,17 +457,31 @@ async fn download_file_by_id(
         start: LARGE_FILE_PART1_SIZE as u64,
         length: UPLOAD_FILE_CONTENTS.len() as u64,
     };
-    let params = DownloadParams::builder().range(&part2_range).build();
+    let content_type = "text/html".to_owned();
+    let cache_control = "no-cache".to_owned();
+    let params = DownloadParams::builder()
+        .file_id(
+            large_uploaded_file
+                .file_id()
+                .expect("Large file did not have a file id"),
+        )
+        .range(&part2_range)
+        .b2_cache_control(&cache_control)
+        .b2_content_type(&content_type)
+        .build();
     let resp = b2_download_file_by_id(
         test_key_auth.download_url(),
         Some(test_key_auth.authorization_token()),
-        large_uploaded_file
-            .file_id()
-            .expect("Large file did not have a file id"),
         &params,
     )
     .await
     .expect("Downloading file by id failed");
+    dbg!(resp.headers());
+    let received_content_type = resp
+        .headers()
+        .get("Content-Type")
+        .expect("Content-Type header not received, even though it was went");
+    assert_eq!(&content_type, received_content_type);
     let data = resp
         .bytes()
         .await

@@ -25,7 +25,7 @@ Some highlights:
 |[b2_delete_bucket](https://www.backblaze.com/b2/docs/b2_delete_bucket.html)|✔️⁴|✔️|
 |[b2_delete_file_version](https://www.backblaze.com/b2/docs/b2_delete_file_version.html)|✔️⁴|✔️|
 |[b2_delete_key](https://www.backblaze.com/b2/docs/b2_delete_key.html)|✔️⁴|✔️|
-|[b2_download_file_by_id](https://www.backblaze.com/b2/docs/b2_download_file_by_id.html)|✔️¹²⁴|✔️|
+|[b2_download_file_by_id](https://www.backblaze.com/b2/docs/b2_download_file_by_id.html)|✔️²⁴|✔️|
 |[b2_download_file_by_name](https://www.backblaze.com/b2/docs/b2_download_file_by_name.html)|✔️|✔️|
 |[b2_finish_large_file](https://www.backblaze.com/b2/docs/b2_finish_large_file.html)|✔️³⁴|✔️|
 |[b2_get_download_authorization](https://www.backblaze.com/b2/docs/b2_get_download_authorization.html)|✔️⁴|✔️|
@@ -45,8 +45,6 @@ Some highlights:
 |[b2_update_file_retention](https://www.backblaze.com/b2/docs/b2_update_file_retention.html)|✔️⁴|✔️|
 |[b2_upload_file](https://www.backblaze.com/b2/docs/b2_upload_file.html)|✔️²³⁴|✔️|
 |[b2_upload_part](https://www.backblaze.com/b2/docs/b2_upload_part.html)|✔️²⁴|✔️|
- 
- ¹ B2* Headers missing
  
  ² Server Side Encryption missing
  

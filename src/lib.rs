@@ -1,4 +1,5 @@
 mod header_serializer;
+mod http_range_serializer;
 pub mod v2;
 
 #[cfg(test)]

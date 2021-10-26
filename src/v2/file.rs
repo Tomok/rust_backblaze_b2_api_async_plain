@@ -98,10 +98,11 @@ pub type ContentEncoding = headers::ContentEncoding;
 pub type ContentEncodingRef<'s> = &'s ContentEncoding;
 
 /// expires content-type header value acc. to RFC 2616
-pub type ContentType = String; //TODO: create struct and check for RFC compliance
-pub type ContentTypeRef<'s> = &'s str;
+pub type ContentType = headers::ContentType;
+pub type ContentTypeRef<'s> = &'s ContentType;
 
 /// own Mime type based on [http_types::Mime] to add Serde Support
+/// TODO: use headers::ContentType?
 #[derive(Debug, PartialEq, Eq)]
 pub struct Mime(http_types::Mime);
 

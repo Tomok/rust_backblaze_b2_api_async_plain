@@ -457,7 +457,7 @@ async fn download_file_by_id(
         LARGE_FILE_PART1_SIZE as u64..(LARGE_FILE_PART1_SIZE + UPLOAD_FILE_CONTENTS.len()) as u64,
     )
     .unwrap();
-    let content_type = "text/html".to_owned();
+    let content_type = ContentType::html(); //"text/html"
     let cache_control = CacheControl::new().with_no_cache();
     let params = DownloadParams::builder()
         .file_id(
@@ -480,7 +480,7 @@ async fn download_file_by_id(
         .headers()
         .get("Content-Type")
         .expect("Content-Type header not received, even though it was went");
-    assert_eq!(&content_type, received_content_type);
+    assert_eq!("text/html", received_content_type);
     let received_cache_control = resp
         .headers()
         .get("Cache-Control")

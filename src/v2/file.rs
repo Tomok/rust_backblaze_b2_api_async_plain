@@ -82,8 +82,8 @@ pub type Md5Ref<'s> = &'s str;
 pub type FileInfo = serde_json::Value;
 pub type TimeStamp = i64;
 /// Content Disposition value acc. to the grammar specified in RFC 6266
-pub type ContentDisposition = String; //TODO: create struct and check for RFC-6266 compliance
-pub type ContentDispositionRef<'s> = &'s str;
+pub type ContentDisposition = headers::ContentDisposition;
+pub type ContentDispositionRef<'s> = &'s ContentDisposition;
 /// Content Language value acc. to RFC 2616
 pub type ContentLanguage = String; //TODO: create struct and check for RFC compliance
 pub type ContentLanguageRef<'s> = &'s str;

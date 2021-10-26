@@ -31,8 +31,12 @@ pub struct UploadFileParameters<'s> {
     #[builder(default, setter(strip_option))]
     src_last_modified_millis: Option<TimeStamp>,
 
-    #[serde(rename = "X-Bz-Info-b2-content-disposition")]
     #[builder(default, setter(strip_option))]
+    #[serde(
+        rename = "X-Bz-Info-b2-content-disposition",
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     content_disposition: Option<ContentDispositionRef<'s>>,
 
     #[serde(rename = "X-Bz-Info-b2-content-language")]

@@ -65,6 +65,10 @@ pub struct GetDownloadAuthorizationRequest<'s> {
     valid_duration_in_seconds: ValidDownloadAuthorizationDurationInSeconds,
 
     #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     b2_content_disposition: Option<ContentDispositionRef<'s>>,
 
     #[builder(default, setter(strip_option))]

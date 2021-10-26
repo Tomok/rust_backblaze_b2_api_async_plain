@@ -94,8 +94,8 @@ pub type ExpiresHeaderValueRef<'s> = &'s ExpiresHeaderValue;
 pub type CacheControlHeaderValue = CacheControl;
 pub type CacheControlHeaderValueRef<'s> = &'s CacheControl;
 /// expires content-encoding header value acc. to RFC 2616
-pub type ContentEncoding = String; //TODO: create struct and check for RFC compliance
-pub type ContentEncodingRef<'s> = &'s str;
+pub type ContentEncoding = headers::ContentEncoding;
+pub type ContentEncodingRef<'s> = &'s ContentEncoding;
 
 /// expires content-type header value acc. to RFC 2616
 pub type ContentType = String; //TODO: create struct and check for RFC compliance

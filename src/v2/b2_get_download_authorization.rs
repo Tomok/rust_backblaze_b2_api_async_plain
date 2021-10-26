@@ -87,8 +87,14 @@ pub struct GetDownloadAuthorizationRequest<'s> {
         serialize_with = "serialize_header_option"
     )]
     b2_cache_control: Option<CacheControlHeaderValueRef<'s>>,
+
     #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     b2_content_encoding: Option<ContentEncodingRef<'s>>,
+
     #[builder(default, setter(strip_option))]
     b2_content_type: Option<ContentTypeRef<'s>>,
 }

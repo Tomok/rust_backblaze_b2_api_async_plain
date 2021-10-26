@@ -1,5 +1,6 @@
 ///! This example goes through all implemented calls creating a test bucket
 use backblaze_b2_async_plain::v2::*;
+use headers::CacheControl;
 use lazy_static::lazy_static;
 use std::{
     convert::{TryFrom, TryInto},
@@ -457,7 +458,7 @@ async fn download_file_by_id(
     )
     .unwrap();
     let content_type = "text/html".to_owned();
-    let cache_control = "no-cache".to_owned();
+    let cache_control = CacheControl::new().with_no_cache();
     let params = DownloadParams::builder()
         .file_id(
             large_uploaded_file
@@ -475,12 +476,16 @@ async fn download_file_by_id(
     )
     .await
     .expect("Downloading file by id failed");
-    dbg!(resp.headers());
     let received_content_type = resp
         .headers()
         .get("Content-Type")
         .expect("Content-Type header not received, even though it was went");
     assert_eq!(&content_type, received_content_type);
+    let received_cache_control = resp
+        .headers()
+        .get("Cache-Control")
+        .expect("Cache Control header missing");
+    assert_eq!("no-cache", received_cache_control);
     let data = resp
         .bytes()
         .await

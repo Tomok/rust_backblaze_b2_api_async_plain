@@ -43,8 +43,12 @@ pub struct UploadFileParameters<'s> {
     #[builder(default, setter(strip_option))]
     content_language: Option<ContentLanguageRef<'s>>,
 
-    #[serde(rename = "X-Bz-Info-b2-expires")]
     #[builder(default, setter(strip_option))]
+    #[serde(
+        rename = "X-Bz-Info-b2-expires",
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     expires: Option<ExpiresHeaderValueRef<'s>>,
 
     #[serde(

@@ -88,8 +88,8 @@ pub type ContentDispositionRef<'s> = &'s ContentDisposition;
 pub type ContentLanguage = String; //TODO: create struct and check for RFC compliance
 pub type ContentLanguageRef<'s> = &'s str;
 /// expires header acc. to RFC 2616
-pub type ExpiresHeaderValue = String; //TODO: create struct and check for RFC compliance
-pub type ExpiresHeaderValueRef<'s> = &'s str;
+pub type ExpiresHeaderValue = headers::Expires;
+pub type ExpiresHeaderValueRef<'s> = &'s ExpiresHeaderValue;
 /// expires cache-control header value acc. to RFC 2616
 pub type CacheControlHeaderValue = CacheControl;
 pub type CacheControlHeaderValueRef<'s> = &'s CacheControl;

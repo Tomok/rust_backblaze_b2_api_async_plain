@@ -88,11 +88,11 @@ pub async fn b2_download_file_by_id(
         .await
         .map_err(DownloadFileError::from)?;
     let expected_status = if params.range.is_none() {
-        http_types::StatusCode::Ok
+        http::StatusCode::OK
     } else {
-        http_types::StatusCode::PartialContent
+        http::StatusCode::PARTIAL_CONTENT
     };
-    if resp.status().as_u16() == expected_status as u16 {
+    if resp.status() == expected_status {
         Ok(resp)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(DownloadFileError::from)?;

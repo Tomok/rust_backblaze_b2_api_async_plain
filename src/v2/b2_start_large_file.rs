@@ -37,7 +37,7 @@ pub async fn b2_start_large_file<'a>(
         .send()
         .await
         .map_err(LargeFileError::from)?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(LargeFileError::from)?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(LargeFileError::from)?;

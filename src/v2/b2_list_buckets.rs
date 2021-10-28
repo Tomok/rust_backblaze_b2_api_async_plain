@@ -125,7 +125,7 @@ pub async fn b2_list_buckets(
         .header("Authorization", authorization_token.as_str())
         .json(request_body);
     let resp = request.send().await.map_err(GenericB2Error::from)?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         let auth_ok: ListBucketsOk = resp.json().await.map_err(GenericB2Error::from)?;
         Ok(auth_ok)
     } else {

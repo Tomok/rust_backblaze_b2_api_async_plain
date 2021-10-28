@@ -87,7 +87,7 @@ pub async fn b2_upload_file<'a, T: Into<Body>>(
         .send()
         .await
         .map_err(UploadFileError::from)?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(UploadFileError::from)?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(UploadFileError::from)?;

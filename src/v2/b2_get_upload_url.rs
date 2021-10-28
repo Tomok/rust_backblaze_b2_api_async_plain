@@ -60,7 +60,7 @@ pub async fn b2_get_upload_url(
         .header("Authorization", authorization_token.as_str())
         .json(&GetUploadUrlRequest::from(bucket_id));
     let resp = request.send().await.map_err(GetUploadUrlError::from)?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(GetUploadUrlError::from)?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(GetUploadUrlError::from)?;

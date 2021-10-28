@@ -56,11 +56,11 @@ where
         .await
         .map_err(DownloadFileError::from)?;
     let expected_status = if request.range.is_none() {
-        http_types::StatusCode::Ok
+        http::StatusCode::OK
     } else {
-        http_types::StatusCode::PartialContent
+        http::StatusCode::PARTIAL_CONTENT
     };
-    if resp.status().as_u16() == expected_status as u16 {
+    if resp.status().as_u16() == expected_status {
         Ok(resp)
     } else {
         let raw_error: JsonErrorObj = resp.json().await?;

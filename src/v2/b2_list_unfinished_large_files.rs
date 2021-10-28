@@ -66,7 +66,7 @@ pub async fn b2_list_unfinished_large_files(
         .header("Authorization", authorization_token.as_str())
         .json(request_parameters);
     let resp = request.send().await?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         let auth_ok: ListFileNamesOk = resp.json().await?;
         Ok(auth_ok)
     } else {

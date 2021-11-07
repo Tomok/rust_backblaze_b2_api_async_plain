@@ -2,7 +2,7 @@
 name = "backblaze_b2_async_plain"
 version = "0.1.0"
 authors = ["dev"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -25,8 +25,8 @@ lazy_static = "1.4.0"
 tokio = { version = "1", features = ["macros", "fs", "io-util", "io-std", "rt-multi-thread"] }
 wiremock = "0.5"
 base64 = "0.13"
-textwrap = "0.13"
-http-auth-basic = "0.1"
+textwrap = "0.14.2"
+http-auth-basic = "0.3.1"
 structopt = "0.3.21"
 home = "0.5.3"
 sha1 = "0.6.0"

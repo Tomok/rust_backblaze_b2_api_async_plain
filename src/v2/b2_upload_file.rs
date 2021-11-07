@@ -5,10 +5,11 @@ use typed_builder::TypedBuilder;
 use crate::header_serializer::HeadersFrom;
 
 use super::{
-    errors::UploadFileError, serialize_header_option, server_side_encryption::EncryptionAlgorithm,
-    CacheControlHeaderValueRef, ContentDispositionRef, ContentLanguageRef, ExpiresHeaderValueRef,
-    FileInformation, FileName, JsonErrorObj, Md5Ref, Mime, ServerSideEncryptionCustomerKey,
-    Sha1Ref, TimeStamp, UploadParameters,
+    errors::UploadFileError, serialize_content_type_header, serialize_header_option,
+    server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValueRef, ContentDispositionRef,
+    ContentLanguageRef, ContentTypeRef, ExpiresHeaderValueRef, FileInformation, FileName,
+    JsonErrorObj, Md5Ref, ServerSideEncryptionCustomerKey, Sha1Ref, TimeStamp, UploadParameters,
+    CONTENT_TYPE_AUTO,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -17,9 +18,13 @@ pub struct UploadFileParameters<'s> {
     file_name: &'s FileName,
 
     /// content type parameter, if not set "b2/x-auto" will be sent, causing backblaze to determine the right type
-    #[serde(rename = "Content-Type", default = "b2_content_type_default")]
-    #[builder(default=Mime::auto())]
-    content_type: &'s Mime,
+    #[serde(
+        rename = "Content-Type",
+        default = "b2_content_type_default",
+        serialize_with = "serialize_content_type_header"
+    )]
+    #[builder(default=&CONTENT_TYPE_AUTO)]
+    content_type: ContentTypeRef<'s>,
 
     #[serde(rename = "Content-Length")]
     content_length: u64,

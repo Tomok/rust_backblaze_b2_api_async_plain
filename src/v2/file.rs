@@ -1,8 +1,9 @@
 use super::{AccountId, BucketId, FileRetention, InvalidData, LegalHold, ServerSideEncryption};
 use headers::CacheControl;
 use lazy_static::lazy_static;
-use serde::{de, Deserialize, Serialize};
-use std::{convert::TryFrom, fmt::Display, str::FromStr};
+use mime::Mime;
+use serde::{de, Deserialize, Deserializer, Serialize};
+use std::{convert::TryFrom, str::FromStr};
 
 #[derive(Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct FileName(String);
@@ -100,57 +101,64 @@ pub type ContentEncodingRef<'s> = &'s ContentEncoding;
 /// expires content-type header value acc. to RFC 2616
 pub type ContentType = headers::ContentType;
 pub type ContentTypeRef<'s> = &'s ContentType;
-
-/// own Mime type based on [http_types::Mime] to add Serde Support
-/// TODO: use headers::ContentType?
-#[derive(Debug, PartialEq, Eq)]
-pub struct Mime(http_types::Mime);
-
 lazy_static! {
-    static ref MIME_AUTO: Mime = Mime::from_str("b2/auto").unwrap();
+    pub static ref CONTENT_TYPE_AUTO: ContentType =
+        ContentType::from("b2/auto".parse::<mime::Mime>().unwrap());
 }
 
-impl Mime {
-    /// Use this mime type to have the server determine the mime type by file extension.
-    /// The content type mappings can be found here: <https://www.backblaze.com/b2/docs/content-types.html>:
-    pub fn auto() -> &'static Self {
-        &MIME_AUTO
+struct MimeVisitor {}
+
+impl<'de> de::Visitor<'de> for MimeVisitor {
+    type Value = Mime;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "A string representing a Mime")
     }
-}
 
-impl FromStr for Mime {
-    type Err = http_types::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self(http_types::Mime::from_str(s)?))
-    }
-}
-
-impl Display for Mime {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl Serialize for Mime {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
-        S: serde::Serializer,
+        E: de::Error,
     {
-        self.0.to_string().serialize(serializer)
+        Mime::from_str(v).map_err(|_| de::Error::invalid_value(de::Unexpected::Str(v), &self))
     }
 }
 
-impl<'de> Deserialize<'de> for Mime {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        http_types::Mime::from_str(&s)
-            .map(Self)
-            .map_err(|_e| de::Error::invalid_value(de::Unexpected::Str(&s), &"Valid Mime type"))
+fn deserialize_mime<'de, D>(deserializer: D) -> Result<Mime, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_str(MimeVisitor {})
+}
+
+struct MimeOptionVisitor {}
+
+impl<'de> de::Visitor<'de> for MimeOptionVisitor {
+    type Value = Option<Mime>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "A string representing a Mime or None")
     }
+
+    fn visit_none<E>(self) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(None)
+    }
+
+    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        Ok(Some(deserialize_mime(deserializer)?))
+    }
+}
+
+fn deserialize_mime_option<'de, D>(deserializer: D) -> Result<Option<Mime>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_option(MimeOptionVisitor {})
 }
 
 #[derive(Debug, Deserialize)]
@@ -162,7 +170,8 @@ pub struct FileInformation {
     content_length: u64,
     content_sha1: Option<Sha1>,
     content_md5: Option<Md5>,
-    content_type: Option<Mime>,
+    #[serde(deserialize_with = "deserialize_mime_option", default)]
+    content_type: Option<mime::Mime>,
     file_id: Option<FileId>,
     file_info: FileInfo,
     file_name: FileName,

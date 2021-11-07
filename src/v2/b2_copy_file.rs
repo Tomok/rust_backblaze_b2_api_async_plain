@@ -3,8 +3,8 @@ use serde::Serialize;
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId, FileId, FileInfo,
-    FileInformation, FileName, FileRetention, JsonErrorObj, LegalHold, Mime,
+    errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId, ContentTypeRef, FileId,
+    FileInfo, FileInformation, FileName, FileRetention, JsonErrorObj, LegalHold,
     ServerSideEncryptionCustomerKey,
 };
 
@@ -43,10 +43,13 @@ pub struct CopyFileRequest<'s> {
     metadata_directive: Option<MetadataDirective>,
 
     #[builder(default, setter(strip_option))]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     /// Must only be supplied if the metadataDirective is REPLACE.
     /// The MIME type of the content of the file, which will be returned in the Content-Type header when downloading the file.
-    content_type: Option<&'s Mime>,
+    content_type: Option<ContentTypeRef<'s>>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]

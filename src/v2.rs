@@ -131,6 +131,18 @@ pub use b2_update_file_retention::{
 #[cfg(test)]
 mod test;
 
+// not sure, why this function is necessary ... but direct calls to serialize_header did not work,
+// and since this should be optimized away, it should not cause overhead in release builds
+fn serialize_content_type_header<S>(
+    header: ContentTypeRef,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serialize_header(header, serializer)
+}
+
 /// helper function to serialize headers::Header values
 fn serialize_header<S, H>(header: &H, serializer: S) -> Result<S::Ok, S::Error>
 where

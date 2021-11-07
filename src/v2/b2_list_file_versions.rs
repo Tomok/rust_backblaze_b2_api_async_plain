@@ -85,7 +85,7 @@ pub async fn b2_list_file_versions<'a>(
         .header("Authorization", authorization_token.as_str())
         .json(request_body);
     let resp = request.send().await?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         let auth_ok = resp.json().await?;
         Ok(auth_ok)
     } else {

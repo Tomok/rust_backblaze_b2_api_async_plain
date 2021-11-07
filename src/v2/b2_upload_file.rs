@@ -5,10 +5,11 @@ use typed_builder::TypedBuilder;
 use crate::header_serializer::HeadersFrom;
 
 use super::{
-    errors::UploadFileError, server_side_encryption::EncryptionAlgorithm,
-    CacheControlHeaderValueRef, ContentDispositionRef, ContentLanguageRef, ExpiresHeaderValueRef,
-    FileInformation, FileName, JsonErrorObj, Md5Ref, Mime, ServerSideEncryptionCustomerKey,
-    Sha1Ref, TimeStamp, UploadParameters,
+    errors::UploadFileError, serialize_content_type_header, serialize_header_option,
+    server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValueRef, ContentDispositionRef,
+    ContentLanguageRef, ContentTypeRef, ExpiresHeaderValueRef, FileInformation, FileName,
+    JsonErrorObj, Md5Ref, ServerSideEncryptionCustomerKey, Sha1Ref, TimeStamp, UploadParameters,
+    CONTENT_TYPE_AUTO,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -17,9 +18,13 @@ pub struct UploadFileParameters<'s> {
     file_name: &'s FileName,
 
     /// content type parameter, if not set "b2/x-auto" will be sent, causing backblaze to determine the right type
-    #[serde(rename = "Content-Type", default = "b2_content_type_default")]
-    #[builder(default=Mime::auto())]
-    content_type: &'s Mime,
+    #[serde(
+        rename = "Content-Type",
+        default = "b2_content_type_default",
+        serialize_with = "serialize_content_type_header"
+    )]
+    #[builder(default=&CONTENT_TYPE_AUTO)]
+    content_type: ContentTypeRef<'s>,
 
     #[serde(rename = "Content-Length")]
     content_length: u64,
@@ -31,19 +36,30 @@ pub struct UploadFileParameters<'s> {
     #[builder(default, setter(strip_option))]
     src_last_modified_millis: Option<TimeStamp>,
 
-    #[serde(rename = "X-Bz-Info-b2-content-disposition")]
     #[builder(default, setter(strip_option))]
+    #[serde(
+        rename = "X-Bz-Info-b2-content-disposition",
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     content_disposition: Option<ContentDispositionRef<'s>>,
 
     #[serde(rename = "X-Bz-Info-b2-content-language")]
     #[builder(default, setter(strip_option))]
     content_language: Option<ContentLanguageRef<'s>>,
 
-    #[serde(rename = "X-Bz-Info-b2-expires")]
     #[builder(default, setter(strip_option))]
+    #[serde(
+        rename = "X-Bz-Info-b2-expires",
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     expires: Option<ExpiresHeaderValueRef<'s>>,
 
-    #[serde(rename = "X-Bz-Info-b2-cache-control")]
+    #[serde(
+        rename = "X-Bz-Info-b2-cache-control",
+        serialize_with = "serialize_header_option"
+    )]
     #[builder(default, setter(strip_option))]
     cache_control: Option<CacheControlHeaderValueRef<'s>>,
 
@@ -76,7 +92,7 @@ pub async fn b2_upload_file<'a, T: Into<Body>>(
         .send()
         .await
         .map_err(UploadFileError::from)?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(UploadFileError::from)?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(UploadFileError::from)?;

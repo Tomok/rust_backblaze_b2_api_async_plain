@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors, ApiUrl, AuthorizationToken, BucketId, CacheControlHeaderValueRef,
-    ContentDispositionRef, ContentEncodingRef, ContentLanguageRef, ContentTypeRef,
-    DownloadOnlyAuthorizationToken, ExpiresHeaderValueRef, FileName, JsonErrorObj,
+    errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId,
+    CacheControlHeaderValueRef, ContentDispositionRef, ContentEncodingRef, ContentLanguageRef,
+    ContentTypeRef, DownloadOnlyAuthorizationToken, ExpiresHeaderValueRef, FileName, JsonErrorObj,
 };
 
 #[derive(Debug)]
@@ -65,19 +65,41 @@ pub struct GetDownloadAuthorizationRequest<'s> {
     valid_duration_in_seconds: ValidDownloadAuthorizationDurationInSeconds,
 
     #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     b2_content_disposition: Option<ContentDispositionRef<'s>>,
 
     #[builder(default, setter(strip_option))]
     b2_content_language: Option<ContentLanguageRef<'s>>,
 
     #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     b2_expires: Option<ExpiresHeaderValueRef<'s>>,
 
     #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     b2_cache_control: Option<CacheControlHeaderValueRef<'s>>,
+
     #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     b2_content_encoding: Option<ContentEncodingRef<'s>>,
+
     #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     b2_content_type: Option<ContentTypeRef<'s>>,
 }
 
@@ -122,7 +144,7 @@ pub async fn b2_get_download_authorization<'a>(
         .json(&request_data);
 
     let resp = request.send().await?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await?;

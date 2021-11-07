@@ -1,8 +1,9 @@
+use headers::Range;
 use serde::Serialize;
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors, ApiUrl, AuthorizationToken, FileId, JsonErrorObj, PartNumber, Range,
+    errors, serialize_header_option, ApiUrl, AuthorizationToken, FileId, JsonErrorObj, PartNumber,
     ServerSideEncryptionCustomerKey, UploadPartOk,
 };
 
@@ -19,7 +20,10 @@ pub struct CopyPartRequest<'s> {
     part_number: PartNumber,
 
     #[builder(default, setter(strip_option))]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     /// The range of bytes to copy. If not provided, the whole source file will be copied.
     range: Option<&'s Range>,
 
@@ -45,7 +49,7 @@ pub async fn b2_copy_part<'a>(
         .header("Authorization", authorization_token.as_str())
         .json(request);
     let resp = request.send().await?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await?;

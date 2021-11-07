@@ -1,32 +1,12 @@
+use headers::Range;
 use serde::Serialize;
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors, ApiUrl, AuthorizationToken, BucketId, FileId, FileInfo, FileInformation, FileName,
-    FileRetention, JsonErrorObj, LegalHold, Mime, ServerSideEncryptionCustomerKey,
+    errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId, ContentTypeRef, FileId,
+    FileInfo, FileInformation, FileName, FileRetention, JsonErrorObj, LegalHold,
+    ServerSideEncryptionCustomerKey,
 };
-
-#[derive(Debug)]
-pub enum Range {
-    Bytes { min: u64, max: u64 },
-}
-
-impl Range {
-    pub fn bytes(min: u64, max: u64) -> Self {
-        Self::Bytes { min, max }
-    }
-}
-
-impl Serialize for Range {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            Range::Bytes { min, max } => format!("bytes={}-{}", min, max).serialize(serializer),
-        }
-    }
-}
 
 #[derive(Debug, Serialize)]
 pub enum MetadataDirective {
@@ -50,7 +30,10 @@ pub struct CopyFileRequest<'s> {
     file_name: &'s FileName,
 
     #[builder(default, setter(strip_option))]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     /// The range of bytes to copy. If not provided, the whole source file will be copied.
     range: Option<&'s Range>,
 
@@ -60,10 +43,13 @@ pub struct CopyFileRequest<'s> {
     metadata_directive: Option<MetadataDirective>,
 
     #[builder(default, setter(strip_option))]
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     /// Must only be supplied if the metadataDirective is REPLACE.
     /// The MIME type of the content of the file, which will be returned in the Content-Type header when downloading the file.
-    content_type: Option<&'s Mime>,
+    content_type: Option<ContentTypeRef<'s>>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -104,7 +90,7 @@ pub async fn b2_copy_file(
         .header("Authorization", authorization_token.as_str())
         .json(request);
     let resp = request.send().await?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await?;

@@ -94,7 +94,7 @@ pub async fn b2_list_file_names<'a>(
         .header("Authorization", authorization_token.as_str())
         .json(request_body);
     let resp = request.send().await.map_err(ListFileNamesError::from)?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         let auth_ok: ListFileNamesOk = resp.json().await.map_err(ListFileNamesError::from)?;
         Ok(auth_ok)
     } else {

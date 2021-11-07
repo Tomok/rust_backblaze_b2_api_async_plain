@@ -22,7 +22,7 @@ pub async fn b2_get_file_info(
         .json(&GetFileInfoRequest { file_id })
         .send()
         .await?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await?;

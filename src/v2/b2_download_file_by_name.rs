@@ -3,7 +3,7 @@ use super::{
     JsonErrorObj,
 };
 
-use http_range::HttpRange;
+use headers::{HeaderMap, HeaderMapExt};
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
@@ -11,7 +11,7 @@ pub struct DownloadFileByNameRequest<'s> {
     bucket_name: &'s BucketName,
     file_name: &'s FileName,
     #[builder(default, setter(strip_option))]
-    range: Option<&'s HttpRange>,
+    range: Option<&'s headers::Range>,
 }
 
 /// gets a download URL for a given file in a given directory
@@ -47,21 +47,20 @@ where
         request_builder = request_builder.header("Authorization", auth.download_token_as_str());
     }
     if let Some(range) = request.range {
-        request_builder = request_builder.header(
-            "Range",
-            format!("bytes={}-{}", range.start, range.start + range.length),
-        );
+        let mut headers = HeaderMap::with_capacity(1);
+        headers.typed_insert(range.clone());
+        request_builder = request_builder.headers(headers);
     }
     let resp = request_builder
         .send()
         .await
         .map_err(DownloadFileError::from)?;
     let expected_status = if request.range.is_none() {
-        http_types::StatusCode::Ok
+        http::StatusCode::OK
     } else {
-        http_types::StatusCode::PartialContent
+        http::StatusCode::PARTIAL_CONTENT
     };
-    if resp.status().as_u16() == expected_status as u16 {
+    if resp.status().as_u16() == expected_status {
         Ok(resp)
     } else {
         let raw_error: JsonErrorObj = resp.json().await?;

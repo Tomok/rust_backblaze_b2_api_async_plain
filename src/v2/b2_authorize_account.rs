@@ -74,7 +74,7 @@ pub async fn b2_authorize_account(
         .basic_auth(application_key_id, Some(application_key))
         .send()
         .await?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         let auth_ok: AuthorizeAccountOk = resp.json().await?;
         Ok(auth_ok)
     } else {

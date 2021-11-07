@@ -1,10 +1,9 @@
 use super::{
-    errors::LargeFileError, ApiUrl, AuthorizationToken, BucketId, FileInfo, FileInformation,
-    FileName, FileRetention, JsonErrorObj, LegalHold, Mime, ServerSideEncryptionCustomerKey,
+    errors::LargeFileError, serialize_content_type_header, ApiUrl, AuthorizationToken, BucketId,
+    ContentTypeRef, FileInfo, FileInformation, FileName, FileRetention, JsonErrorObj, LegalHold,
+    ServerSideEncryptionCustomerKey, CONTENT_TYPE_AUTO,
 };
-
 use serde::Serialize;
-use std::str::FromStr;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -12,8 +11,9 @@ use typed_builder::TypedBuilder;
 pub struct StartLargeFileParameters<'s> {
     bucket_id: &'s BucketId,
     file_name: &'s FileName,
-    #[builder(default=Mime::from_str("b2/x-auto").unwrap())]
-    content_type: Mime,
+    #[builder(default = &CONTENT_TYPE_AUTO)]
+    #[serde(serialize_with = "serialize_content_type_header")]
+    content_type: ContentTypeRef<'s>,
     #[builder(default, setter(strip_option))]
     file_info: Option<&'s FileInfo>, // <- TODO: right type??
     #[builder(default, setter(strip_option))]
@@ -37,7 +37,7 @@ pub async fn b2_start_large_file<'a>(
         .send()
         .await
         .map_err(LargeFileError::from)?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(LargeFileError::from)?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await.map_err(LargeFileError::from)?;

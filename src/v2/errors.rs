@@ -12,7 +12,7 @@ macro_rules! error_enum{
 
         impl From<crate::v2::JsonErrorObj> for $enum_name {
             fn from(raw_error: crate::v2::JsonErrorObj) -> Self {
-                match (raw_error.status as u16, raw_error.code.as_str()) {
+                match (raw_error.status.as_u16(), raw_error.code.as_str()) {
                     $(($variant_code, $variant_text) => Self::$variant_name { raw_error },)*
                     _ => Self::Unexpected {
                         raw_error: crate::v2::Error::JsonError(raw_error),

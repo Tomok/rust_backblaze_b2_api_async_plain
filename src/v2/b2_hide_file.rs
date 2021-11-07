@@ -28,7 +28,7 @@ pub async fn b2_hide_file(
         })
         .send()
         .await?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await?;

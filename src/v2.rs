@@ -68,6 +68,8 @@ pub use capabilities::{all_per_bucket_capabilites, Capabilities, Capability};
 pub use common_structs::*;
 pub use file::*;
 pub use file_lock::*;
+use serde::ser::SerializeSeq;
+use serde::Serialize;
 pub use server_side_encryption::{ServerSideEncryption, ServerSideEncryptionCustomerKey};
 
 pub use b2_create_bucket::{b2_create_bucket, CreateBucketRequest};
@@ -107,7 +109,7 @@ pub use b2_start_large_file::{b2_start_large_file, StartLargeFileParameters};
 pub use b2_upload_part::{b2_upload_part, UploadPartOk, UploadPartParameters};
 pub use file_part::PartNumber;
 
-pub use b2_copy_file::{b2_copy_file, CopyFileRequest, MetadataDirective, Range};
+pub use b2_copy_file::{b2_copy_file, CopyFileRequest, MetadataDirective};
 pub use b2_copy_part::{b2_copy_part, CopyPartRequest};
 
 pub use b2_delete_file_version::{
@@ -128,3 +130,64 @@ pub use b2_update_file_retention::{
 
 #[cfg(test)]
 mod test;
+
+// not sure, why this function is necessary ... but direct calls to serialize_header did not work,
+// and since this should be optimized away, it should not cause overhead in release builds
+fn serialize_content_type_header<S>(
+    header: ContentTypeRef,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serialize_header(header, serializer)
+}
+
+/// helper function to serialize headers::Header values
+fn serialize_header<S, H>(header: &H, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+    H: headers::Header + Clone,
+{
+    let mut temporary_storage = headers::HeaderMap::with_capacity(1);
+    headers::HeaderMapExt::typed_insert(&mut temporary_storage, header.clone());
+    let len = temporary_storage.len();
+    match len {
+        0 => serializer.serialize_none(),
+        1 => {
+            let entry = temporary_storage.into_iter().next().unwrap();
+
+            let (_, value) = entry;
+            //try to serialize as string first, if that does not work, use bytes
+            if let Ok(s) = value.to_str() {
+                s.serialize(serializer)
+            } else {
+                value.as_bytes().serialize(serializer)
+            }
+        }
+        _ => {
+            // not sure this could happen, but better safe than sorry
+            let mut seq = serializer.serialize_seq(Some(len))?;
+            for (_, value) in temporary_storage.into_iter() {
+                if let Ok(s) = value.to_str() {
+                    seq.serialize_element(s)?;
+                } else {
+                    seq.serialize_element(value.as_bytes())?;
+                }
+            }
+            seq.end()
+        }
+    }
+}
+
+/// helper function to serialize Options of headers::Header values
+fn serialize_header_option<S, H>(header: &Option<&H>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+    H: headers::Header + Clone,
+{
+    match header {
+        Some(h) => serialize_header(*h, serializer),
+        None => serializer.serialize_none(),
+    }
+}

@@ -83,9 +83,11 @@ impl Match for JsonBodyMatch {
     }
 }
 
+use super::super::common_structs::status_code_serialization;
 #[derive(Debug, Serialize)]
 struct ErrorStructure<'a> {
-    status: http_types::StatusCode,
+    #[serde(with = "status_code_serialization")]
+    status: http::StatusCode,
     code: &'a str,
     message: &'a str,
 }
@@ -93,8 +95,8 @@ struct ErrorStructure<'a> {
 impl<'a> ErrorStructure<'a> {
     fn new<S>(status: S, code: &'a str, message: &'a str) -> Self
     where
-        S: TryInto<http_types::StatusCode>,
-        <S as TryInto<http_types::StatusCode>>::Error: std::fmt::Debug,
+        S: TryInto<http::StatusCode>,
+        <S as TryInto<http::StatusCode>>::Error: std::fmt::Debug,
     {
         let status_code = status
             .try_into()
@@ -109,8 +111,8 @@ impl<'a> ErrorStructure<'a> {
 
 fn error_reponse<S>(status: S, code: &str, message: &str) -> ResponseTemplate
 where
-    S: TryInto<http_types::StatusCode>,
-    <S as TryInto<http_types::StatusCode>>::Error: std::fmt::Debug,
+    S: TryInto<http::StatusCode>,
+    <S as TryInto<http::StatusCode>>::Error: std::fmt::Debug,
 {
     let status_code = status
         .try_into()

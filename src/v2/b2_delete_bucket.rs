@@ -28,7 +28,7 @@ pub async fn b2_delete_bucket(
         .header("Authorization", authorization_token.as_str())
         .json(&delete_bucket_request);
     let resp = request.send().await?;
-    if resp.status().as_u16() == http_types::StatusCode::Ok as u16 {
+    if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
         let raw_error: JsonErrorObj = resp.json().await?;

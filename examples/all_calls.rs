@@ -479,7 +479,7 @@ async fn download_file_by_id(
     let received_content_type = resp
         .headers()
         .get("Content-Type")
-        .expect("Content-Type header not received, even though it was went");
+        .expect("Content-Type header not received, even though it was sent");
     assert_eq!("text/html", received_content_type);
     let received_cache_control = resp
         .headers()

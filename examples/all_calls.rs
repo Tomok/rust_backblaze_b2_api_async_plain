@@ -459,6 +459,7 @@ async fn download_file_by_id(
     .unwrap();
     let content_type = ContentType::html(); //"text/html"
     let cache_control = CacheControl::new().with_no_cache();
+    let content_language = ContentLanguage::try_from("en-US").unwrap();
     let params = DownloadParams::builder()
         .file_id(
             large_uploaded_file
@@ -468,6 +469,7 @@ async fn download_file_by_id(
         .range(&part2_range)
         .b2_cache_control(&cache_control)
         .b2_content_type(&content_type)
+        .b2_content_language(&content_language)
         .build();
     let resp = b2_download_file_by_id(
         test_key_auth.download_url(),
@@ -479,8 +481,14 @@ async fn download_file_by_id(
     let received_content_type = resp
         .headers()
         .get("Content-Type")
-        .expect("Content-Type header not received, even though it was went");
+        .expect("Content-Type header not received, even though it was sent");
     assert_eq!("text/html", received_content_type);
+    let received_content_language = resp
+        .headers()
+        .get("Content-Language")
+        .expect("Content-Languange header not received, even though it was sent");
+    assert_eq!("en-US", received_content_language);
+
     let received_cache_control = resp
         .headers()
         .get("Cache-Control")

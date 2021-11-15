@@ -85,9 +85,10 @@ pub type TimeStamp = i64;
 /// Content Disposition value acc. to the grammar specified in RFC 6266
 pub type ContentDisposition = headers::ContentDisposition;
 pub type ContentDispositionRef<'s> = &'s ContentDisposition;
-/// Content Language value acc. to RFC 2616
-pub type ContentLanguage = String; //TODO: create struct and check for RFC compliance
-pub type ContentLanguageRef<'s> = &'s str;
+
+mod content_language;
+pub use content_language::ContentLanguage;
+pub type ContentLanguageRef<'s> = &'s ContentLanguage;
 /// expires header acc. to RFC 2616
 pub type ExpiresHeaderValue = headers::Expires;
 pub type ExpiresHeaderValueRef<'s> = &'s ExpiresHeaderValue;

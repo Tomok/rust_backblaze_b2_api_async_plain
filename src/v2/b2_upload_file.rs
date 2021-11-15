@@ -44,8 +44,12 @@ pub struct UploadFileParameters<'s> {
     )]
     content_disposition: Option<ContentDispositionRef<'s>>,
 
-    #[serde(rename = "X-Bz-Info-b2-content-language")]
-    #[builder(default, setter(strip_option))]
+    #[builder(default, setter(strip_option, into))]
+    #[serde(
+        rename = "X-Bz-Info-b2-content-language",
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
     content_language: Option<ContentLanguageRef<'s>>,
 
     #[builder(default, setter(strip_option))]

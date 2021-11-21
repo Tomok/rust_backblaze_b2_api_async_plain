@@ -38,7 +38,46 @@ mod file_lock;
 mod file_part;
 mod server_side_encryption;
 
-pub type KeyName = String; //TODO
+use serde::ser::SerializeSeq;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(transparent)]
+pub struct KeyName(String);
+
+impl From<KeyName> for String {
+    fn from(key_name: KeyName) -> Self {
+        key_name.0
+    }
+}
+
+impl KeyName {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl TryFrom<String> for KeyName {
+    type Error = StringSpecializationError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        let len = value.len();
+        if len > 100 {
+            return Err(StringSpecializationError::invalid_length(len, 100));
+        }
+        for (index, c) in value.chars().enumerate() {
+            if !(c.is_ascii_alphanumeric() || c == '-') {
+                return Err(StringSpecializationError::invalid_character(
+                    c,
+                    index,
+                    "A-Za-z0-9",
+                ));
+            }
+        }
+        Ok(Self(value))
+    }
+}
+
 pub type KeyNameRef<'a> = &'a str; //TODO
 pub type ApplicationKey = String; //TODO
 pub type ApplicationKeyId = String; //TODO
@@ -68,8 +107,6 @@ pub use capabilities::{all_per_bucket_capabilites, Capabilities, Capability};
 pub use common_structs::*;
 pub use file::*;
 pub use file_lock::*;
-use serde::ser::SerializeSeq;
-use serde::Serialize;
 pub use server_side_encryption::{ServerSideEncryption, ServerSideEncryptionCustomerKey};
 
 pub use b2_create_bucket::{b2_create_bucket, CreateBucketRequest};

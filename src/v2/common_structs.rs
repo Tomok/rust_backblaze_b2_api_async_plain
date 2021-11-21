@@ -1,6 +1,6 @@
 //! Common structs used by multiple B2 API calls
 
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -160,3 +160,111 @@ impl DownloadAuthorizationToken for DownloadOnlyAuthorizationToken {
         self.as_str()
     }
 }
+
+#[derive(Debug)]
+pub struct InvalidCharacterError {
+    character: char,
+    position: usize,
+    expected: &'static str,
+}
+
+impl InvalidCharacterError {
+    pub fn new(character: char, position: usize, expected: &'static str) -> Self {
+        Self {
+            character,
+            position,
+            expected,
+        }
+    }
+
+    /// Get the invalid character
+    pub fn character(&self) -> char {
+        self.character
+    }
+
+    /// Get the invalid character error's position.
+    pub fn position(&self) -> usize {
+        self.position
+    }
+
+    /// Get a textual description of the allowed characters
+    pub fn expected(&self) -> &'static str {
+        self.expected
+    }
+}
+
+impl std::error::Error for InvalidCharacterError {}
+
+impl Display for InvalidCharacterError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "found unexpected character {:?} in String at position {}. Allowed are {}",
+            self.character, self.position, self.expected
+        )
+    }
+}
+
+#[derive(Debug)]
+pub struct InvalidLengthError {
+    /// the length of the String passed in
+    length: usize,
+    /// the maximal allowed length
+    allowed_length: usize,
+}
+
+impl InvalidLengthError {
+    pub fn new(length: usize, allowed_length: usize) -> Self {
+        Self {
+            length,
+            allowed_length,
+        }
+    }
+
+    /// Get the invalid length.
+    pub fn length(&self) -> usize {
+        self.length
+    }
+
+    /// Get the allowed length.
+    pub fn allowed_length(&self) -> usize {
+        self.allowed_length
+    }
+}
+impl std::error::Error for InvalidLengthError {}
+
+impl Display for InvalidLengthError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Passed String is longer than allowed: {} > {}",
+            self.length, self.allowed_length
+        )
+    }
+}
+
+#[derive(Debug)]
+pub enum StringSpecializationError {
+    InvalidCharacterError(InvalidCharacterError),
+    InvalidLengthError(InvalidLengthError),
+}
+
+impl StringSpecializationError {
+    pub fn invalid_length(length: usize, allowed_length: usize) -> Self {
+        Self::InvalidLengthError(InvalidLengthError::new(length, allowed_length))
+    }
+    pub fn invalid_character(character: char, position: usize, expected: &'static str) -> Self {
+        Self::InvalidCharacterError(InvalidCharacterError::new(character, position, expected))
+    }
+}
+
+impl Display for StringSpecializationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            StringSpecializationError::InvalidCharacterError(e) => std::fmt::Display::fmt(&e, f),
+            StringSpecializationError::InvalidLengthError(e) => std::fmt::Display::fmt(&e, f),
+        }
+    }
+}
+
+impl std::error::Error for StringSpecializationError {}

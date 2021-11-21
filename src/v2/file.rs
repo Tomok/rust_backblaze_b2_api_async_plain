@@ -1,5 +1,6 @@
 use super::{
-    AccountId, BucketId, FileRetention, LegalHold, ServerSideEncryption, StringSpecializationError,
+    AccountId, BucketId, FileRetention, InvalidCharacterError, LegalHold, ServerSideEncryption,
+    StringSpecializationError,
 };
 use headers::CacheControl;
 use lazy_static::lazy_static;
@@ -7,7 +8,32 @@ use mime::Mime;
 use serde::{de, Deserialize, Deserializer, Serialize};
 use std::{convert::TryFrom, str::FromStr};
 
+/// a character used to delimit a query for a list of files
 #[derive(Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
+#[serde(transparent)]
+pub struct FileNameDelimiter(char);
+
+impl FileNameDelimiter {}
+
+impl TryFrom<char> for FileNameDelimiter {
+    type Error = InvalidCharacterError;
+
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        let v = value as u32;
+        if v < 32 || v == 127 {
+            Err(Self::Error::new(
+                value,
+                0,
+                "An UTF-8 character without characters below 32 and DEL (code 127)",
+            ))
+        } else {
+            Ok(Self(value))
+        }
+    }
+}
+
+#[derive(Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
+#[serde(transparent)]
 pub struct FileName(String);
 
 impl FileName {
@@ -17,6 +43,34 @@ impl FileName {
 }
 
 impl TryFrom<String> for FileName {
+    type Error = StringSpecializationError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::Error::check_length(&value, 1, 1024)?;
+        Self::Error::check_characters(
+            &value,
+            |c| {
+                let v = c as u32;
+                !(v < 32 || v == 127)
+            },
+            "UTF-8 string without characters below 32 and DEL (code 127)",
+        )?;
+        Ok(Self(value))
+    }
+}
+
+/// A prefix for [FileName]s contrary to [FileName] this may be empty
+#[derive(Debug, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
+#[serde(transparent)]
+pub struct FileNamePrefix(String);
+
+impl FileNamePrefix {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl TryFrom<String> for FileNamePrefix {
     type Error = StringSpecializationError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -30,6 +84,25 @@ impl TryFrom<String> for FileName {
             "UTF-8 string without characters below 32, and DEL (code 127)",
         )?;
         Ok(Self(value))
+    }
+}
+
+impl TryFrom<FileNamePrefix> for FileName {
+    type Error = StringSpecializationError;
+
+    fn try_from(value: FileNamePrefix) -> Result<Self, Self::Error> {
+        let len = value.as_str().len();
+        if len <= 1 {
+            Err(StringSpecializationError::invalid_length(len, 1, 1024))
+        } else {
+            Ok(Self(value.0))
+        }
+    }
+}
+
+impl From<FileName> for FileNamePrefix {
+    fn from(file_name: FileName) -> Self {
+        Self(file_name.0)
     }
 }
 

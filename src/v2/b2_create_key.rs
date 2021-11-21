@@ -3,7 +3,7 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors::GenericB2Error, AccountId, ApiUrl, ApplicationKey, ApplicationKeyId,
-    ApplicationKeyIdRef, AuthorizationToken, BucketId, Capabilities, FileName, JsonErrorObj,
+    ApplicationKeyIdRef, AuthorizationToken, BucketId, Capabilities, FileNamePrefix, JsonErrorObj,
     KeyName, KeyNameRef, TimeStamp,
 };
 
@@ -28,7 +28,7 @@ pub struct CreateKeyRequest<'s> {
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     ///When present, restricts access to files whose names start with the prefix. You must set bucketId when setting this.
-    name_prefix: Option<&'s FileName>,
+    name_prefix: Option<&'s FileNamePrefix>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -54,7 +54,7 @@ pub struct CreatedKeyInformation {
     bucket_id: Option<BucketId>,
 
     ///When present, restricts access to files whose names start with the prefix.
-    name_prefix: Option<FileName>,
+    name_prefix: Option<FileNamePrefix>,
 
     /// reserved by blackblaze for future use,
     options: serde_json::Value,
@@ -97,7 +97,7 @@ impl CreatedKeyInformation {
     }
 
     /// Get a reference to the created key information's name prefix.
-    pub fn name_prefix(&self) -> Option<&FileName> {
+    pub fn name_prefix(&self) -> Option<&FileNamePrefix> {
         self.name_prefix.as_ref()
     }
 }

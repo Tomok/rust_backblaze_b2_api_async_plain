@@ -10,7 +10,8 @@ use typed_builder::TypedBuilder;
 use super::{
     errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId,
     CacheControlHeaderValueRef, ContentDispositionRef, ContentEncodingRef, ContentLanguageRef,
-    ContentTypeRef, DownloadOnlyAuthorizationToken, ExpiresHeaderValueRef, FileName, JsonErrorObj,
+    ContentTypeRef, DownloadOnlyAuthorizationToken, ExpiresHeaderValueRef, FileNamePrefix,
+    JsonErrorObj,
 };
 
 #[derive(Debug)]
@@ -61,7 +62,7 @@ impl TryFrom<u32> for ValidDownloadAuthorizationDurationInSeconds {
 #[serde(rename_all = "camelCase")]
 pub struct GetDownloadAuthorizationRequest<'s> {
     bucket_id: &'s BucketId,
-    file_name_prefix: &'s FileName,
+    file_name_prefix: &'s FileNamePrefix,
     valid_duration_in_seconds: ValidDownloadAuthorizationDurationInSeconds,
 
     #[builder(default, setter(strip_option))]
@@ -111,7 +112,7 @@ pub struct GetDownloadAuthorizationRequest<'s> {
 #[serde(rename_all = "camelCase")]
 pub struct GetDownloadAuthorizationOk {
     bucket_id: BucketId,
-    file_name_prefix: FileName,
+    file_name_prefix: FileNamePrefix,
     authorization_token: DownloadOnlyAuthorizationToken,
 }
 
@@ -122,7 +123,7 @@ impl GetDownloadAuthorizationOk {
     }
 
     /// Get a reference to the get download authorization ok's file name prefix.
-    pub fn file_name_prefix(&self) -> &FileName {
+    pub fn file_name_prefix(&self) -> &FileNamePrefix {
         &self.file_name_prefix
     }
 

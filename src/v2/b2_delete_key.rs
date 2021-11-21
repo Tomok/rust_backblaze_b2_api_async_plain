@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{
     errors::GenericB2Error, AccountId, ApiUrl, ApplicationKeyId, ApplicationKeyIdRef,
-    AuthorizationToken, BucketId, Capabilities, FileName, JsonErrorObj, KeyName, TimeStamp,
+    AuthorizationToken, BucketId, Capabilities, FileNamePrefix, JsonErrorObj, KeyName, TimeStamp,
 };
 
 #[derive(Debug, Serialize)]
@@ -32,7 +32,7 @@ pub struct KeyInformation {
     bucket_id: Option<BucketId>,
 
     ///When present, restricts access to files whose names start with the prefix.
-    name_prefix: Option<FileName>,
+    name_prefix: Option<FileNamePrefix>,
 
     /// reserved by blackblaze for future use,
     options: serde_json::Value,
@@ -70,7 +70,7 @@ impl KeyInformation {
     }
 
     /// Get a reference to the key information's name prefix.
-    pub fn name_prefix(&self) -> Option<&FileName> {
+    pub fn name_prefix(&self) -> Option<&FileNamePrefix> {
         self.name_prefix.as_ref()
     }
 

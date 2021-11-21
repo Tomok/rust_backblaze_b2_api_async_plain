@@ -2,7 +2,7 @@ use std::{convert::TryFrom, num::NonZeroU16};
 
 use super::{
     errors::ListFileNamesError, file::FileInformation, ApiUrl, AuthorizationToken, BucketId,
-    FileName, InvalidData, JsonErrorObj,
+    FileName, FileNameDelimiter, FileNamePrefix, InvalidData, JsonErrorObj,
 };
 
 use serde::{Deserialize, Serialize};
@@ -40,10 +40,10 @@ pub struct ListFileNamesRequest<'s> {
     max_file_count: Option<MaxFileCount>,
     #[builder(default, setter(strip_option, into))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    prefix: Option<&'s str>,
+    prefix: Option<&'s FileNamePrefix>,
     #[builder(default, setter(strip_option, into))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    delimiter: Option<&'s str>,
+    delimiter: Option<&'s FileNameDelimiter>,
 }
 
 impl<'s> ListFileNamesRequest<'s> {
@@ -51,8 +51,8 @@ impl<'s> ListFileNamesRequest<'s> {
         bucket_id: &'s BucketId,
         start_file_name: Option<&'s FileName>,
         max_file_count: Option<MaxFileCount>,
-        prefix: Option<&'s str>,
-        delimiter: Option<&'s str>,
+        prefix: Option<&'s FileNamePrefix>,
+        delimiter: Option<&'s FileNameDelimiter>,
     ) -> Self {
         Self {
             bucket_id,

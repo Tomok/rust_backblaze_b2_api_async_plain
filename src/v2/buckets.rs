@@ -15,7 +15,7 @@ use serde::{
 };
 use typed_builder::TypedBuilder;
 
-use super::{FileName, InvalidData, StringSpecializationError};
+use super::{FileNamePrefix, InvalidData, StringSpecializationError};
 
 #[derive(Debug, Serialize, Deserialize, Eq)]
 /// Bucket names must be a minimum of 6 and a maximum of 50 characters long, and must be globally unique; two different B2 accounts cannot have buckets with the name name. Bucket names can consist of: letters, digits, and "-". Bucket names cannot start with "b2-"; these are reserved for internal Backblaze use.
@@ -379,14 +379,14 @@ pub struct LifeCycleRule {
     days_from_hiding_to_deleting: Option<NonZeroU64>,
     #[builder(default, setter(strip_option))]
     days_from_uploading_to_hiding: Option<NonZeroU64>,
-    file_name_prefix: FileName,
+    file_name_prefix: FileNamePrefix,
 }
 
 impl LifeCycleRule {
     pub fn new(
         days_from_hiding_to_deleting: Option<NonZeroU64>,
         days_from_uploading_to_hiding: Option<NonZeroU64>,
-        file_name_prefix: FileName,
+        file_name_prefix: FileNamePrefix,
     ) -> Self {
         Self {
             days_from_hiding_to_deleting,

@@ -5,7 +5,8 @@ use std::{
 use structopt::StructOpt;
 
 use backblaze_b2_async_plain::v2::{
-    b2_list_file_names, AuthorizeAccountOk, FileName, ListFileNamesRequest, MaxFileCount,
+    b2_list_file_names, AuthorizeAccountOk, FileName, FileNameDelimiter, FileNamePrefix,
+    ListFileNamesRequest, MaxFileCount,
 };
 
 #[derive(StructOpt)]
@@ -24,7 +25,7 @@ struct Params {
     #[structopt(long)]
     prefix: Option<String>,
     #[structopt(long)]
-    delimiter: Option<String>,
+    delimiter: Option<char>,
     #[structopt(long)]
     /// if set, further calls will be made, if the returned struct contained a "next_file_name"
     continue_requests: bool,
@@ -56,8 +57,8 @@ async fn main() {
     let max_file_count = p.max_file_count.map(|m| {
         MaxFileCount::try_from(m).unwrap_or_else(|e| panic!("Invalid Maximum count: {:#?}", e))
     });
-    let prefix = p.prefix;
-    let delimiter = p.delimiter;
+    let prefix = p.prefix.map(|p| FileNamePrefix::try_from(p).unwrap());
+    let delimiter = p.delimiter.map(|p| FileNameDelimiter::try_from(p).unwrap());
 
     //usually it is a good idea to use [ListBucketsRequest::builder] instead of new() here, but since we have all parameters
     let mut request_counter = 1usize;
@@ -67,8 +68,8 @@ async fn main() {
             &bucket_id,
             next_file_name.as_ref(),
             max_file_count,
-            prefix.as_deref(),
-            delimiter.as_deref(),
+            prefix.as_ref(),
+            delimiter.as_ref(),
         );
 
         let res = b2_list_file_names(

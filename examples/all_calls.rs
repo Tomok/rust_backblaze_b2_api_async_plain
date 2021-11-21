@@ -508,7 +508,7 @@ async fn download_file_by_name(
 ) {
     print!("Creating Download Authorization ... ");
     let download_auth = {
-        let file_name_prefix: FileName = "".to_string().try_into().unwrap();
+        let file_name_prefix: FileNamePrefix = "".to_string().try_into().unwrap();
         let req = GetDownloadAuthorizationRequest::builder()
             .bucket_id(test_bucket.bucket_id())
             .file_name_prefix(&file_name_prefix)

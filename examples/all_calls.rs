@@ -61,7 +61,7 @@ async fn delete_test_keys(auth_data: &AuthorizeAccountOk, test_key_name: &str) {
         .expect("Listing Keys failed");
 
         for key_info in key_listing.keys() {
-            if key_info.key_name() == test_key_name {
+            if key_info.key_name().as_str() == test_key_name {
                 print!("Deleting test key ... ");
                 b2_delete_key(
                     auth_data.api_url(),

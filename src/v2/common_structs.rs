@@ -1,6 +1,6 @@
 //! Common structs used by multiple B2 API calls
 
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -160,3 +160,180 @@ impl DownloadAuthorizationToken for DownloadOnlyAuthorizationToken {
         self.as_str()
     }
 }
+
+#[derive(Debug)]
+pub struct InvalidCharacterError {
+    character: char,
+    position: usize,
+    expected: &'static str,
+}
+
+impl InvalidCharacterError {
+    pub fn new(character: char, position: usize, expected: &'static str) -> Self {
+        Self {
+            character,
+            position,
+            expected,
+        }
+    }
+
+    /// Get the invalid character
+    pub fn character(&self) -> char {
+        self.character
+    }
+
+    /// Get the invalid character error's position.
+    pub fn position(&self) -> usize {
+        self.position
+    }
+
+    /// Get a textual description of the allowed characters
+    pub fn expected(&self) -> &'static str {
+        self.expected
+    }
+
+    pub fn check_characters<F>(s: &str, check_func: F, expected: &'static str) -> Result<(), Self>
+    where
+        F: Fn(char) -> bool,
+    {
+        for (i, c) in s.chars().enumerate() {
+            if !check_func(c) {
+                return Err(Self::new(c, i, expected));
+            }
+        }
+        Ok(())
+    }
+
+    pub fn check_ascii_alphanum_or_dash(s: &str) -> Result<(), Self> {
+        Self::check_characters(
+            s,
+            |c| c == '-' || c.is_ascii_alphanumeric(),
+            "Alphanumeric ASCII Character or a '-'",
+        )
+    }
+}
+
+impl std::error::Error for InvalidCharacterError {}
+
+impl Display for InvalidCharacterError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "found unexpected character {:?} in String at position {}. Allowed are {}",
+            self.character, self.position, self.expected
+        )
+    }
+}
+
+#[derive(Debug)]
+pub struct InvalidLengthError {
+    /// the length of the String passed in
+    length: usize,
+    /// the minimaly required length
+    min_length: usize,
+    /// the maximal allowed length
+    max_length: usize,
+}
+
+impl InvalidLengthError {
+    pub fn new(length: usize, min_length: usize, max_length: usize) -> Self {
+        Self {
+            length,
+            min_length,
+            max_length,
+        }
+    }
+
+    /// Get the invalid length.
+    pub fn length(&self) -> usize {
+        self.length
+    }
+
+    /// Get the invalid length error's min length.
+    pub fn min_length(&self) -> usize {
+        self.min_length
+    }
+
+    /// Get the invalid length error's max length.
+    pub fn max_length(&self) -> usize {
+        self.max_length
+    }
+
+    /// checks the length of a &str, will return that length on success or this error on failure
+    pub fn check_length(s: &str, min_length: usize, max_length: usize) -> Result<usize, Self> {
+        let len = s.len();
+        if min_length <= len && len <= max_length {
+            Ok(len)
+        } else {
+            Err(Self::new(len, min_length, max_length))
+        }
+    }
+}
+impl std::error::Error for InvalidLengthError {}
+
+impl Display for InvalidLengthError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Passed String has an invalid length: {} (not between {} and {})",
+            self.length, self.min_length, self.max_length
+        )
+    }
+}
+
+#[derive(Debug)]
+pub enum StringSpecializationError {
+    InvalidCharacterError(InvalidCharacterError),
+    InvalidLengthError(InvalidLengthError),
+}
+
+impl From<InvalidCharacterError> for StringSpecializationError {
+    fn from(err: InvalidCharacterError) -> Self {
+        Self::InvalidCharacterError(err)
+    }
+}
+
+impl From<InvalidLengthError> for StringSpecializationError {
+    fn from(err: InvalidLengthError) -> Self {
+        Self::InvalidLengthError(err)
+    }
+}
+
+impl StringSpecializationError {
+    pub fn invalid_length(length: usize, min_length: usize, max_length: usize) -> Self {
+        Self::InvalidLengthError(InvalidLengthError::new(length, min_length, max_length))
+    }
+
+    /// checks the length of a &str, will return that length on success or this [Self::StringSpecializationError] on failure
+    pub fn check_length(s: &str, min_length: usize, max_length: usize) -> Result<usize, Self> {
+        Ok(InvalidLengthError::check_length(s, min_length, max_length)?)
+    }
+
+    pub fn invalid_character(character: char, position: usize, expected: &'static str) -> Self {
+        Self::InvalidCharacterError(InvalidCharacterError::new(character, position, expected))
+    }
+
+    pub fn check_characters<F>(s: &str, check_func: F, expected: &'static str) -> Result<(), Self>
+    where
+        F: Fn(char) -> bool,
+    {
+        Ok(InvalidCharacterError::check_characters(
+            s, check_func, expected,
+        )?)
+    }
+
+    pub fn check_ascii_alphanum_or_dash(s: &str) -> Result<(), Self> {
+        Ok(InvalidCharacterError::check_ascii_alphanum_or_dash(s)?)
+    }
+}
+
+impl Display for StringSpecializationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            StringSpecializationError::InvalidCharacterError(e) => std::fmt::Display::fmt(&e, f),
+            StringSpecializationError::InvalidLengthError(e) => std::fmt::Display::fmt(&e, f),
+        }
+    }
+}
+
+impl std::error::Error for StringSpecializationError {}

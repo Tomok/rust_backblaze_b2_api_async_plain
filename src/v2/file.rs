@@ -1,4 +1,6 @@
-use super::{AccountId, BucketId, FileRetention, InvalidData, LegalHold, ServerSideEncryption};
+use super::{
+    AccountId, BucketId, FileRetention, LegalHold, ServerSideEncryption, StringSpecializationError,
+};
 use headers::CacheControl;
 use lazy_static::lazy_static;
 use mime::Mime;
@@ -15,30 +17,19 @@ impl FileName {
 }
 
 impl TryFrom<String> for FileName {
-    type Error = InvalidData;
+    type Error = StringSpecializationError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        let bytes = value.as_bytes();
-        if bytes.len() <= 1024 {
-            for (i, c) in value.chars().enumerate() {
+        Self::Error::check_length(&value, 0, 1024)?;
+        Self::Error::check_characters(
+            &value,
+            |c| {
                 let v = c as u32;
-                if v < 32 {
-                    return Err(InvalidData::new(format!("Invalid character {:#?} at position {} - characters below 32 are not allowed", c, i)));
-                }
-                if v == 127 {
-                    return Err(InvalidData::new(format!(
-                        "Invalid DEL character at position {}",
-                        i
-                    )));
-                }
-            }
-            Ok(Self(value))
-        } else {
-            Err(InvalidData::new(format!(
-                "To many bytes in Filename, at most 1024 are allowed, but {:#?} were used",
-                bytes.len()
-            )))
-        }
+                !(v < 32 || v == 127)
+            },
+            "UTF-8 string without characters below 32, and DEL (code 127)",
+        )?;
+        Ok(Self(value))
     }
 }
 
@@ -61,17 +52,11 @@ impl FileId {
 }
 
 impl TryFrom<String> for FileId {
-    type Error = InvalidData;
+    type Error = StringSpecializationError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        if value.len() > 200 {
-            Err(InvalidData::new(format!(
-                "File ID may not have more than 200 characters, but had {} characters",
-                value.len()
-            )))
-        } else {
-            Ok(Self(value))
-        }
+        Self::Error::check_length(&value, 1, 200)?;
+        Ok(Self(value))
     }
 }
 

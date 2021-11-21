@@ -15,27 +15,7 @@ use serde::{
 };
 use typed_builder::TypedBuilder;
 
-use super::{FileName, InvalidData};
-
-#[derive(Debug)]
-pub struct InvalidCharacterError {
-    ///an invalid character found - does not mean there were not others
-    pub invalid_character: char,
-}
-
-impl InvalidCharacterError {
-    pub fn new(invalid_character: char) -> Self {
-        Self { invalid_character }
-    }
-}
-
-impl Error for InvalidCharacterError {}
-
-impl Display for InvalidCharacterError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Invalid character: {:#?}", self.invalid_character)
-    }
-}
+use super::{FileName, InvalidData, StringSpecializationError};
 
 #[derive(Debug, Serialize, Deserialize, Eq)]
 /// Bucket names must be a minimum of 6 and a maximum of 50 characters long, and must be globally unique; two different B2 accounts cannot have buckets with the name name. Bucket names can consist of: letters, digits, and "-". Bucket names cannot start with "b2-"; these are reserved for internal Backblaze use.
@@ -55,21 +35,12 @@ impl PartialEq for BucketName {
 }
 
 impl TryFrom<String> for BucketName {
-    type Error = InvalidCharacterError;
+    type Error = StringSpecializationError;
 
     /// Ensures all characters in string are valid, i.e. characters, numbers or '-'
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        for c in value.chars() {
-            match c {
-                'a'..='z' => {}
-                'A'..='Z' => {}
-                '0'..='9' => {}
-                '-' => {}
-                _ => {
-                    return Err(Self::Error::new(c));
-                }
-            };
-        }
+        Self::Error::check_length(&value, 6, 50)?;
+        Self::Error::check_ascii_alphanum_or_dash(&value)?;
         Ok(Self(value))
     }
 }
@@ -189,23 +160,17 @@ impl Serialize for BucketTypes {
 pub struct BucketInfoKey(String);
 
 impl TryFrom<String> for BucketInfoKey {
-    type Error = InvalidData;
+    type Error = StringSpecializationError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        if value.bytes().len() > 50 {
-            return Err(InvalidData::new(
-                "Keys for Bucket Info may be at most 50 characters long".into(),
-            ));
-        }
+        Self::Error::check_length(&value, 1, 50)?;
         let lower_value = value.to_lowercase();
-        /* there are limits on valid b2- values, but as some values are allowed, do not exclude them right now
-        if lower_value.starts_with("b2-") {
-            return Err(InvalidData::new("Names starting with \"b2-\" are reserved and not allowed as keys for Bucket Info".into()));
-        }
-        */
+        /*
+         * there are limits on valid b2- values, but as some values are allowed, do not exclude them right now
+         */
         //validate characters used
-        for c in lower_value.chars() {
-            match c {
+        Self::Error::check_characters(&lower_value,
+            |c| matches!( c,
                 'a'..='z'
                 | '-'
                 | '_'
@@ -221,16 +186,10 @@ impl TryFrom<String> for BucketInfoKey {
                 | '*'
                 | '\''
                 | '|'
-                | '+' => {}
-                _ => {
-                    return Err(InvalidData::new(format!(
-                        "Invalid Character found: {:#?}",
-                        c
-                    )))
-                }
-            }
-        }
-        Ok(Self(value))
+                | '+'),
+            "ASCII letters, Numbers or these special characters: '-', '_', '.', '`', '~', '!', '#', '$', '%', '^', '&', '*', ''', '|', '+'"
+        )?;
+        Ok(Self(lower_value))
     }
 }
 
@@ -403,7 +362,7 @@ impl BucketId {
 }
 
 impl TryFrom<String> for BucketId {
-    type Error = InvalidData;
+    type Error = StringSpecializationError;
 
     /// Create BucketId from String
     ///

@@ -61,24 +61,13 @@ impl TryFrom<String> for KeyName {
     type Error = StringSpecializationError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        let len = value.len();
-        if len > 100 {
-            return Err(StringSpecializationError::invalid_length(len, 100));
-        }
-        for (index, c) in value.chars().enumerate() {
-            if !(c.is_ascii_alphanumeric() || c == '-') {
-                return Err(StringSpecializationError::invalid_character(
-                    c,
-                    index,
-                    "A-Za-z0-9",
-                ));
-            }
-        }
+        Self::Error::check_length(&value, 1, 100)?;
+        Self::Error::check_ascii_alphanum_or_dash(&value)?;
         Ok(Self(value))
     }
 }
 
-pub type KeyNameRef<'a> = &'a str; //TODO
+pub type KeyNameRef<'a> = &'a str;
 pub type ApplicationKey = String; //TODO
 pub type ApplicationKeyId = String; //TODO
 pub type ApplicationKeyIdRef<'a> = &'a str; //TODO

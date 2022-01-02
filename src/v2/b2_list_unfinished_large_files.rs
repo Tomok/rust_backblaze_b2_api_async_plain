@@ -10,7 +10,7 @@ use super::{
     ListFileNamesOk,
 };
 
-#[derive(Debug, Deserialize, Serialize,PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct MaxUnfinishedLargeFileCount(NonZeroU8);
 
 impl TryFrom<u8> for MaxUnfinishedLargeFileCount {

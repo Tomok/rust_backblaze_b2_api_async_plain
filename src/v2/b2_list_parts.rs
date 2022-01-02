@@ -8,7 +8,7 @@ use super::{
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, Deserialize, Serialize,PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct MaxPartCount(NonZeroU16);
 
 impl TryFrom<u16> for MaxPartCount {

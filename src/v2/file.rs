@@ -328,7 +328,7 @@ impl<'de> de::Visitor<'de> for Sha1OptionVisitor {
         } else {
             Some(
                 Sha1Digest::try_from(s)
-                    .map_err(|e| de::Error::invalid_value(de::Unexpected::Str(s), &self))?,
+                    .map_err(|_| de::Error::invalid_value(de::Unexpected::Str(s), &self))?,
             )
         })
     }

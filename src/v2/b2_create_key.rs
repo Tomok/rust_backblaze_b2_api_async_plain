@@ -33,7 +33,7 @@ impl<T: core::fmt::Debug> Display for InvalidKeyLifeTimeError<T> {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize,PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[serde(transparent)]
 pub struct ValidKeyLifeTimeInSeconds(NonZeroU32);
 

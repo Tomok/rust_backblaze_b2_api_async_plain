@@ -175,9 +175,43 @@ impl From<sha1::Digest> for Sha1 {
 
 pub type Sha1Ref<'s> = &'s Sha1;
 
-// TODO: more specific types...
-pub type Md5 = String;
-pub type Md5Ref<'s> = &'s str;
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "&str", into = "String")]
+pub struct Md5 {
+    bytes: [u8; 16],
+}
+
+impl Md5 {
+    pub fn new(bytes: [u8; 16]) -> Self {
+        Self { bytes }
+    }
+}
+
+impl<'a> TryFrom<&'a str> for Md5 {
+    type Error = FromHexError;
+
+    /// try to get the digest from a hex string
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self {
+            bytes: <[u8; 16]>::from_hex(value)?,
+        })
+    }
+}
+
+#[cfg(feature = "md5")]
+impl From<md5::Digest> for Md5 {
+    fn from(digest: md5::Digest) -> Self {
+        Self { bytes: digest.0 }
+    }
+}
+
+impl From<Md5> for String {
+    fn from(m: Md5) -> Self {
+        m.bytes.encode_hex()
+    }
+}
+
+pub type Md5Ref<'s> = &'s Md5;
 pub type FileInfo = serde_json::Value;
 pub type TimeStamp = i64;
 /// Content Disposition value acc. to the grammar specified in RFC 6266

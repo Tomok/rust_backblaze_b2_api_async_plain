@@ -214,17 +214,17 @@ async fn create_test_key(
     res
 }
 
-fn sha1sum(data: &[u8]) -> String {
+fn sha1sum(data: &[u8]) -> Sha1 {
     let mut h = sha1::Sha1::new();
     h.update(data);
-    h.digest().to_string()
+    h.digest().into()
 }
 
 const UPLOAD_FILE_CONTENTS: &[u8] = &[42u8; 4096];
 lazy_static! {
     static ref UPLOAD_FILE_NAME: FileName = "UploadedFile".to_owned().try_into().unwrap();
     static ref COPY_FILE_NAME: FileName = "CopiedFile".to_owned().try_into().unwrap();
-    static ref UPLOAD_FILE_CONTENTS_SHA1: String = sha1sum(UPLOAD_FILE_CONTENTS);
+    static ref UPLOAD_FILE_CONTENTS_SHA1: Sha1 = sha1sum(UPLOAD_FILE_CONTENTS);
 }
 
 async fn upload_file(test_key_auth: &AuthorizeAccountOk, test_bucket: &Bucket) -> FileInformation {
@@ -296,7 +296,7 @@ async fn build_large_file(
     .await
     .expect("Could not get file upload parts url");
 
-    let sha1_part1: String = {
+    let sha1_part1: Sha1 = {
         let upload_data = Vec::from([0u8; LARGE_FILE_PART1_SIZE]);
         let sha1 = sha1sum(upload_data.as_ref());
         let params = UploadPartParameters::builder()
@@ -382,7 +382,7 @@ async fn build_large_file(
         assert_eq!(&*UPLOAD_FILE_CONTENTS_SHA1, parts.parts()[1].content_sha1());
     }
 
-    let sha1_part2_ref: &String = &UPLOAD_FILE_CONTENTS_SHA1;
+    let sha1_part2_ref: Sha1Ref = &UPLOAD_FILE_CONTENTS_SHA1;
     let res = b2_finish_large_file(
         test_key_auth.api_url(),
         test_key_auth.authorization_token(),

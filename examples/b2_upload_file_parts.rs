@@ -2,7 +2,7 @@ use std::{convert::TryInto, num::NonZeroU16, path::PathBuf};
 
 use backblaze_b2_async_plain::v2::{
     b2_finish_large_file, b2_get_upload_part_url, b2_start_large_file, b2_upload_part,
-    AuthorizeAccountOk, FileInformation, PartNumber, StartLargeFileParameters,
+    AuthorizeAccountOk, FileInformation, PartNumber, Sha1, Sha1Ref, StartLargeFileParameters,
     UploadPartParameters,
 };
 use num_integer::{div_ceil, div_floor};
@@ -119,10 +119,10 @@ async fn main() {
                 .expect("Reading input file failed");
             //give reader back
             file_to_upload = segmet_reader.into_inner();
-            let sha1 = {
+            let sha1: Sha1 = {
                 let mut hasher = sha1::Sha1::new();
                 hasher.update(buf.as_slice());
-                hasher.digest().to_string()
+                hasher.digest().into()
             };
             sha1sums.push(sha1.clone());
             let upload_params = UploadPartParameters::builder()
@@ -140,7 +140,7 @@ async fn main() {
             }
         }
     }
-    let sha1sum_references: Vec<&str> = sha1sums.iter().map(|s| s.as_str()).collect();
+    let sha1sum_references: Vec<Sha1Ref> = sha1sums.iter().map(|s| s).collect();
     let res = b2_finish_large_file(
         auth_data.api_url(),
         auth_data.authorization_token(),

@@ -3,6 +3,7 @@ use super::{
     StringSpecializationError,
 };
 use headers::CacheControl;
+use hex::{FromHex, FromHexError, ToHex};
 use lazy_static::lazy_static;
 use mime::Mime;
 use serde::{de, Deserialize, Deserializer, Serialize};
@@ -133,9 +134,48 @@ impl TryFrom<String> for FileId {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "&str", into = "String")]
+pub struct Sha1 {
+    bytes: [u8; 20],
+}
+
+impl Into<String> for Sha1 {
+    // returns the digest as String
+    fn into(self) -> String {
+        self.bytes.encode_hex()
+    }
+}
+
+impl<'a> TryFrom<&'a str> for Sha1 {
+    type Error = FromHexError;
+
+    /// try to get the digest from a hex string
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self {
+            bytes: <[u8; 20]>::from_hex(value)?,
+        })
+    }
+}
+
+impl Sha1 {
+    pub fn new(bytes: [u8; 20]) -> Self {
+        Self { bytes }
+    }
+}
+
+#[cfg(feature = "sha1")]
+impl From<sha1::Digest> for Sha1 {
+    fn from(digest: sha1::Digest) -> Self {
+        Self {
+            bytes: digest.bytes(),
+        }
+    }
+}
+
+pub type Sha1Ref<'s> = &'s Sha1;
+
 // TODO: more specific types...
-pub type Sha1 = String;
-pub type Sha1Ref<'s> = &'s str;
 pub type Md5 = String;
 pub type Md5Ref<'s> = &'s str;
 pub type FileInfo = serde_json::Value;
@@ -220,6 +260,53 @@ where
     deserializer.deserialize_option(MimeOptionVisitor {})
 }
 
+/// the Backblaze API can return a String "none" for a not set sha1 sum ...
+/// as this still should be mapped to [Option::None] a custom deserializer is necessary
+struct Sha1OptionVisitor {}
+
+impl<'de> de::Visitor<'de> for Sha1OptionVisitor {
+    type Value = Option<Sha1>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "A string representing an SHA1 digest as hex, \"None\"(as string), or None (as the option type)")
+    }
+
+    fn visit_none<E>(self) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(None)
+    }
+
+    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        deserializer.deserialize_str(self)
+    }
+
+    fn visit_str<E>(self, s: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(if s == "none" {
+            None
+        } else {
+            Some(
+                Sha1::try_from(s)
+                    .map_err(|e| de::Error::invalid_value(de::Unexpected::Str(s), &self))?,
+            )
+        })
+    }
+}
+
+fn deserialize_sha1_option<'de, D>(deserializer: D) -> Result<Option<Sha1>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_option(Sha1OptionVisitor {})
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FileInformation {
@@ -227,6 +314,7 @@ pub struct FileInformation {
     action: FileAction,
     bucket_id: BucketId,
     content_length: u64,
+    #[serde(deserialize_with = "deserialize_sha1_option")]
     content_sha1: Option<Sha1>,
     content_md5: Option<Md5>,
     #[serde(deserialize_with = "deserialize_mime_option", default)]

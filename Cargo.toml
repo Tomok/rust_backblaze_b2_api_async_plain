@@ -19,6 +19,8 @@ headers = "0.3.5"
 http = "0.2.4"
 enumset = { version="1.0", features=["serde"] }
 lazy_static = "1.4.0"
+sha1 = { version = "0.6.0", optional = true }
+hex = { version = "0.4.3" }
 
 
 [dev-dependencies]
@@ -34,10 +36,28 @@ tokio-util = {version = "0.6.7", features = ["io"] }
 num-integer = "0.1"
 
 [[example]]
+name = "all_calls"
+required-features = ["sha1"]
+
+[[example]]
 name = "b2_authorize_account"
+
+[[example]]
+name = "b2_download_file_by_id"
+
+[[example]]
+name = "b2_get_upload_url"
 
 [[example]]
 name = "b2_list_buckets"
 
 [[example]]
-name= "b2_download_file_by_id"
+name = "b2_list_file_names"
+
+[[example]]
+name = "b2_upload_file_parts"
+required-features = ["sha1"]
+
+[[example]]
+name = "b2_upload_file"
+required-features = ["sha1"]

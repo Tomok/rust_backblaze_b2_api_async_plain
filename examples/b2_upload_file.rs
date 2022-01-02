@@ -80,7 +80,7 @@ async fn main() {
             break; // 0 bytes were read -> file end was reached
         }
     }
-    let sha1 = hasher.digest();
+    let sha1 = hasher.digest().into();
     file.seek(SeekFrom::Start(0))
         .await
         .expect("Could not go to start of upload file");
@@ -89,11 +89,10 @@ async fn main() {
         .try_into()
         .expect("Filename not b2 compatible");
 
-    let sha1_str = sha1.to_string();
     let upload_params = UploadFileParameters::builder()
         .file_name(&filename)
         .content_length(file_len)
-        .content_sha1(&sha1_str)
+        .content_sha1(&sha1)
         .build();
 
     let res = b2_upload_file(

@@ -38,7 +38,7 @@ impl Display for InvalidDownloadAuthorizationDurationError {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize,PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct ValidDownloadAuthorizationDurationInSeconds(NonZeroU32);
 
 impl ValidDownloadAuthorizationDurationInSeconds {

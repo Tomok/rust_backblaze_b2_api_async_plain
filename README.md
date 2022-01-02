@@ -16,7 +16,7 @@ Some highlights:
 ## Progress
 | function  | implemented  | in all calls example  |
 |---|---|---|
-|[b2_authorize_account](https://www.backblaze.com/b2/docs/b2_authorize_account.html)|✔️⁴|✔️|
+|[b2_authorize_account](https://www.backblaze.com/b2/docs/b2_authorize_account.html)|✔️|✔️|
 |[b2_cancel_large_file](https://www.backblaze.com/b2/docs/b2_cancel_large_file.html)|✔️⁴|✔️|
 |[b2_copy_file](https://www.backblaze.com/b2/docs/b2_copy_file.html)|✔️²³⁴|✔️|
 |[b2_copy_part](https://www.backblaze.com/b2/docs/b2_copy_part.html)|✔️²⁴|✔️|

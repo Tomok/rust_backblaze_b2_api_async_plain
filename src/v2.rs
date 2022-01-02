@@ -67,7 +67,8 @@ impl TryFrom<String> for KeyName {
     }
 }
 
-pub type KeyNameRef<'a> = &'a str;
+pub type KeyNameRef<'a> = &'a KeyName;
+
 pub type ApplicationKey = String; //TODO
 pub type ApplicationKeyId = String; //TODO
 pub type ApplicationKeyIdRef<'a> = &'a str; //TODO

@@ -42,14 +42,14 @@ fn readline(stdin: &io::Stdin) -> String {
     res
 }
 
-async fn delete_test_keys(auth_data: &AuthorizeAccountOk, test_key_name: &str) {
+async fn delete_test_keys(auth_data: &AuthorizeAccountOk, test_key_name: &KeyName) {
     let mut start_key = None;
     loop {
         println!("Listing application keys ...");
         let list_key_params = ListKeysRequest::new(
             auth_data.account_id(),
             Some(1000u16.try_into().unwrap()), //1000 is the max number of keys requestable, without it counting like a second attempt
-            start_key.as_deref(),
+            start_key.as_ref(),
         );
 
         let key_listing = b2_list_keys(
@@ -61,7 +61,7 @@ async fn delete_test_keys(auth_data: &AuthorizeAccountOk, test_key_name: &str) {
         .expect("Listing Keys failed");
 
         for key_info in key_listing.keys() {
-            if key_info.key_name().as_str() == test_key_name {
+            if key_info.key_name() == test_key_name {
                 print!("Deleting test key ... ");
                 b2_delete_key(
                     auth_data.api_url(),
@@ -157,10 +157,10 @@ async fn delete_all_files_in_bucket(auth_data: &AuthorizeAccountOk, bucket: &Buc
 }
 
 //cleanup after the test / before creating keys
-async fn clean_up(
-    root_authorization_data: &AuthorizeAccountOk,
-    test_bucket_name: &BucketName,
-    test_key_name: &str,
+async fn clean_up<'a>(
+    root_authorization_data: &'a AuthorizeAccountOk,
+    test_bucket_name: &'a BucketName,
+    test_key_name: KeyNameRef<'a>,
 ) {
     delete_test_keys(root_authorization_data, test_key_name).await;
     delete_test_bucket(root_authorization_data, test_bucket_name).await;
@@ -191,7 +191,7 @@ async fn create_test_bucket(
 async fn create_test_key(
     root_authorization_data: &AuthorizeAccountOk,
     test_bucket: &Bucket,
-    test_key_name: &str,
+    test_key_name: &KeyName,
 ) -> CreatedKeyInformation {
     print!("Creating test key ... ");
     let capabilities = all_per_bucket_capabilites();
@@ -717,13 +717,15 @@ async fn main() {
         .unwrap_or_else(|| "rust-backblaze-b2-api-async-plain-test-bucket".to_owned())
         .try_into()
         .unwrap();
-    let test_key_name = p
+    let test_key_name: KeyName = p
         .test_key_name
-        .unwrap_or_else(|| "rust-backblaze-b2-api-async-plain-test-key".to_owned());
+        .unwrap_or_else(|| "rust-backblaze-b2-api-async-plain-test-key".to_owned())
+        .try_into()
+        .expect("Invalid test key name");
 
     let stdin = io::stdin();
     let mut stdout = io::stdout();
-    let application_key_id = if let Some(key_id) = p.application_key_id {
+    let application_key_id_string = if let Some(key_id) = p.application_key_id {
         key_id
     } else {
         write!(stdout, "Please enter application key id: ").unwrap();

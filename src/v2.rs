@@ -45,12 +45,6 @@ use serde::{Deserialize, Serialize};
 #[serde(transparent)]
 pub struct KeyName(String);
 
-impl From<KeyName> for String {
-    fn from(key_name: KeyName) -> Self {
-        key_name.0
-    }
-}
-
 impl KeyName {
     pub fn as_str(&self) -> &str {
         &self.0

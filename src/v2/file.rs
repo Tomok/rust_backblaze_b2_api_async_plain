@@ -136,18 +136,18 @@ impl TryFrom<String> for FileId {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(try_from = "&str", into = "String")]
-pub struct Sha1 {
+pub struct Sha1Digest {
     bytes: [u8; 20],
 }
 
-impl From<Sha1> for String {
+impl From<Sha1Digest> for String {
     // returns the digest as String
-    fn from(s: Sha1) -> Self {
+    fn from(s: Sha1Digest) -> Self {
         s.bytes.encode_hex()
     }
 }
 
-impl<'a> TryFrom<&'a str> for Sha1 {
+impl<'a> TryFrom<&'a str> for Sha1Digest {
     type Error = FromHexError;
 
     /// try to get the digest from a hex string
@@ -158,14 +158,14 @@ impl<'a> TryFrom<&'a str> for Sha1 {
     }
 }
 
-impl Sha1 {
+impl Sha1Digest {
     pub fn new(bytes: [u8; 20]) -> Self {
         Self { bytes }
     }
 }
 
 #[cfg(feature = "sha1")]
-impl From<sha1::Digest> for Sha1 {
+impl From<sha1::Digest> for Sha1Digest {
     fn from(digest: sha1::Digest) -> Self {
         Self {
             bytes: digest.bytes(),
@@ -173,21 +173,21 @@ impl From<sha1::Digest> for Sha1 {
     }
 }
 
-pub type Sha1Ref<'s> = &'s Sha1;
+pub type Sha1DigestRef<'s> = &'s Sha1Digest;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(try_from = "&str", into = "String")]
-pub struct Md5 {
+pub struct Md5Digest {
     bytes: [u8; 16],
 }
 
-impl Md5 {
+impl Md5Digest {
     pub fn new(bytes: [u8; 16]) -> Self {
         Self { bytes }
     }
 }
 
-impl<'a> TryFrom<&'a str> for Md5 {
+impl<'a> TryFrom<&'a str> for Md5Digest {
     type Error = FromHexError;
 
     /// try to get the digest from a hex string
@@ -199,19 +199,19 @@ impl<'a> TryFrom<&'a str> for Md5 {
 }
 
 #[cfg(feature = "md5")]
-impl From<md5::Digest> for Md5 {
+impl From<md5::Digest> for Md5Digest {
     fn from(digest: md5::Digest) -> Self {
         Self { bytes: digest.0 }
     }
 }
 
-impl From<Md5> for String {
-    fn from(m: Md5) -> Self {
+impl From<Md5Digest> for String {
+    fn from(m: Md5Digest) -> Self {
         m.bytes.encode_hex()
     }
 }
 
-pub type Md5Ref<'s> = &'s Md5;
+pub type Md5DigestRef<'s> = &'s Md5Digest;
 pub type FileInfo = serde_json::Value;
 pub type TimeStamp = i64;
 /// Content Disposition value acc. to the grammar specified in RFC 6266
@@ -299,7 +299,7 @@ where
 struct Sha1OptionVisitor {}
 
 impl<'de> de::Visitor<'de> for Sha1OptionVisitor {
-    type Value = Option<Sha1>;
+    type Value = Option<Sha1Digest>;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(formatter, "A string representing an SHA1 digest as hex, \"None\"(as string), or None (as the option type)")
@@ -327,14 +327,14 @@ impl<'de> de::Visitor<'de> for Sha1OptionVisitor {
             None
         } else {
             Some(
-                Sha1::try_from(s)
+                Sha1Digest::try_from(s)
                     .map_err(|e| de::Error::invalid_value(de::Unexpected::Str(s), &self))?,
             )
         })
     }
 }
 
-fn deserialize_sha1_option<'de, D>(deserializer: D) -> Result<Option<Sha1>, D::Error>
+fn deserialize_sha1_option<'de, D>(deserializer: D) -> Result<Option<Sha1Digest>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -349,8 +349,8 @@ pub struct FileInformation {
     bucket_id: BucketId,
     content_length: u64,
     #[serde(deserialize_with = "deserialize_sha1_option")]
-    content_sha1: Option<Sha1>,
-    content_md5: Option<Md5>,
+    content_sha1: Option<Sha1Digest>,
+    content_md5: Option<Md5Digest>,
     #[serde(deserialize_with = "deserialize_mime_option", default)]
     content_type: Option<mime::Mime>,
     file_id: Option<FileId>,
@@ -389,12 +389,12 @@ impl FileInformation {
     }
 
     /// Get a reference to the file information's content sha1.
-    pub fn content_sha1(&self) -> Option<&Sha1> {
+    pub fn content_sha1(&self) -> Option<&Sha1Digest> {
         self.content_sha1.as_ref()
     }
 
     /// Get a reference to the file information's content md5.
-    pub fn content_md5(&self) -> Option<&Md5> {
+    pub fn content_md5(&self) -> Option<&Md5Digest> {
         self.content_md5.as_ref()
     }
 

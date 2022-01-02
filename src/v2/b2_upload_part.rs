@@ -6,8 +6,8 @@ use crate::header_serializer::HeadersFrom;
 
 use super::{
     errors::UploadPartError, server_side_encryption::EncryptionAlgorithm, FileId, JsonErrorObj,
-    Md5, Md5Ref, PartNumber, ServerSideEncryption, ServerSideEncryptionCustomerKey, Sha1, Sha1Ref,
-    TimeStamp, UploadPartUrlParameters,
+    Md5Digest, Md5DigestRef, PartNumber, ServerSideEncryption, ServerSideEncryptionCustomerKey,
+    Sha1Digest, Sha1DigestRef, TimeStamp, UploadPartUrlParameters,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -26,7 +26,7 @@ pub struct UploadPartParameters<'s> {
     /// The SHA1 checksum of the this part of the file. B2 will check this when the part is uploaded, to make sure that the data arrived correctly.
     /// The same SHA1 checksum must be passed to b2_finish_large_file.
     /// You may optionally provide the SHA1 at the end of the upload.
-    content_sha1: Sha1Ref<'s>,
+    content_sha1: Sha1DigestRef<'s>,
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Algorithm")]
     #[builder(default, setter(strip_option))]
@@ -41,7 +41,7 @@ pub struct UploadPartParameters<'s> {
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
     #[builder(default, setter(strip_option))]
     /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKeyMd5 requested via b2_start_large_file.
-    server_side_encryption_customer_key_md5: Option<Md5Ref<'s>>,
+    server_side_encryption_customer_key_md5: Option<Md5DigestRef<'s>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -50,8 +50,8 @@ pub struct UploadPartOk {
     file_id: FileId,
     part_number: PartNumber,
     content_length: u64,
-    content_sha1: Sha1,
-    content_md5: Option<Md5>,
+    content_sha1: Sha1Digest,
+    content_md5: Option<Md5Digest>,
     server_side_encryption: Option<ServerSideEncryption>,
     upload_timestamp: TimeStamp,
 }

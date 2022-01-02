@@ -8,8 +8,8 @@ use super::{
     errors::UploadFileError, serialize_content_type_header, serialize_header_option,
     server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValueRef, ContentDispositionRef,
     ContentLanguageRef, ContentTypeRef, ExpiresHeaderValueRef, FileInformation, FileName,
-    JsonErrorObj, Md5Ref, ServerSideEncryptionCustomerKey, Sha1Ref, TimeStamp, UploadParameters,
-    CONTENT_TYPE_AUTO,
+    JsonErrorObj, Md5DigestRef, ServerSideEncryptionCustomerKey, Sha1DigestRef, TimeStamp,
+    UploadParameters, CONTENT_TYPE_AUTO,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -30,7 +30,7 @@ pub struct UploadFileParameters<'s> {
     content_length: u64,
 
     #[serde(rename = "X-Bz-Content-Sha1")]
-    content_sha1: Sha1Ref<'s>,
+    content_sha1: Sha1DigestRef<'s>,
 
     #[serde(rename = "X-Bz-Info-src_last_modified_millis")]
     #[builder(default, setter(strip_option))]
@@ -77,7 +77,7 @@ pub struct UploadFileParameters<'s> {
 
     #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
     #[builder(default, setter(strip_option))]
-    server_side_encryption_customer_key_md5: Option<Md5Ref<'s>>,
+    server_side_encryption_customer_key_md5: Option<Md5DigestRef<'s>>,
 }
 
 pub async fn b2_upload_file<'a, T: Into<Body>>(

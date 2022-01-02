@@ -1,14 +1,14 @@
 use std::{convert::TryFrom, num::NonZeroU16};
 
 use super::{
-    errors::GenericB2Error, ApiUrl, AuthorizationToken, FileId, InvalidData, JsonErrorObj, Md5,
-    PartNumber, ServerSideEncryption, Sha1, TimeStamp,
+    errors::GenericB2Error, ApiUrl, AuthorizationToken, FileId, InvalidData, JsonErrorObj,
+    Md5Digest, PartNumber, ServerSideEncryption, Sha1Digest, TimeStamp,
 };
 
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct MaxPartCount(NonZeroU16);
 
 impl TryFrom<u16> for MaxPartCount {
@@ -71,8 +71,8 @@ pub struct Part {
     file_id: FileId,
     part_number: PartNumber,
     content_length: u64,
-    content_sha1: Sha1,
-    content_md5: Option<Md5>,
+    content_sha1: Sha1Digest,
+    content_md5: Option<Md5Digest>,
     server_side_encryption: Option<ServerSideEncryption>,
     upload_timestamp: TimeStamp,
 }
@@ -94,12 +94,12 @@ impl Part {
     }
 
     /// Get a reference to the part's content sha1.
-    pub fn content_sha1(&self) -> &Sha1 {
+    pub fn content_sha1(&self) -> &Sha1Digest {
         &self.content_sha1
     }
 
     /// Get a reference to the part's content md5.
-    pub fn content_md5(&self) -> Option<&Md5> {
+    pub fn content_md5(&self) -> Option<&Md5Digest> {
         self.content_md5.as_ref()
     }
 

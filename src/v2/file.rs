@@ -3,6 +3,7 @@ use super::{
     StringSpecializationError,
 };
 use headers::CacheControl;
+use hex::{FromHex, FromHexError, ToHex};
 use lazy_static::lazy_static;
 use mime::Mime;
 use serde::{de, Deserialize, Deserializer, Serialize};
@@ -133,11 +134,84 @@ impl TryFrom<String> for FileId {
     }
 }
 
-// TODO: more specific types...
-pub type Sha1 = String;
-pub type Sha1Ref<'s> = &'s str;
-pub type Md5 = String;
-pub type Md5Ref<'s> = &'s str;
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "&str", into = "String")]
+pub struct Sha1Digest {
+    bytes: [u8; 20],
+}
+
+impl From<Sha1Digest> for String {
+    // returns the digest as String
+    fn from(s: Sha1Digest) -> Self {
+        s.bytes.encode_hex()
+    }
+}
+
+impl<'a> TryFrom<&'a str> for Sha1Digest {
+    type Error = FromHexError;
+
+    /// try to get the digest from a hex string
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self {
+            bytes: <[u8; 20]>::from_hex(value)?,
+        })
+    }
+}
+
+impl Sha1Digest {
+    pub fn new(bytes: [u8; 20]) -> Self {
+        Self { bytes }
+    }
+}
+
+#[cfg(feature = "sha1")]
+impl From<sha1::Digest> for Sha1Digest {
+    fn from(digest: sha1::Digest) -> Self {
+        Self {
+            bytes: digest.bytes(),
+        }
+    }
+}
+
+pub type Sha1DigestRef<'s> = &'s Sha1Digest;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "&str", into = "String")]
+pub struct Md5Digest {
+    bytes: [u8; 16],
+}
+
+impl Md5Digest {
+    pub fn new(bytes: [u8; 16]) -> Self {
+        Self { bytes }
+    }
+}
+
+impl<'a> TryFrom<&'a str> for Md5Digest {
+    type Error = FromHexError;
+
+    /// try to get the digest from a hex string
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        Ok(Self {
+            bytes: <[u8; 16]>::from_hex(value)?,
+        })
+    }
+}
+
+#[cfg(feature = "md5")]
+impl From<md5::Digest> for Md5Digest {
+    fn from(digest: md5::Digest) -> Self {
+        Self { bytes: digest.0 }
+    }
+}
+
+impl From<Md5Digest> for String {
+    fn from(m: Md5Digest) -> Self {
+        m.bytes.encode_hex()
+    }
+}
+
+pub type Md5DigestRef<'s> = &'s Md5Digest;
 pub type FileInfo = serde_json::Value;
 pub type TimeStamp = i64;
 /// Content Disposition value acc. to the grammar specified in RFC 6266
@@ -220,6 +294,53 @@ where
     deserializer.deserialize_option(MimeOptionVisitor {})
 }
 
+/// the Backblaze API can return a String "none" for a not set sha1 sum ...
+/// as this still should be mapped to [Option::None] a custom deserializer is necessary
+struct Sha1OptionVisitor {}
+
+impl<'de> de::Visitor<'de> for Sha1OptionVisitor {
+    type Value = Option<Sha1Digest>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "A string representing an SHA1 digest as hex, \"None\"(as string), or None (as the option type)")
+    }
+
+    fn visit_none<E>(self) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(None)
+    }
+
+    fn visit_some<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        deserializer.deserialize_str(self)
+    }
+
+    fn visit_str<E>(self, s: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(if s == "none" {
+            None
+        } else {
+            Some(
+                Sha1Digest::try_from(s)
+                    .map_err(|_| de::Error::invalid_value(de::Unexpected::Str(s), &self))?,
+            )
+        })
+    }
+}
+
+fn deserialize_sha1_option<'de, D>(deserializer: D) -> Result<Option<Sha1Digest>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_option(Sha1OptionVisitor {})
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FileInformation {
@@ -227,8 +348,9 @@ pub struct FileInformation {
     action: FileAction,
     bucket_id: BucketId,
     content_length: u64,
-    content_sha1: Option<Sha1>,
-    content_md5: Option<Md5>,
+    #[serde(deserialize_with = "deserialize_sha1_option")]
+    content_sha1: Option<Sha1Digest>,
+    content_md5: Option<Md5Digest>,
     #[serde(deserialize_with = "deserialize_mime_option", default)]
     content_type: Option<mime::Mime>,
     file_id: Option<FileId>,
@@ -267,12 +389,12 @@ impl FileInformation {
     }
 
     /// Get a reference to the file information's content sha1.
-    pub fn content_sha1(&self) -> Option<&Sha1> {
+    pub fn content_sha1(&self) -> Option<&Sha1Digest> {
         self.content_sha1.as_ref()
     }
 
     /// Get a reference to the file information's content md5.
-    pub fn content_md5(&self) -> Option<&Md5> {
+    pub fn content_md5(&self) -> Option<&Md5Digest> {
         self.content_md5.as_ref()
     }
 
@@ -304,5 +426,10 @@ impl FileInformation {
     /// Get a reference to the file information's file name.
     pub fn file_name(&self) -> &FileName {
         &self.file_name
+    }
+
+    /// Get a reference to the file information's content type.
+    pub fn content_type(&self) -> Option<&Mime> {
+        self.content_type.as_ref()
     }
 }

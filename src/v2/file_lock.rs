@@ -120,6 +120,18 @@ pub struct FileLockConfigurationValue {
     is_file_lock_enabled: bool,
 }
 
+impl FileLockConfigurationValue {
+    /// Get a reference to the file lock configuration value's default retention.
+    pub fn default_retention(&self) -> &DefaultFileRetention {
+        &self.default_retention
+    }
+
+    /// Get a reference to the file lock configuration value's is file lock enabled.
+    pub fn is_file_lock_enabled(&self) -> bool {
+        self.is_file_lock_enabled
+    }
+}
+
 #[derive(Debug)]
 pub enum FileLockConfiguration {
     ClientAuthorizedToRead { value: FileLockConfigurationValue },
@@ -158,7 +170,7 @@ struct DeserializeableFileLockConfiguration {
 
 pub type LegalHold = serde_json::Value; //TODO
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LegalHoldOnOff {
     On,

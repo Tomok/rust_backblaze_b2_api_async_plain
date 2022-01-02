@@ -1,3 +1,5 @@
+use std::{fmt::Display, num::NonZeroU32, time::Duration};
+
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
@@ -6,6 +8,68 @@ use super::{
     ApplicationKeyIdRef, AuthorizationToken, BucketId, Capabilities, FileNamePrefix, JsonErrorObj,
     KeyName, KeyNameRef, TimeStamp,
 };
+
+#[derive(Debug)]
+pub struct InvalidKeyLifeTimeError<T: core::fmt::Debug> {
+    value_attempted: T,
+}
+
+impl<T: core::fmt::Debug> InvalidKeyLifeTimeError<T> {
+    pub fn new(value_attempted: T) -> Self {
+        Self { value_attempted }
+    }
+}
+
+impl<T: core::fmt::Debug> std::error::Error for InvalidKeyLifeTimeError<T> {}
+
+impl<T: core::fmt::Debug> Display for InvalidKeyLifeTimeError<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Invalid key lifetime: {:#?} - must be a value between 1 and {} secs",
+            self.value_attempted,
+            ValidKeyLifeTimeInSeconds::max_key_life_time_secs()
+        )
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[serde(transparent)]
+pub struct ValidKeyLifeTimeInSeconds(NonZeroU32);
+
+impl ValidKeyLifeTimeInSeconds {
+    pub const fn max_key_life_time_secs() -> u32 {
+        86400000 - 1 // -1 as spec says less than
+    }
+}
+
+impl TryFrom<u32> for ValidKeyLifeTimeInSeconds {
+    type Error = InvalidKeyLifeTimeError<u32>;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        if 1 <= value && value <= Self::max_key_life_time_secs() {
+            Ok(Self(value.try_into().unwrap())) // unwrap is safe as it was checked by the if above
+        } else {
+            Err(InvalidKeyLifeTimeError::new(value))
+        }
+    }
+}
+
+impl TryFrom<Duration> for ValidKeyLifeTimeInSeconds {
+    type Error = InvalidKeyLifeTimeError<Duration>;
+
+    fn try_from(duration: Duration) -> Result<Self, Self::Error> {
+        let value: u32 = duration
+            .as_secs()
+            .try_into()
+            .map_err(|_| InvalidKeyLifeTimeError::new(duration))?;
+        if 1 <= value && value <= Self::max_key_life_time_secs() {
+            Ok(Self(value.try_into().unwrap())) // unwrap is safe as it was checked by the if above
+        } else {
+            Err(InvalidKeyLifeTimeError::new(duration))
+        }
+    }
+}
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
@@ -18,7 +82,7 @@ pub struct CreateKeyRequest<'s> {
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// When provided, the key will expire after the given number of seconds, and will have expirationTimestamp set. Value must be a positive integer, and must be less than 1000 days (in seconds).
-    valid_duration_in_seconds: Option<u64>, //todo
+    valid_duration_in_seconds: Option<ValidKeyLifeTimeInSeconds>, //todo
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]

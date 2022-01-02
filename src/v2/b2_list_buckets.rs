@@ -4,6 +4,7 @@ use super::{
     },
     errors::GenericB2Error,
     AccountId, ApiUrl, AuthorizationToken, FileLockConfiguration, JsonErrorObj,
+    ServerSideEncryption,
 };
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
@@ -51,7 +52,7 @@ pub struct Bucket {
     #[serde(default)]
     cors_rules: serde_json::Value, // it's not part of the example, so maybe optional???                 //todo!!!
     file_lock_configuration: FileLockConfiguration,
-    default_server_side_encryption: serde_json::Value, //todo !!!
+    default_server_side_encryption: ServerSideEncryption,
     lifecycle_rules: Vec<LifeCycleRule>,
     #[serde(default)]
     revision: Option<BucketRevision>, // it's not part of the example, so maybe optional???
@@ -98,6 +99,11 @@ impl Bucket {
     /// Get a reference to the bucket's revision.
     pub fn revision(&self) -> Option<&BucketRevision> {
         self.revision.as_ref()
+    }
+
+    /// Get a reference to the bucket's default server side encryption.
+    pub fn default_server_side_encryption(&self) -> &ServerSideEncryption {
+        &self.default_server_side_encryption
     }
 }
 

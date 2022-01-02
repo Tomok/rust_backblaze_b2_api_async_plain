@@ -56,6 +56,43 @@ pub struct UploadPartOk {
     upload_timestamp: TimeStamp,
 }
 
+impl UploadPartOk {
+    /// Get a reference to the upload part ok's file id.
+    pub fn file_id(&self) -> &FileId {
+        &self.file_id
+    }
+
+    /// Get the upload part ok's part number.
+    pub fn part_number(&self) -> PartNumber {
+        self.part_number
+    }
+
+    /// Get the upload part ok's content length.
+    pub fn content_length(&self) -> u64 {
+        self.content_length
+    }
+
+    /// Get a reference to the upload part ok's content sha1.
+    pub fn content_sha1(&self) -> &Sha1Digest {
+        &self.content_sha1
+    }
+
+    /// Get a reference to the upload part ok's content md5.
+    pub fn content_md5(&self) -> Option<&Md5Digest> {
+        self.content_md5.as_ref()
+    }
+
+    /// Get a reference to the upload part ok's server side encryption.
+    pub fn server_side_encryption(&self) -> Option<&ServerSideEncryption> {
+        self.server_side_encryption.as_ref()
+    }
+
+    /// Get the upload part ok's upload timestamp.
+    pub fn upload_timestamp(&self) -> i64 {
+        self.upload_timestamp
+    }
+}
+
 pub async fn b2_upload_part<'a, T: Into<Body>>(
     uploader_params: &'a mut UploadPartUrlParameters,
     upload_part_params: &'a UploadPartParameters<'a>,

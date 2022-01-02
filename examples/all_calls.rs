@@ -733,9 +733,15 @@ async fn main() {
         stdout.flush().unwrap();
         readline(&stdin)
     };
+    let application_key_id = application_key_id_string
+        .try_into()
+        .expect("Invalid application key id");
     write!(stdout, "Please enter the application key: ").unwrap();
     stdout.flush().unwrap();
-    let application_key = readline(&stdin);
+    let application_key_string = readline(&stdin);
+    let application_key = application_key_string
+        .try_into()
+        .expect("Invalid application key");
 
     let root_authorization_data = b2_authorize_account(&application_key_id, &application_key)
         .await

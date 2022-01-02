@@ -140,10 +140,10 @@ pub struct Sha1 {
     bytes: [u8; 20],
 }
 
-impl Into<String> for Sha1 {
+impl From<Sha1> for String {
     // returns the digest as String
-    fn into(self) -> String {
-        self.bytes.encode_hex()
+    fn from(s: Sha1) -> Self {
+        s.bytes.encode_hex()
     }
 }
 

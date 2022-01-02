@@ -5,6 +5,7 @@ use lazy_static::lazy_static;
 use std::{
     convert::{TryFrom, TryInto},
     io::{self, BufRead, Write},
+    time::Duration,
 };
 use structopt::StructOpt;
 
@@ -199,7 +200,7 @@ async fn create_test_key(
         .account_id(root_authorization_data.account_id())
         .capabilities(&capabilities)
         .key_name(test_key_name)
-        .valid_duration_in_seconds(60 * 60) //one hour should be more than sufficient to run all these steps
+        .valid_duration_in_seconds(Duration::from_secs(60 * 60).try_into().unwrap()) //one hour should be more than sufficient to run all these steps
         .bucket_id(test_bucket.bucket_id())
         .build();
     let res = b2_create_key(

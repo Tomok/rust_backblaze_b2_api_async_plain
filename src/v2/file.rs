@@ -305,4 +305,9 @@ impl FileInformation {
     pub fn file_name(&self) -> &FileName {
         &self.file_name
     }
+
+    /// Get a reference to the file information's content type.
+    pub fn content_type(&self) -> Option<&Mime> {
+        self.content_type.as_ref()
+    }
 }

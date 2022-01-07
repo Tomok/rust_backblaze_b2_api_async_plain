@@ -1,6 +1,9 @@
 use std::fmt::Display;
 
+use reqwest::RequestBuilder;
 use serde::{de, Deserialize, Serialize};
+
+use super::Md5DigestRef;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ServerSideEncryption {
@@ -108,7 +111,92 @@ impl<'de> Deserialize<'de> for ServerSideEncryption {
     }
 }
 
+const CUSTOMER_KEY_BYTES: usize = 32usize;
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(into = "SerializableServerSideEncryptionCustomerKey")]
+pub enum ServerSideEncryptionCustomerKey<'s> {
+    None,
+    SseB2,
+    SseC {
+        customer_key: &'s [u8; CUSTOMER_KEY_BYTES],
+        customer_key_md5: Md5DigestRef<'s>,
+    },
+}
+
+impl<'s> ServerSideEncryptionCustomerKey<'s> {
+    /// Adds these values to a RequestBuilder as headers
+    pub(crate) fn add_to_request_as_header(&self, request: RequestBuilder) -> RequestBuilder {
+        match self {
+            ServerSideEncryptionCustomerKey::None => request,
+            ServerSideEncryptionCustomerKey::SseB2 => {
+                request.header("X-Bz-Server-Side-Encryption", "AES256")
+            }
+            ServerSideEncryptionCustomerKey::SseC {
+                customer_key,
+                customer_key_md5,
+            } => request
+                .header("X-Bz-Server-Side-Encryption-Customer-Algorithm", "AES256")
+                .header(
+                    "X-Bz-Server-Side-Encryption-Customer-Key",
+                    base64_encode_sse(customer_key),
+                )
+                .header(
+                    "X-Bz-Server-Side-Encryption-Customer-Key-Md5",
+                    base64_encode_sse(customer_key_md5.bytes()),
+                ),
+        }
+    }
+}
+
+const BASE64_CONFIG: base64::Config = base64::Config::new(base64::CharacterSet::Standard, false);
+
+pub(crate) fn base64_encode_sse(s: impl AsRef<[u8]>) -> String {
+    base64::encode_config(s, BASE64_CONFIG)
+}
+
 #[derive(Debug, Serialize)]
-pub struct ServerSideEncryptionCustomerKey {
-    //TODO
+#[serde(rename_all = "camelCase")]
+pub struct SerializableServerSideEncryptionCustomerKey {
+    algorithm: Option<&'static str>,
+    #[serde(default)]
+    mode: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    customer_key: Option<String>, // base64 encoded
+    #[serde(skip_serializing_if = "Option::is_none")]
+    customer_key_md5: Option<String>, // base64 encoded
+}
+
+impl<'s> From<ServerSideEncryptionCustomerKey<'s>> for SerializableServerSideEncryptionCustomerKey {
+    fn from(sse_ck: ServerSideEncryptionCustomerKey) -> Self {
+        match sse_ck {
+            ServerSideEncryptionCustomerKey::None => Self {
+                algorithm: None,
+                mode: None,
+                customer_key: None,
+                customer_key_md5: None,
+            },
+            ServerSideEncryptionCustomerKey::SseB2 => Self {
+                algorithm: Some("AES256"),
+                mode: Some("SSE-B2"),
+                customer_key: None,
+                customer_key_md5: None,
+            },
+            ServerSideEncryptionCustomerKey::SseC {
+                customer_key,
+                customer_key_md5,
+            } => {
+                let key = base64_encode_sse(customer_key);
+                //assert_eq!(CUSTOMER_KEY_ENCODED_BYTES, key.len());
+                let key_md5 = base64_encode_sse(customer_key_md5.bytes());
+                //assert_eq!(CUSTOMER_KEY_MD5_ENCODED_BYTES, key_md5.len());
+                Self {
+                    algorithm: Some("AES256"),
+                    mode: Some("SSE-C"),
+                    customer_key: Some(key),
+                    customer_key_md5: Some(key_md5),
+                }
+            }
+        }
+    }
 }

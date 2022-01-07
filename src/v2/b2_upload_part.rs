@@ -5,9 +5,8 @@ use typed_builder::TypedBuilder;
 use crate::header_serializer::HeadersFrom;
 
 use super::{
-    errors::UploadPartError, server_side_encryption::EncryptionAlgorithm, FileId, JsonErrorObj,
-    Md5Digest, Md5DigestRef, PartNumber, ServerSideEncryption, ServerSideEncryptionCustomerKey,
-    Sha1Digest, Sha1DigestRef, TimeStamp, UploadPartUrlParameters,
+    errors::UploadPartError, FileId, JsonErrorObj, Md5Digest, PartNumber, ServerSideEncryption,
+    ServerSideEncryptionCustomerKey, Sha1Digest, Sha1DigestRef, TimeStamp, UploadPartUrlParameters,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -28,20 +27,9 @@ pub struct UploadPartParameters<'s> {
     /// You may optionally provide the SHA1 at the end of the upload.
     content_sha1: Sha1DigestRef<'s>,
 
-    #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Algorithm")]
     #[builder(default, setter(strip_option))]
-    /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption algorithm requested via b2_start_large_file.
-    server_side_encryption_algorithm: Option<EncryptionAlgorithm>,
-
-    #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key")]
-    #[builder(default, setter(strip_option))]
-    /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKey requested via b2_start_large_file.
-    server_side_encryption_customer_key: Option<&'s ServerSideEncryptionCustomerKey>,
-
-    #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
-    #[builder(default, setter(strip_option))]
-    /// This header is required if b2_start_large_file was called with parameters specifying Server-Side Encryption with Customer-Managed Keys (SSE-C), in which case its value must match the serverSideEncryption customerKeyMd5 requested via b2_start_large_file.
-    server_side_encryption_customer_key_md5: Option<Md5DigestRef<'s>>,
+    #[serde(skip)] //will be serialized manually
+    server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey<'s>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -98,17 +86,18 @@ pub async fn b2_upload_part<'a, T: Into<Body>>(
     upload_part_params: &'a UploadPartParameters<'a>,
     file_contents: T,
 ) -> Result<UploadPartOk, UploadPartError> {
-    let resp = reqwest::Client::new()
+    let mut request = reqwest::Client::new()
         .post(uploader_params.upload_url().as_str())
         .header(
             "Authorization",
             uploader_params.authorization_token().as_str(),
         )
         .headers_from(upload_part_params)
-        .body(file_contents)
-        .send()
-        .await
-        .map_err(UploadPartError::from)?;
+        .body(file_contents);
+    if let Some(ssec) = upload_part_params.server_side_encryption {
+        request = ssec.add_to_request_as_header(request);
+    }
+    let resp = request.send().await.map_err(UploadPartError::from)?;
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(UploadPartError::from)?)
     } else {

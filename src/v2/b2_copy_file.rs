@@ -71,12 +71,12 @@ pub struct CopyFileRequest<'s> {
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// If present, specifies the parameters for Backblaze B2 to use for accessing the source file data using Server-Side Encryption. This parameter is required if and only if the source file has been encrypted using Server-Side Encryption with Customer-Managed Keys (SSE-C), and the provided encryption key must match the one with which the source file was encrypted.
-    source_server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey>,
+    source_server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey<'s>>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// If present, specifies the parameters for Backblaze B2 to use for encrypting the copied data before storing the destination file using Server-Side Encryption.
-    destination_server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey>,
+    destination_server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey<'s>>,
 }
 
 pub async fn b2_copy_file(

@@ -221,10 +221,18 @@ fn sha1sum(data: &[u8]) -> Sha1Digest {
 }
 
 const UPLOAD_FILE_CONTENTS: &[u8] = &[42u8; 4096];
+// output key of `openssl enc -nosalt -aes-256-cbc -k hello-aes -P` .. use a save key in real usecases
+const CUSTOMER_KEY_FOR_SSE_C: [u8; 32] = [
+    0xE8, 0xB6, 0xC0, 0x0C, 0x9A, 0xDC, 0x5E, 0x75, 0xBB, 0x65, 0x6E, 0xCD, 0x42, 0x9C, 0xB1, 0x64,
+    0x3A, 0x25, 0xB1, 0x11, 0xFC, 0xD2, 0x2C, 0x66, 0x22, 0xD5, 0x3E, 0x07, 0x22, 0x43, 0x99, 0x93,
+];
 lazy_static! {
     static ref UPLOAD_FILE_NAME: FileName = "UploadedFile".to_owned().try_into().unwrap();
+    static ref UPLOAD_FILE_NAME_SSEC: FileName = "UploadedFileSSEC".to_owned().try_into().unwrap();
     static ref COPY_FILE_NAME: FileName = "CopiedFile".to_owned().try_into().unwrap();
+    static ref COPY_FILE_NAME_SSEC: FileName = "CopiedFileSSEC".to_owned().try_into().unwrap();
     static ref UPLOAD_FILE_CONTENTS_SHA1: Sha1Digest = sha1sum(UPLOAD_FILE_CONTENTS);
+    static ref CUSTOMER_KEY_FOR_SSE_C_MD5: Md5Digest = md5::compute(CUSTOMER_KEY_FOR_SSE_C).into();
 }
 
 async fn upload_file(test_key_auth: &AuthorizeAccountOk, test_bucket: &Bucket) -> FileInformation {
@@ -707,6 +715,88 @@ async fn update_bucket_life_cycle_rules(main_key_auth: &AuthorizeAccountOk, buck
     println!("done");
 }
 
+async fn server_side_encryption_c_calls(test_key_auth: &AuthorizeAccountOk, test_bucket: &Bucket) {
+    let server_side_encryption = ServerSideEncryptionCustomerKey::SseC {
+        customer_key: &CUSTOMER_KEY_FOR_SSE_C,
+        customer_key_md5: &CUSTOMER_KEY_FOR_SSE_C_MD5,
+    };
+
+    print!("Uploading test file with SSE-C... ");
+    let uploaded_file = {
+        let mut upload_params = b2_get_upload_url(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            test_bucket.bucket_id(),
+        )
+        .await
+        .expect("Could not get upload url");
+
+        let upload_file_params = UploadFileParameters::builder()
+            .file_name(&UPLOAD_FILE_NAME_SSEC)
+            .content_length(UPLOAD_FILE_CONTENTS.len() as u64)
+            .content_sha1(&UPLOAD_FILE_CONTENTS_SHA1)
+            .server_side_encryption(&server_side_encryption)
+            .build();
+
+        b2_upload_file(
+            &mut upload_params,
+            &upload_file_params,
+            UPLOAD_FILE_CONTENTS,
+        )
+        .await
+        .expect("Uploading test file with SSE-C failed")
+    };
+    let uploaded_file_id = uploaded_file
+        .file_id()
+        .expect("File uploaded with SSE-C did not have a file id");
+    println!("done");
+
+    print!("Copying file with SSE-C ...");
+    let copied_file = {
+        let parameters = CopyFileRequest::builder()
+            .source_file_id(uploaded_file_id)
+            .file_name(&COPY_FILE_NAME_SSEC)
+            .source_server_side_encryption(&server_side_encryption)
+            .destination_server_side_encryption(&server_side_encryption)
+            .build();
+        b2_copy_file(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &parameters,
+        )
+        .await
+        .expect("Copiing file with SSE-C failed")
+    };
+    println!("done");
+
+    print!("Checking file with SSE-C ...");
+    {
+        let download_params = DownloadParams::builder()
+            .file_id(
+                copied_file
+                    .file_id()
+                    .expect("File copied with SSE-C did not have a file_id"),
+            )
+            .server_side_encryption(&server_side_encryption)
+            .build();
+        let download = b2_download_file_by_id(
+            test_key_auth.download_url(),
+            Some(test_key_auth.authorization_token()),
+            &download_params,
+        )
+        .await
+        .expect("Downloading file sith SSE-C failed");
+        assert_eq!(
+            UPLOAD_FILE_CONTENTS,
+            download
+                .bytes()
+                .await
+                .expect("Getting data of file with SSE-C failed")
+        );
+    }
+    println!("done");
+}
+
 #[tokio::main]
 /// WARNING: this example uses blocking stdin/out without generating a separate thread this is generally a bad idea, but
 /// done here to keep the example simple
@@ -784,6 +874,8 @@ async fn main() {
 
     update_file_legal_hold(&test_key_auth, &uploaded_file).await;
     update_file_retention(&test_key_auth, &uploaded_file).await;
+
+    server_side_encryption_c_calls(&test_key_auth, &test_bucket).await;
 
     print!("Listing file names ... ");
     {

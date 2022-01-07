@@ -42,12 +42,12 @@ struct Params {
 async fn main() {
     let p = Params::from_args();
 
-    let target_filename = p.target_filename.unwrap_or(
+    let target_filename = p.target_filename.unwrap_or_else(|| {
         p.file_to_upload
             .file_name()
             .map(|x| x.to_string_lossy().to_string())
-            .expect("Filename could not be determined"),
-    );
+            .expect("Filename could not be determined")
+    });
     let auth_data = {
         let auth_file = match p.auth_file {
             Some(path) => PathBuf::from(path),
@@ -140,7 +140,7 @@ async fn main() {
             }
         }
     }
-    let sha1sum_references: Vec<Sha1DigestRef> = sha1sums.iter().map(|s| s).collect();
+    let sha1sum_references: Vec<Sha1DigestRef> = sha1sums.iter().collect();
     let res = b2_finish_large_file(
         auth_data.api_url(),
         auth_data.authorization_token(),

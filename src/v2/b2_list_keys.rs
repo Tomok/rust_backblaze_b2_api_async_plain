@@ -45,7 +45,7 @@ pub struct ListKeysOk {
 
 impl ListKeysOk {
     /// Get a reference to the list keys ok's next application key id.
-    pub fn next_application_key_id<'s>(&'s self) -> Option<ApplicationKeyIdRef<'s>> {
+    pub fn next_application_key_id(&self) -> Option<ApplicationKeyIdRef<'_>> {
         self.next_application_key_id.as_ref()
     }
 

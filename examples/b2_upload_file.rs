@@ -51,12 +51,12 @@ async fn main() {
             serde_yaml::from_reader(file).expect("Could not read upload url data from file");
         url
     };
-    let target_filename = p.target_filename.unwrap_or(
+    let target_filename = p.target_filename.unwrap_or_else(|| {
         p.file_to_upload
             .file_name()
             .map(|x| x.to_string_lossy().to_string())
-            .expect("Filename could not be determined"),
-    );
+            .expect("Filename could not be determined")
+    });
 
     let mut file = tokio::fs::File::open(p.file_to_upload)
         .await

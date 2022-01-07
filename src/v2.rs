@@ -63,7 +63,6 @@ impl TryFrom<String> for KeyName {
 
 pub type KeyNameRef<'a> = &'a KeyName;
 
-
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(transparent)]
 pub struct ApplicationKey(String);

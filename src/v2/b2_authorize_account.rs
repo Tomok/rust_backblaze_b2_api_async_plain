@@ -101,7 +101,7 @@ mod test {
             &FAKE_APPLICATION_KEY.to_owned().try_into().unwrap(),
         )
         .await;
-        assert_eq!(true, res.is_ok());
+        assert!(res.is_ok());
     }
 
     #[tokio::test]

@@ -21,7 +21,7 @@ pub struct StartLargeFileParameters<'s> {
     #[builder(default, setter(strip_option))]
     legal_hold: Option<&'s LegalHold>,
     #[builder(default, setter(strip_option))]
-    server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey>, // <- TODO: right type??
+    server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey<'s>>,
 }
 
 pub async fn b2_start_large_file<'a>(

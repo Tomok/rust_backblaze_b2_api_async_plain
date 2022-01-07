@@ -185,6 +185,10 @@ impl Md5Digest {
     pub fn new(bytes: [u8; 16]) -> Self {
         Self { bytes }
     }
+
+    pub fn bytes(&self) -> &[u8; 16] {
+        &self.bytes
+    }
 }
 
 impl<'a> TryFrom<&'a str> for Md5Digest {

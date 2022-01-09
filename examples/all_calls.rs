@@ -545,14 +545,11 @@ async fn download_file_by_name(
             .bucket_name(test_bucket.bucket_name())
             .file_name(large_uploaded_file.file_name())
             .range(&part2_range)
+            .authorization(download_auth.authorization_token())
             .build();
-        let resp = b2_download_file_by_name(
-            test_key_auth.download_url(),
-            Some(download_auth.authorization_token()),
-            &req,
-        )
-        .await
-        .expect("Downloading file by name failed");
+        let resp = b2_download_file_by_name(test_key_auth.download_url(), &req)
+            .await
+            .expect("Downloading file by name failed");
 
         let data = resp
             .bytes()
@@ -785,7 +782,27 @@ async fn server_side_encryption_c_calls(test_key_auth: &AuthorizeAccountOk, test
             &download_params,
         )
         .await
-        .expect("Downloading file sith SSE-C failed");
+        .expect("Downloading file with SSE-C failed");
+        assert_eq!(
+            UPLOAD_FILE_CONTENTS,
+            download
+                .bytes()
+                .await
+                .expect("Getting data of file with SSE-C failed")
+        );
+    }
+    println!("done");
+    print!("Checking named file download with SSE-C ...");
+    {
+        let download_params = DownloadFileByNameRequest::builder()
+            .bucket_name(test_bucket.bucket_name())
+            .file_name(copied_file.file_name())
+            .authorization(test_key_auth.authorization_token())
+            .server_side_encryption(&server_side_encryption)
+            .build();
+        let download = b2_download_file_by_name(test_key_auth.download_url(), &download_params)
+            .await
+            .expect("Downloading file by name for SSE-C file failed");
         assert_eq!(
             UPLOAD_FILE_CONTENTS,
             download

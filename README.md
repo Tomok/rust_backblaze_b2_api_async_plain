@@ -26,7 +26,7 @@ Some highlights:
 |[b2_delete_file_version](https://www.backblaze.com/b2/docs/b2_delete_file_version.html)|✔️|✔️|
 |[b2_delete_key](https://www.backblaze.com/b2/docs/b2_delete_key.html)|✔️³|✔️|
 |[b2_download_file_by_id](https://www.backblaze.com/b2/docs/b2_download_file_by_id.html)|✔️|✔️|
-|[b2_download_file_by_name](https://www.backblaze.com/b2/docs/b2_download_file_by_name.html)|✔️¹²|✔️|
+|[b2_download_file_by_name](https://www.backblaze.com/b2/docs/b2_download_file_by_name.html)|✔️|✔️|
 |[b2_finish_large_file](https://www.backblaze.com/b2/docs/b2_finish_large_file.html)|✔️|✔️|
 |[b2_get_download_authorization](https://www.backblaze.com/b2/docs/b2_get_download_authorization.html)|✔️|✔️|
 |[b2_get_file_info](https://www.backblaze.com/b2/docs/b2_get_file_info.html)|✔️|✔️|
@@ -46,8 +46,6 @@ Some highlights:
 |[b2_upload_file](https://www.backblaze.com/b2/docs/b2_upload_file.html)|✔️²|✔️|
 |[b2_upload_part](https://www.backblaze.com/b2/docs/b2_upload_part.html)|✔️²|✔️|
  
- ¹ Only a base set of parameters supported
-
  ² Server Side Encryption missing
  
  ³ some fields supported as serde_json::Value only ... to be changed

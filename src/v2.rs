@@ -149,6 +149,7 @@ pub use b2_list_file_versions::{
 pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams};
 pub use b2_download_file_by_name::{
     b2_download_file_by_name, get_b2_download_file_by_name_url, DownloadFileByNameRequest,
+    DownloadFileByNameUrlParameters,
 };
 pub use b2_get_download_authorization::{
     b2_get_download_authorization, GetDownloadAuthorizationOk, GetDownloadAuthorizationRequest,

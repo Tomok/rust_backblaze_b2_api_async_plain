@@ -6,6 +6,12 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = []
+# Features that are available in the b2 api, but their implementation in this library is not final yet,
+# so they might change in the feature without changing the major version of this package
+b2_unstable = [] 
+
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"

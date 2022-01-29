@@ -1,6 +1,8 @@
+#[cfg(feature = "b2_unstable")]
+use super::FileInfo;
 use super::{
     errors::LargeFileError, serialize_content_type_header, ApiUrl, AuthorizationToken, BucketId,
-    ContentTypeRef, FileInfo, FileInformation, FileName, FileRetention, JsonErrorObj, LegalHold,
+    ContentTypeRef, FileInformation, FileName, FileRetention, JsonErrorObj, LegalHoldOnOff,
     ServerSideEncryptionCustomerKey, CONTENT_TYPE_AUTO,
 };
 use serde::Serialize;
@@ -11,15 +13,21 @@ use typed_builder::TypedBuilder;
 pub struct StartLargeFileParameters<'s> {
     bucket_id: &'s BucketId,
     file_name: &'s FileName,
+
     #[builder(default = &CONTENT_TYPE_AUTO)]
     #[serde(serialize_with = "serialize_content_type_header")]
     content_type: ContentTypeRef<'s>,
+
+    #[cfg(feature = "b2_unstable")]
     #[builder(default, setter(strip_option))]
     file_info: Option<&'s FileInfo>, // <- TODO: right type??
+
     #[builder(default, setter(strip_option))]
     file_retention: Option<&'s FileRetention>,
+
     #[builder(default, setter(strip_option))]
-    legal_hold: Option<&'s LegalHold>,
+    legal_hold: Option<&'s LegalHoldOnOff>,
+
     #[builder(default, setter(strip_option))]
     server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey<'s>>,
 }

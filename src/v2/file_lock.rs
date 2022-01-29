@@ -168,11 +168,44 @@ struct DeserializeableFileLockConfiguration {
     value: Option<FileLockConfigurationValue>,
 }
 
-pub type LegalHold = serde_json::Value; //TODO
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LegalHoldOnOff {
     On,
     Off,
+}
+
+#[derive(Debug, Clone)]
+pub enum FileLegalHold {
+    ClientAuthorizedToRead { value: LegalHoldOnOff },
+    ClientNotAuthorizedToRead,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct DeserializeableLegalHoldConfiguration {
+    is_client_authorized_to_read: bool,
+    value: Option<LegalHoldOnOff>,
+}
+
+impl<'de> Deserialize<'de> for FileLegalHold {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let deserialized = DeserializeableLegalHoldConfiguration::deserialize(deserializer)?;
+        if deserialized.is_client_authorized_to_read {
+            match deserialized.value {
+                None => Ok(Self::ClientAuthorizedToRead {
+                    value: LegalHoldOnOff::Off,
+                }),
+                Some(value) => Ok(Self::ClientAuthorizedToRead { value }),
+            }
+        } else {
+            match deserialized.value {
+                Some(_) => Err(de::Error::invalid_value(de::Unexpected::Option, &"None")),
+                None => Ok(Self::ClientNotAuthorizedToRead),
+            }
+        }
+    }
 }

@@ -26,6 +26,7 @@ pub struct UpdateBucketRequest<'s> {
     ///Cache-Control policies can be set here on a global level for all the files in the bucket.
     bucket_info: Option<&'s BucketInfo>,
 
+    #[cfg(feature = "b2_unstable")]
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     cors_rules: Option<&'s serde_json::Value>, //TODO...

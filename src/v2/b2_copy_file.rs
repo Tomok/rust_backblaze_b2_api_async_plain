@@ -4,9 +4,12 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId, ContentTypeRef, FileId,
-    FileInfo, FileInformation, FileName, FileRetention, JsonErrorObj, LegalHold,
+    FileInformation, FileName, FileRetention, JsonErrorObj, LegalHold,
     ServerSideEncryptionCustomerKey,
 };
+
+#[cfg(feature = "b2_unstable")]
+use super::FileInfo;
 
 #[derive(Debug, Serialize)]
 pub enum MetadataDirective {
@@ -51,6 +54,7 @@ pub struct CopyFileRequest<'s> {
     /// The MIME type of the content of the file, which will be returned in the Content-Type header when downloading the file.
     content_type: Option<ContentTypeRef<'s>>,
 
+    #[cfg(feature = "b2_unstable")]
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// Must only be supplied if the metadataDirective is REPLACE.

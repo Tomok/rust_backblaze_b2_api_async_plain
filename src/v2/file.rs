@@ -216,6 +216,7 @@ impl From<Md5Digest> for String {
 }
 
 pub type Md5DigestRef<'s> = &'s Md5Digest;
+#[cfg(feature = "b2_unstable")]
 pub type FileInfo = serde_json::Value;
 pub type TimeStamp = i64;
 /// Content Disposition value acc. to the grammar specified in RFC 6266
@@ -358,6 +359,8 @@ pub struct FileInformation {
     #[serde(deserialize_with = "deserialize_mime_option", default)]
     content_type: Option<mime::Mime>,
     file_id: Option<FileId>,
+
+    #[cfg(feature = "b2_unstable")]
     file_info: FileInfo,
     file_name: FileName,
     file_retention: Option<FileRetention>,
@@ -402,6 +405,7 @@ impl FileInformation {
         self.content_md5.as_ref()
     }
 
+    #[cfg(feature = "b2_unstable")]
     /// Get a reference to the file information's file info.
     pub fn file_info(&self) -> &FileInfo {
         &self.file_info

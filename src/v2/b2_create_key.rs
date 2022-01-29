@@ -120,6 +120,7 @@ pub struct CreatedKeyInformation {
     ///When present, restricts access to files whose names start with the prefix.
     name_prefix: Option<FileNamePrefix>,
 
+    #[cfg(feature = "b2_unstable")]
     /// reserved by blackblaze for future use,
     options: serde_json::Value,
 }
@@ -163,6 +164,12 @@ impl CreatedKeyInformation {
     /// Get a reference to the created key information's name prefix.
     pub fn name_prefix(&self) -> Option<&FileNamePrefix> {
         self.name_prefix.as_ref()
+    }
+
+    #[cfg(feature = "b2_unstable")]
+    /// Get a reference to the created key information's options.
+    pub fn options(&self) -> &serde_json::Value {
+        &self.options
     }
 }
 

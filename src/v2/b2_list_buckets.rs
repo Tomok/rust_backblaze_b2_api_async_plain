@@ -173,6 +173,6 @@ mod test {
                 .build(),
         )
         .await;
-        assert!(res.is_ok());
+        assert!(res.is_ok(), "res={:#?}", res);
     }
 }

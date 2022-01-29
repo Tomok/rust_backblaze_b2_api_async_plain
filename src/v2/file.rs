@@ -1,5 +1,5 @@
 use super::{
-    AccountId, BucketId, FileRetention, InvalidCharacterError, LegalHold, ServerSideEncryption,
+    AccountId, BucketId, FileLegalHold, FileRetention, InvalidCharacterError, ServerSideEncryption,
     StringSpecializationError,
 };
 use headers::CacheControl;
@@ -364,7 +364,7 @@ pub struct FileInformation {
     file_info: FileInfo,
     file_name: FileName,
     file_retention: Option<FileRetention>,
-    legal_hold: Option<LegalHold>,
+    legal_hold: Option<FileLegalHold>,
     server_side_encryption: Option<ServerSideEncryption>,
     upload_timestamp: TimeStamp,
 }
@@ -417,7 +417,7 @@ impl FileInformation {
     }
 
     /// Get a reference to the file information's legal hold.
-    pub fn legal_hold(&self) -> Option<&LegalHold> {
+    pub fn legal_hold(&self) -> Option<&FileLegalHold> {
         self.legal_hold.as_ref()
     }
 

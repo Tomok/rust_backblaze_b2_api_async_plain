@@ -2,7 +2,7 @@
 use super::FileInfo;
 use super::{
     errors::LargeFileError, serialize_content_type_header, ApiUrl, AuthorizationToken, BucketId,
-    ContentTypeRef, FileInformation, FileName, FileRetention, JsonErrorObj, LegalHold,
+    ContentTypeRef, FileInformation, FileName, FileRetention, JsonErrorObj, LegalHoldOnOff,
     ServerSideEncryptionCustomerKey, CONTENT_TYPE_AUTO,
 };
 use serde::Serialize;
@@ -26,7 +26,7 @@ pub struct StartLargeFileParameters<'s> {
     file_retention: Option<&'s FileRetention>,
 
     #[builder(default, setter(strip_option))]
-    legal_hold: Option<&'s LegalHold>,
+    legal_hold: Option<&'s LegalHoldOnOff>,
 
     #[builder(default, setter(strip_option))]
     server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey<'s>>,

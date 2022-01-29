@@ -4,7 +4,7 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId, ContentTypeRef, FileId,
-    FileInformation, FileName, FileRetention, JsonErrorObj, LegalHold,
+    FileInformation, FileName, FileRetention, JsonErrorObj, LegalHoldOnOff,
     ServerSideEncryptionCustomerKey,
 };
 
@@ -70,7 +70,7 @@ pub struct CopyFileRequest<'s> {
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]
     /// If present, specifies the File Lock legal hold status for the new file. Setting the value requires the writeFileLegalHolds capability and that the destination bucket is File Lock-enabled.
-    legal_hold: Option<&'s LegalHold>,
+    legal_hold: Option<&'s LegalHoldOnOff>,
 
     #[builder(default, setter(strip_option))]
     #[serde(skip_serializing_if = "Option::is_none")]

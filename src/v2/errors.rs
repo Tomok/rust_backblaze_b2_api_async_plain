@@ -5,6 +5,8 @@ macro_rules! error_enum{
         #[derive(Debug)]
         pub enum $enum_name {
             $($variant_name { raw_error: crate::v2::JsonErrorObj },)*
+            /// Error reported from reqwest & not in the data of the request or response
+            RequestError{error: reqwest::Error},
             Unexpected {
                 raw_error: crate::v2::Error,
             },
@@ -24,9 +26,14 @@ macro_rules! error_enum{
 
         impl From<reqwest::Error> for $enum_name {
             fn from(e: reqwest::Error) -> Self {
-                //TODO separate error for network / timeouts??
-                Self::Unexpected {
-                    raw_error: crate::v2::Error::ReqwestError(e),
+                if e.is_timeout() || e.is_connect() {
+                    Self::RequestError {
+                        error: e
+                    }
+                } else {
+                    Self::Unexpected {
+                        raw_error: crate::v2::Error::ReqwestError(e),
+                    }
                 }
             }
         }

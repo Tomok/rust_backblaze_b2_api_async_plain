@@ -1,31 +1,123 @@
 use super::{
-    errors::DownloadFileError, BucketName, DownloadAuthorizationToken, DownloadUrl, FileName,
+    errors::DownloadFileError, serialize_header_option, BucketName, CacheControlHeaderValueRef,
+    ContentDispositionRef, ContentEncodingRef, ContentLanguageRef, ContentTypeRef,
+    DownloadAuthorizationToken, DownloadUrl, ExpiresHeaderValueRef, FileName,
+    ServerSideEncryptionCustomerKey,
 };
 
 use headers::{HeaderMap, HeaderMapExt};
+use serde::Serialize;
 use typed_builder::TypedBuilder;
 
 #[derive(Debug, TypedBuilder)]
-pub struct DownloadFileByNameRequest<'s> {
+pub struct DownloadFileByNameRequest<'s, AuthToken>
+where
+    AuthToken: 's + DownloadAuthorizationToken + Serialize,
+{
     bucket_name: &'s BucketName,
     file_name: &'s FileName,
     #[builder(default, setter(strip_option))]
     range: Option<&'s headers::Range>,
+    #[builder(default, setter(strip_option))]
+    authorization: Option<&'s AuthToken>,
+    #[builder(default, setter(strip_option))]
+    b2_content_disposition: Option<ContentDispositionRef<'s>>,
+    #[builder(default, setter(strip_option))]
+    b2_content_language: Option<ContentLanguageRef<'s>>,
+    #[builder(default, setter(strip_option))]
+    b2_expires: Option<ExpiresHeaderValueRef<'s>>,
+    #[builder(default, setter(strip_option))]
+    b2_cache_control: Option<CacheControlHeaderValueRef<'s>>,
+    #[builder(default, setter(strip_option))]
+    b2_content_encoding: Option<ContentEncodingRef<'s>>,
+    #[builder(default, setter(strip_option))]
+    b2_content_type: Option<ContentTypeRef<'s>>,
+    #[builder(default, setter(strip_option))]
+    server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey<'s>>,
+}
+
+impl<'s, AuthToken> DownloadFileByNameRequest<'s, AuthToken>
+where
+    AuthToken: DownloadAuthorizationToken + Serialize,
+{
+    /// returns the parameters that cannot be passed as headers as [DownloadFileByNameUrlParameters]
+    fn as_url_params(&'s self) -> DownloadFileByNameUrlParameters<'s> {
+        DownloadFileByNameUrlParameters {
+            b2_content_disposition: self.b2_content_disposition,
+            b2_content_language: self.b2_content_language,
+            b2_expires: self.b2_expires,
+            b2_cache_control: self.b2_cache_control,
+            b2_content_encoding: self.b2_content_encoding,
+            b2_content_type: self.b2_content_type,
+        }
+    }
+}
+
+/// Parameters to generate a download url
+/// these intentionally do not include Authorization and server-side-encryption authentication,
+/// as those might be cached by intermediate servers, apear in logs, ...
+/// so it is better to pass them as headers instead
+#[derive(Debug, TypedBuilder, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DownloadFileByNameUrlParameters<'s> {
+    #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
+    b2_content_disposition: Option<ContentDispositionRef<'s>>,
+
+    #[builder(default, setter(strip_option, into))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
+    b2_content_language: Option<ContentLanguageRef<'s>>,
+
+    #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
+    b2_expires: Option<ExpiresHeaderValueRef<'s>>,
+
+    #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
+    b2_cache_control: Option<CacheControlHeaderValueRef<'s>>,
+
+    #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
+    b2_content_encoding: Option<ContentEncodingRef<'s>>,
+
+    #[builder(default, setter(strip_option))]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_header_option"
+    )]
+    b2_content_type: Option<ContentTypeRef<'s>>,
 }
 
 /// gets a download URL for a given file in a given directory
 ///
 /// public as it might be usefull to give this url to a different application/client/...
-pub fn get_b2_download_file_by_name_url(
+pub fn get_b2_download_file_by_name_url<'s>(
     download_url: &DownloadUrl,
     bucket_name: &BucketName,
     file_name: &FileName,
+    params: &DownloadFileByNameUrlParameters<'s>,
 ) -> String {
     format!(
-        "{}/file/{}/{}",
+        "{}/file/{}/{}?{}",
         download_url.as_str(),
         bucket_name.as_str(),
-        file_name.as_str()
+        file_name.as_str(),
+        serde_urlencoded::to_string(params).unwrap()
     )
 }
 
@@ -33,17 +125,23 @@ pub fn get_b2_download_file_by_name_url(
 /// or PartialContent (206) if a range was used.
 pub async fn b2_download_file_by_name<'a, 'b, AuthToken>(
     download_url: &DownloadUrl,
-    authorization_token: Option<&'a AuthToken>,
-    request: &DownloadFileByNameRequest<'b>,
+    request: &DownloadFileByNameRequest<'b, AuthToken>,
 ) -> Result<reqwest::Response, DownloadFileError>
 where
-    AuthToken: DownloadAuthorizationToken,
+    AuthToken: DownloadAuthorizationToken + Serialize,
 {
-    let url =
-        get_b2_download_file_by_name_url(download_url, request.bucket_name, request.file_name);
+    let url = get_b2_download_file_by_name_url(
+        download_url,
+        request.bucket_name,
+        request.file_name,
+        &request.as_url_params(),
+    );
     let mut request_builder = reqwest::Client::new().get(url);
-    if let Some(auth) = authorization_token {
+    if let Some(auth) = request.authorization {
         request_builder = request_builder.header("Authorization", auth.download_token_as_str());
+    }
+    if let Some(sse) = request.server_side_encryption {
+        request_builder = sse.add_to_request_as_header(request_builder);
     }
     if let Some(range) = request.range {
         let mut headers = HeaderMap::with_capacity(1);

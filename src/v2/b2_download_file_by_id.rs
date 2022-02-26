@@ -60,8 +60,8 @@ pub struct DownloadParams<'s> {
     b2_content_type: Option<ContentTypeRef<'s>>,
 
     #[builder(default, setter(strip_option))]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey>,
+    #[serde(skip)] //use custom serializer
+    server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey<'s>>,
 }
 
 /// downloads a file by ID, does return a reqwest::Response object, if the server returned http status OK (200)
@@ -84,6 +84,9 @@ pub async fn b2_download_file_by_id(
     let mut request_builder = reqwest::Client::new().get(url).headers(headers);
     if let Some(auth) = authorization_token {
         request_builder = request_builder.header("Authorization", auth.as_str());
+    }
+    if let Some(sse) = params.server_side_encryption {
+        request_builder = sse.add_to_request_as_header(request_builder);
     }
     let resp = request_builder
         .send()

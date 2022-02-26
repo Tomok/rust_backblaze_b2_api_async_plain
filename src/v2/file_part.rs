@@ -20,7 +20,7 @@ impl Display for InvalidPartNumberError {
 }
 
 /// number of a file part, starts with 1, is 10000 at most.
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 #[serde(transparent)]
 pub struct PartNumber(u16);
 

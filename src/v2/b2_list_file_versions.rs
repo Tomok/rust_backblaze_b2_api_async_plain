@@ -3,7 +3,7 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors::ListFileVersionsError, ApiUrl, AuthorizationToken, BucketId, FileId, FileInformation,
-    FileName, MaxFileCount,
+    FileName, FileNameDelimiter, FileNamePrefix, MaxFileCount,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -21,10 +21,10 @@ pub struct ListFileVersionsRequest<'s> {
     max_file_count: Option<MaxFileCount>,
     #[builder(default, setter(strip_option, into))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    prefix: Option<&'s str>,
+    prefix: Option<&'s FileNamePrefix>,
     #[builder(default, setter(strip_option, into))]
     #[serde(skip_serializing_if = "Option::is_none")]
-    delimiter: Option<&'s str>,
+    delimiter: Option<&'s FileNameDelimiter>,
 }
 
 impl<'s> ListFileVersionsRequest<'s> {
@@ -33,8 +33,8 @@ impl<'s> ListFileVersionsRequest<'s> {
         start_file_name: Option<&'s FileName>,
         start_file_id: Option<&'s FileId>,
         max_file_count: Option<MaxFileCount>,
-        prefix: Option<&'s str>,
-        delimiter: Option<&'s str>,
+        prefix: Option<&'s FileNamePrefix>,
+        delimiter: Option<&'s FileNameDelimiter>,
     ) -> Self {
         Self {
             bucket_id,

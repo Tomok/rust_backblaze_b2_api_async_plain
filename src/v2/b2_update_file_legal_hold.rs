@@ -21,6 +21,23 @@ pub struct UpdateFileLegalHoldOk {
     legal_hold: LegalHoldOnOff,
 }
 
+impl UpdateFileLegalHoldOk {
+    /// Get a reference to the update file legal hold ok's file name.
+    pub fn file_name(&self) -> &FileName {
+        &self.file_name
+    }
+
+    /// Get a reference to the update file legal hold ok's file id.
+    pub fn file_id(&self) -> &FileId {
+        &self.file_id
+    }
+
+    /// Get a reference to the update file legal hold ok's legal hold.
+    pub fn legal_hold(&self) -> &LegalHoldOnOff {
+        &self.legal_hold
+    }
+}
+
 pub async fn b2_update_file_legal_hold(
     api_url: &ApiUrl,
     authorization_token: &AuthorizationToken,

@@ -51,7 +51,7 @@ async fn main() {
 
     let stdin = io::stdin();
     let mut stdout = io::stdout();
-    let application_key_id = match p.application_key_id {
+    let application_key_id_string = match p.application_key_id {
         Some(key_id) => key_id,
         None => {
             write!(stdout, "Please enter application key id: ").unwrap();
@@ -60,10 +60,16 @@ async fn main() {
             readline(&stdin)
         }
     };
+    let application_key_id = application_key_id_string
+        .try_into()
+        .expect("Invlaid application key id");
 
     write!(stdout, "Please enter the application key: ").unwrap();
     stdout.flush().unwrap();
-    let application_key = readline(&stdin);
+    let application_key_string = readline(&stdin);
+    let application_key = application_key_string
+        .try_into()
+        .expect("Invalid application key");
 
     let res = b2_authorize_account(&application_key_id, &application_key).await;
     writeln!(stdout, "Result: {:#?}", res).unwrap();

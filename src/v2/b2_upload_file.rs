@@ -6,9 +6,9 @@ use crate::header_serializer::HeadersFrom;
 
 use super::{
     errors::UploadFileError, serialize_content_type_header, serialize_header_option,
-    server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValueRef, ContentDispositionRef,
-    ContentLanguageRef, ContentTypeRef, ExpiresHeaderValueRef, FileInformation, FileName, Md5Ref,
-    ServerSideEncryptionCustomerKey, Sha1Ref, TimeStamp, UploadParameters, CONTENT_TYPE_AUTO,
+    CacheControlHeaderValueRef, ContentDispositionRef, ContentLanguageRef, ContentTypeRef,
+    ExpiresHeaderValueRef, FileInformation, FileName, ServerSideEncryptionCustomerKey,
+    Sha1DigestRef, TimeStamp, UploadParameters, CONTENT_TYPE_AUTO,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -29,7 +29,7 @@ pub struct UploadFileParameters<'s> {
     content_length: u64,
 
     #[serde(rename = "X-Bz-Content-Sha1")]
-    content_sha1: Sha1Ref<'s>,
+    content_sha1: Sha1DigestRef<'s>,
 
     #[serde(rename = "X-Bz-Info-src_last_modified_millis")]
     #[builder(default, setter(strip_option))]
@@ -66,17 +66,9 @@ pub struct UploadFileParameters<'s> {
     #[builder(default, setter(strip_option))]
     cache_control: Option<CacheControlHeaderValueRef<'s>>,
 
-    #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Algorithm")]
+    #[serde(skip)] // will be serialized manually
     #[builder(default, setter(strip_option))]
-    server_side_encryption_algorithm: Option<EncryptionAlgorithm>,
-
-    #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key")]
-    #[builder(default, setter(strip_option))]
-    server_side_encryption_customer_key: Option<&'s ServerSideEncryptionCustomerKey>,
-
-    #[serde(rename = "X-Bz-Server-Side-Encryption-Customer-Key-Md5")]
-    #[builder(default, setter(strip_option))]
-    server_side_encryption_customer_key_md5: Option<Md5Ref<'s>>,
+    server_side_encryption: Option<&'s ServerSideEncryptionCustomerKey<'s>>,
 }
 
 pub async fn b2_upload_file<'a, T: Into<Body>>(
@@ -84,17 +76,18 @@ pub async fn b2_upload_file<'a, T: Into<Body>>(
     upload_file_params: &'a UploadFileParameters<'a>,
     file_contents: T,
 ) -> Result<FileInformation, UploadFileError> {
-    let resp = reqwest::Client::new()
+    let mut request = reqwest::Client::new()
         .post(uploader_params.upload_url().as_str())
         .header(
             "Authorization",
             uploader_params.authorization_token().as_str(),
         )
         .headers_from(upload_file_params)
-        .body(file_contents)
-        .send()
-        .await
-        .map_err(UploadFileError::from)?;
+        .body(file_contents);
+    if let Some(sse) = upload_file_params.server_side_encryption {
+        request = sse.add_to_request_as_header(request);
+    }
+    let resp = request.send().await.map_err(UploadFileError::from)?;
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(UploadFileError::from)?)
     } else {

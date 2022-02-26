@@ -45,12 +45,6 @@ use serde::{Deserialize, Serialize};
 #[serde(transparent)]
 pub struct KeyName(String);
 
-impl From<KeyName> for String {
-    fn from(key_name: KeyName) -> Self {
-        key_name.0
-    }
-}
-
 impl KeyName {
     pub fn as_str(&self) -> &str {
         &self.0
@@ -67,16 +61,56 @@ impl TryFrom<String> for KeyName {
     }
 }
 
-pub type KeyNameRef<'a> = &'a str;
-pub type ApplicationKey = String; //TODO
-pub type ApplicationKeyId = String; //TODO
-pub type ApplicationKeyIdRef<'a> = &'a str; //TODO
+pub type KeyNameRef<'a> = &'a KeyName;
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[serde(transparent)]
+pub struct ApplicationKey(String);
+
+impl ApplicationKey {
+    fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl TryFrom<String> for ApplicationKey {
+    type Error = ();
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        // currently cannont fail as no rules are known for these values
+        // however might fail in the future ...
+        Ok(Self(value))
+    }
+}
+
+pub type ApplicationKeyRef<'a> = &'a ApplicationKey;
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[serde(transparent)]
+pub struct ApplicationKeyId(String);
+
+impl ApplicationKeyId {
+    fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+impl TryFrom<String> for ApplicationKeyId {
+    type Error = ();
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        // currently cannont fail as no rules are known for these values
+        // however might fail in the future ...
+        Ok(Self(value))
+    }
+}
+
+pub type ApplicationKeyIdRef<'a> = &'a ApplicationKeyId;
 
 pub use b2_authorize_account::AuthorizeAccountOk;
 /// Authorize account function see [official documentation](https://www.backblaze.com/b2/docs/b2_authorize_account.html)
 pub async fn b2_authorize_account(
-    application_key_id: &str,
-    application_key: &str,
+    application_key_id: &ApplicationKeyId,
+    application_key: &ApplicationKey,
 ) -> Result<AuthorizeAccountOk, errors::AuthorizeError> {
     // call the real function with the basic_uri filled in (needes to be changeable for testing)
     b2_authorize_account::b2_authorize_account(
@@ -115,6 +149,7 @@ pub use b2_list_file_versions::{
 pub use b2_download_file_by_id::{b2_download_file_by_id, DownloadParams};
 pub use b2_download_file_by_name::{
     b2_download_file_by_name, get_b2_download_file_by_name_url, DownloadFileByNameRequest,
+    DownloadFileByNameUrlParameters,
 };
 pub use b2_get_download_authorization::{
     b2_get_download_authorization, GetDownloadAuthorizationOk, GetDownloadAuthorizationRequest,

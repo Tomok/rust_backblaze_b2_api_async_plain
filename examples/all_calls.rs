@@ -5,6 +5,7 @@ use lazy_static::lazy_static;
 use std::{
     convert::{TryFrom, TryInto},
     io::{self, BufRead, Write},
+    time::Duration,
 };
 use structopt::StructOpt;
 
@@ -42,14 +43,14 @@ fn readline(stdin: &io::Stdin) -> String {
     res
 }
 
-async fn delete_test_keys(auth_data: &AuthorizeAccountOk, test_key_name: &str) {
+async fn delete_test_keys(auth_data: &AuthorizeAccountOk, test_key_name: &KeyName) {
     let mut start_key = None;
     loop {
         println!("Listing application keys ...");
         let list_key_params = ListKeysRequest::new(
             auth_data.account_id(),
             Some(1000u16.try_into().unwrap()), //1000 is the max number of keys requestable, without it counting like a second attempt
-            start_key.as_deref(),
+            start_key.as_ref(),
         );
 
         let key_listing = b2_list_keys(
@@ -61,7 +62,7 @@ async fn delete_test_keys(auth_data: &AuthorizeAccountOk, test_key_name: &str) {
         .expect("Listing Keys failed");
 
         for key_info in key_listing.keys() {
-            if key_info.key_name().as_str() == test_key_name {
+            if key_info.key_name() == test_key_name {
                 print!("Deleting test key ... ");
                 b2_delete_key(
                     auth_data.api_url(),
@@ -157,10 +158,10 @@ async fn delete_all_files_in_bucket(auth_data: &AuthorizeAccountOk, bucket: &Buc
 }
 
 //cleanup after the test / before creating keys
-async fn clean_up(
-    root_authorization_data: &AuthorizeAccountOk,
-    test_bucket_name: &BucketName,
-    test_key_name: &str,
+async fn clean_up<'a>(
+    root_authorization_data: &'a AuthorizeAccountOk,
+    test_bucket_name: &'a BucketName,
+    test_key_name: KeyNameRef<'a>,
 ) {
     delete_test_keys(root_authorization_data, test_key_name).await;
     delete_test_bucket(root_authorization_data, test_bucket_name).await;
@@ -191,7 +192,7 @@ async fn create_test_bucket(
 async fn create_test_key(
     root_authorization_data: &AuthorizeAccountOk,
     test_bucket: &Bucket,
-    test_key_name: &str,
+    test_key_name: &KeyName,
 ) -> CreatedKeyInformation {
     print!("Creating test key ... ");
     let capabilities = all_per_bucket_capabilites();
@@ -199,7 +200,7 @@ async fn create_test_key(
         .account_id(root_authorization_data.account_id())
         .capabilities(&capabilities)
         .key_name(test_key_name)
-        .valid_duration_in_seconds(60 * 60) //one hour should be more than sufficient to run all these steps
+        .valid_duration_in_seconds(Duration::from_secs(60 * 60).try_into().unwrap()) //one hour should be more than sufficient to run all these steps
         .bucket_id(test_bucket.bucket_id())
         .build();
     let res = b2_create_key(
@@ -213,17 +214,25 @@ async fn create_test_key(
     res
 }
 
-fn sha1sum(data: &[u8]) -> String {
+fn sha1sum(data: &[u8]) -> Sha1Digest {
     let mut h = sha1::Sha1::new();
     h.update(data);
-    h.digest().to_string()
+    h.digest().into()
 }
 
 const UPLOAD_FILE_CONTENTS: &[u8] = &[42u8; 4096];
+// output key of `openssl enc -nosalt -aes-256-cbc -k hello-aes -P` .. use a save key in real usecases
+const CUSTOMER_KEY_FOR_SSE_C: [u8; 32] = [
+    0xE8, 0xB6, 0xC0, 0x0C, 0x9A, 0xDC, 0x5E, 0x75, 0xBB, 0x65, 0x6E, 0xCD, 0x42, 0x9C, 0xB1, 0x64,
+    0x3A, 0x25, 0xB1, 0x11, 0xFC, 0xD2, 0x2C, 0x66, 0x22, 0xD5, 0x3E, 0x07, 0x22, 0x43, 0x99, 0x93,
+];
 lazy_static! {
     static ref UPLOAD_FILE_NAME: FileName = "UploadedFile".to_owned().try_into().unwrap();
+    static ref UPLOAD_FILE_NAME_SSEC: FileName = "UploadedFileSSEC".to_owned().try_into().unwrap();
     static ref COPY_FILE_NAME: FileName = "CopiedFile".to_owned().try_into().unwrap();
-    static ref UPLOAD_FILE_CONTENTS_SHA1: String = sha1sum(UPLOAD_FILE_CONTENTS);
+    static ref COPY_FILE_NAME_SSEC: FileName = "CopiedFileSSEC".to_owned().try_into().unwrap();
+    static ref UPLOAD_FILE_CONTENTS_SHA1: Sha1Digest = sha1sum(UPLOAD_FILE_CONTENTS);
+    static ref CUSTOMER_KEY_FOR_SSE_C_MD5: Md5Digest = md5::compute(CUSTOMER_KEY_FOR_SSE_C).into();
 }
 
 async fn upload_file(test_key_auth: &AuthorizeAccountOk, test_bucket: &Bucket) -> FileInformation {
@@ -295,7 +304,7 @@ async fn build_large_file(
     .await
     .expect("Could not get file upload parts url");
 
-    let sha1_part1: String = {
+    let sha1_part1: Sha1Digest = {
         let upload_data = Vec::from([0u8; LARGE_FILE_PART1_SIZE]);
         let sha1 = sha1sum(upload_data.as_ref());
         let params = UploadPartParameters::builder()
@@ -381,7 +390,7 @@ async fn build_large_file(
         assert_eq!(&*UPLOAD_FILE_CONTENTS_SHA1, parts.parts()[1].content_sha1());
     }
 
-    let sha1_part2_ref: &String = &UPLOAD_FILE_CONTENTS_SHA1;
+    let sha1_part2_ref: Sha1DigestRef = &UPLOAD_FILE_CONTENTS_SHA1;
     let res = b2_finish_large_file(
         test_key_auth.api_url(),
         test_key_auth.authorization_token(),
@@ -536,14 +545,11 @@ async fn download_file_by_name(
             .bucket_name(test_bucket.bucket_name())
             .file_name(large_uploaded_file.file_name())
             .range(&part2_range)
+            .authorization(download_auth.authorization_token())
             .build();
-        let resp = b2_download_file_by_name(
-            test_key_auth.download_url(),
-            Some(download_auth.authorization_token()),
-            &req,
-        )
-        .await
-        .expect("Downloading file by name failed");
+        let resp = b2_download_file_by_name(test_key_auth.download_url(), &req)
+            .await
+            .expect("Downloading file by name failed");
 
         let data = resp
             .bytes()
@@ -706,6 +712,108 @@ async fn update_bucket_life_cycle_rules(main_key_auth: &AuthorizeAccountOk, buck
     println!("done");
 }
 
+async fn server_side_encryption_c_calls(test_key_auth: &AuthorizeAccountOk, test_bucket: &Bucket) {
+    let server_side_encryption = ServerSideEncryptionCustomerKey::SseC {
+        customer_key: &CUSTOMER_KEY_FOR_SSE_C,
+        customer_key_md5: &CUSTOMER_KEY_FOR_SSE_C_MD5,
+    };
+
+    print!("Uploading test file with SSE-C... ");
+    let uploaded_file = {
+        let mut upload_params = b2_get_upload_url(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            test_bucket.bucket_id(),
+        )
+        .await
+        .expect("Could not get upload url");
+
+        let upload_file_params = UploadFileParameters::builder()
+            .file_name(&UPLOAD_FILE_NAME_SSEC)
+            .content_length(UPLOAD_FILE_CONTENTS.len() as u64)
+            .content_sha1(&UPLOAD_FILE_CONTENTS_SHA1)
+            .server_side_encryption(&server_side_encryption)
+            .build();
+
+        b2_upload_file(
+            &mut upload_params,
+            &upload_file_params,
+            UPLOAD_FILE_CONTENTS,
+        )
+        .await
+        .expect("Uploading test file with SSE-C failed")
+    };
+    let uploaded_file_id = uploaded_file
+        .file_id()
+        .expect("File uploaded with SSE-C did not have a file id");
+    println!("done");
+
+    print!("Copying file with SSE-C ...");
+    let copied_file = {
+        let parameters = CopyFileRequest::builder()
+            .source_file_id(uploaded_file_id)
+            .file_name(&COPY_FILE_NAME_SSEC)
+            .source_server_side_encryption(&server_side_encryption)
+            .destination_server_side_encryption(&server_side_encryption)
+            .build();
+        b2_copy_file(
+            test_key_auth.api_url(),
+            test_key_auth.authorization_token(),
+            &parameters,
+        )
+        .await
+        .expect("Copiing file with SSE-C failed")
+    };
+    println!("done");
+
+    print!("Checking file with SSE-C ...");
+    {
+        let download_params = DownloadParams::builder()
+            .file_id(
+                copied_file
+                    .file_id()
+                    .expect("File copied with SSE-C did not have a file_id"),
+            )
+            .server_side_encryption(&server_side_encryption)
+            .build();
+        let download = b2_download_file_by_id(
+            test_key_auth.download_url(),
+            Some(test_key_auth.authorization_token()),
+            &download_params,
+        )
+        .await
+        .expect("Downloading file with SSE-C failed");
+        assert_eq!(
+            UPLOAD_FILE_CONTENTS,
+            download
+                .bytes()
+                .await
+                .expect("Getting data of file with SSE-C failed")
+        );
+    }
+    println!("done");
+    print!("Checking named file download with SSE-C ...");
+    {
+        let download_params = DownloadFileByNameRequest::builder()
+            .bucket_name(test_bucket.bucket_name())
+            .file_name(copied_file.file_name())
+            .authorization(test_key_auth.authorization_token())
+            .server_side_encryption(&server_side_encryption)
+            .build();
+        let download = b2_download_file_by_name(test_key_auth.download_url(), &download_params)
+            .await
+            .expect("Downloading file by name for SSE-C file failed");
+        assert_eq!(
+            UPLOAD_FILE_CONTENTS,
+            download
+                .bytes()
+                .await
+                .expect("Getting data of file with SSE-C failed")
+        );
+    }
+    println!("done");
+}
+
 #[tokio::main]
 /// WARNING: this example uses blocking stdin/out without generating a separate thread this is generally a bad idea, but
 /// done here to keep the example simple
@@ -717,13 +825,15 @@ async fn main() {
         .unwrap_or_else(|| "rust-backblaze-b2-api-async-plain-test-bucket".to_owned())
         .try_into()
         .unwrap();
-    let test_key_name = p
+    let test_key_name: KeyName = p
         .test_key_name
-        .unwrap_or_else(|| "rust-backblaze-b2-api-async-plain-test-key".to_owned());
+        .unwrap_or_else(|| "rust-backblaze-b2-api-async-plain-test-key".to_owned())
+        .try_into()
+        .expect("Invalid test key name");
 
     let stdin = io::stdin();
     let mut stdout = io::stdout();
-    let application_key_id = if let Some(key_id) = p.application_key_id {
+    let application_key_id_string = if let Some(key_id) = p.application_key_id {
         key_id
     } else {
         write!(stdout, "Please enter application key id: ").unwrap();
@@ -731,9 +841,15 @@ async fn main() {
         stdout.flush().unwrap();
         readline(&stdin)
     };
+    let application_key_id = application_key_id_string
+        .try_into()
+        .expect("Invalid application key id");
     write!(stdout, "Please enter the application key: ").unwrap();
     stdout.flush().unwrap();
-    let application_key = readline(&stdin);
+    let application_key_string = readline(&stdin);
+    let application_key = application_key_string
+        .try_into()
+        .expect("Invalid application key");
 
     let root_authorization_data = b2_authorize_account(&application_key_id, &application_key)
         .await
@@ -775,6 +891,8 @@ async fn main() {
 
     update_file_legal_hold(&test_key_auth, &uploaded_file).await;
     update_file_retention(&test_key_auth, &uploaded_file).await;
+
+    server_side_encryption_c_calls(&test_key_auth, &test_bucket).await;
 
     print!("Listing file names ... ");
     {

@@ -3,7 +3,7 @@ use super::{
         BucketId, BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes, LifeCycleRule,
     },
     errors::GenericB2Error,
-    AccountId, ApiUrl, AuthorizationToken, FileLockConfiguration,
+    AccountId, ApiUrl, AuthorizationToken, FileLockConfiguration, ServerSideEncryption,
 };
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
@@ -48,13 +48,15 @@ pub struct Bucket {
     bucket_name: BucketName,
     bucket_type: BucketType,
     bucket_info: BucketInfo,
+    #[cfg(feature = "b2_unstable")]
     #[serde(default)]
     cors_rules: serde_json::Value, // it's not part of the example, so maybe optional???                 //todo!!!
     file_lock_configuration: FileLockConfiguration,
-    default_server_side_encryption: serde_json::Value, //todo !!!
+    default_server_side_encryption: ServerSideEncryption,
     lifecycle_rules: Vec<LifeCycleRule>,
     #[serde(default)]
     revision: Option<BucketRevision>, // it's not part of the example, so maybe optional???
+    #[cfg(feature = "b2_unstable")]
     #[serde(default)]
     options: Option<serde_json::Value>, //todo!!!
 }
@@ -98,6 +100,23 @@ impl Bucket {
     /// Get a reference to the bucket's revision.
     pub fn revision(&self) -> Option<&BucketRevision> {
         self.revision.as_ref()
+    }
+
+    /// Get a reference to the bucket's default server side encryption.
+    pub fn default_server_side_encryption(&self) -> &ServerSideEncryption {
+        &self.default_server_side_encryption
+    }
+
+    #[cfg(feature = "b2_unstable")]
+    /// Get a reference to the bucket's cors rules.
+    pub fn cors_rules(&self) -> &serde_json::Value {
+        &self.cors_rules
+    }
+
+    #[cfg(feature = "b2_unstable")]
+    /// Get a reference to the bucket's options.
+    pub fn options(&self) -> Option<&serde_json::Value> {
+        self.options.as_ref()
     }
 }
 
@@ -152,6 +171,6 @@ mod test {
                 .build(),
         )
         .await;
-        assert!(res.is_ok());
+        assert!(res.is_ok(), "res={:#?}", res);
     }
 }

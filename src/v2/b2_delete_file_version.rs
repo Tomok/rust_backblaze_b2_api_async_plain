@@ -37,6 +37,18 @@ pub struct DeleteFileVersionOk {
     file_name: FileName,
 }
 
+impl DeleteFileVersionOk {
+    /// Get a reference to the delete file version ok's file id.
+    pub fn file_id(&self) -> &FileId {
+        &self.file_id
+    }
+
+    /// Get a reference to the delete file version ok's file name.
+    pub fn file_name(&self) -> &FileName {
+        &self.file_name
+    }
+}
+
 /// Deletes a specific version of a file.
 ///
 /// If the version you delete is the latest version, and there are older versions, then the most recent older version will become the current version, and be the one that you'll get when downloading by name. See the File Versions page for more details.

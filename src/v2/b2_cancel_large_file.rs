@@ -12,6 +12,28 @@ pub struct CancelFileOk {
     file_name: FileName,
 }
 
+impl CancelFileOk {
+    /// Get a reference to the cancel file ok's file id.
+    pub fn file_id(&self) -> &FileId {
+        &self.file_id
+    }
+
+    /// Get a reference to the cancel file ok's account id.
+    pub fn account_id(&self) -> &AccountId {
+        &self.account_id
+    }
+
+    /// Get a reference to the cancel file ok's bucket id.
+    pub fn bucket_id(&self) -> &BucketId {
+        &self.bucket_id
+    }
+
+    /// Get a reference to the cancel file ok's file name.
+    pub fn file_name(&self) -> &FileName {
+        &self.file_name
+    }
+}
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct CancelFileRequest<'s> {

@@ -1,9 +1,7 @@
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-use super::{
-    errors::DeleteFileVersionError, ApiUrl, AuthorizationToken, FileId, FileName, JsonErrorObj,
-};
+use super::{errors::DeleteFileVersionError, ApiUrl, AuthorizationToken, FileId, FileName};
 
 #[derive(Debug, Serialize, TypedBuilder)]
 #[serde(rename_all = "camelCase")]
@@ -59,7 +57,6 @@ pub async fn b2_delete_file_version<'a>(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(DeleteFileVersionError::from_response(resp).await)
     }
 }

@@ -3,7 +3,7 @@ use serde::Serialize;
 use typed_builder::TypedBuilder;
 
 use super::{
-    errors, serialize_header_option, ApiUrl, AuthorizationToken, FileId, JsonErrorObj, PartNumber,
+    errors, serialize_header_option, ApiUrl, AuthorizationToken, FileId, PartNumber,
     ServerSideEncryptionCustomerKey, UploadPartOk,
 };
 
@@ -52,7 +52,6 @@ pub async fn b2_copy_part<'a>(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(errors::CopyError::from_response(resp).await)
     }
 }

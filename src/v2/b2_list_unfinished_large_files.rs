@@ -3,8 +3,6 @@ use std::{convert::TryFrom, num::NonZeroU8};
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-use crate::v2::JsonErrorObj;
-
 use super::{
     errors::GenericB2Error, ApiUrl, AuthorizationToken, BucketId, FileId, FileName, InvalidData,
     ListFileNamesOk,
@@ -70,7 +68,6 @@ pub async fn b2_list_unfinished_large_files(
         let auth_ok: ListFileNamesOk = resp.json().await?;
         Ok(auth_ok)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(GenericB2Error::from_response(resp).await)
     }
 }

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{errors::GetUploadUrlError, ApiUrl, AuthorizationToken, BucketId, JsonErrorObj};
+use super::{errors::GetUploadUrlError, ApiUrl, AuthorizationToken, BucketId};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -63,7 +63,6 @@ pub async fn b2_get_upload_url(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(GetUploadUrlError::from)?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(GetUploadUrlError::from)?;
-        Err(raw_error.into())
+        Err(GetUploadUrlError::from_response(resp).await)
     }
 }

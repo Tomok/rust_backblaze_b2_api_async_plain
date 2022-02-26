@@ -11,7 +11,6 @@ use super::{
     errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId,
     CacheControlHeaderValueRef, ContentDispositionRef, ContentEncodingRef, ContentLanguageRef,
     ContentTypeRef, DownloadOnlyAuthorizationToken, ExpiresHeaderValueRef, FileNamePrefix,
-    JsonErrorObj,
 };
 
 #[derive(Debug)]
@@ -152,7 +151,6 @@ pub async fn b2_get_download_authorization<'a>(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(errors::GetDownloadAuthorizationError::from_response(resp).await)
     }
 }

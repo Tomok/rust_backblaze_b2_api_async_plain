@@ -6,7 +6,7 @@ use super::{
     buckets::{BucketRevision, LifeCycleRule},
     errors::UpdateBucketError,
     AccountId, ApiUrl, AuthorizationToken, BucketId, BucketInfo, BucketType, DefaultFileRetention,
-    JsonErrorObj, ServerSideEncryption,
+    ServerSideEncryption,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -67,7 +67,6 @@ pub async fn b2_update_bucket(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(UpdateBucketError::from_response(resp).await)
     }
 }

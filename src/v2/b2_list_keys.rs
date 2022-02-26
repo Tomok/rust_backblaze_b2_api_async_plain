@@ -5,7 +5,7 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors::GenericB2Error, AccountId, ApiUrl, ApplicationKeyId, ApplicationKeyIdRef,
-    AuthorizationToken, JsonErrorObj, KeyInformation,
+    AuthorizationToken, KeyInformation,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -69,7 +69,6 @@ pub async fn b2_list_keys<'a>(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(GenericB2Error::from_response(resp).await)
     }
 }

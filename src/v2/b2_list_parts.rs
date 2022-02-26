@@ -1,8 +1,8 @@
 use std::{convert::TryFrom, num::NonZeroU16};
 
 use super::{
-    errors::GenericB2Error, ApiUrl, AuthorizationToken, FileId, InvalidData, JsonErrorObj, Md5,
-    PartNumber, ServerSideEncryption, Sha1, TimeStamp,
+    errors::GenericB2Error, ApiUrl, AuthorizationToken, FileId, InvalidData, Md5, PartNumber,
+    ServerSideEncryption, Sha1, TimeStamp,
 };
 
 use serde::{Deserialize, Serialize};
@@ -129,7 +129,6 @@ pub async fn b2_list_parts(
         let ok: ListPartsOk = resp.json().await?;
         Ok(ok)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(GenericB2Error::from_response(resp).await)
     }
 }

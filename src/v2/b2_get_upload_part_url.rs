@@ -1,5 +1,3 @@
-use crate::v2::JsonErrorObj;
-
 use super::{
     b2_get_upload_url::UploadUrl, errors::GetUploadUrlError, ApiUrl, AuthorizationToken, FileId,
 };
@@ -56,7 +54,6 @@ pub async fn b2_get_upload_part_url(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(GetUploadUrlError::from)?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(GetUploadUrlError::from)?;
-        Err(raw_error.into())
+        Err(GetUploadUrlError::from_response(resp).await)
     }
 }

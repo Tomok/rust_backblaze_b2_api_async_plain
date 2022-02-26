@@ -1,5 +1,3 @@
-use crate::v2::JsonErrorObj;
-
 use super::{errors::LargeFileError, ApiUrl, AuthorizationToken, FileId, FileInformation, Sha1Ref};
 use serde::Serialize;
 
@@ -31,7 +29,6 @@ pub async fn b2_finish_large_file<'a>(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(LargeFileError::from_response(resp).await)
     }
 }

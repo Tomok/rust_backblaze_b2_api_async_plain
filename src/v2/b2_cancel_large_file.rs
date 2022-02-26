@@ -1,5 +1,3 @@
-use crate::v2::JsonErrorObj;
-
 use super::{
     errors::GenericB2Error, AccountId, ApiUrl, AuthorizationToken, BucketId, FileId, FileName,
 };
@@ -35,7 +33,6 @@ pub async fn b2_cancel_large_file(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(GenericB2Error::from_response(resp).await)
     }
 }

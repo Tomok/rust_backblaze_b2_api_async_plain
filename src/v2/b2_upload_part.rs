@@ -5,9 +5,9 @@ use typed_builder::TypedBuilder;
 use crate::header_serializer::HeadersFrom;
 
 use super::{
-    errors::UploadPartError, server_side_encryption::EncryptionAlgorithm, FileId, JsonErrorObj,
-    Md5, Md5Ref, PartNumber, ServerSideEncryption, ServerSideEncryptionCustomerKey, Sha1, Sha1Ref,
-    TimeStamp, UploadPartUrlParameters,
+    errors::UploadPartError, server_side_encryption::EncryptionAlgorithm, FileId, Md5, Md5Ref,
+    PartNumber, ServerSideEncryption, ServerSideEncryptionCustomerKey, Sha1, Sha1Ref, TimeStamp,
+    UploadPartUrlParameters,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -75,7 +75,6 @@ pub async fn b2_upload_part<'a, T: Into<Body>>(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(UploadPartError::from)?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(UploadPartError::from)?;
-        Err(raw_error.into())
+        Err(UploadPartError::from_response(resp).await)
     }
 }

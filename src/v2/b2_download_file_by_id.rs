@@ -1,8 +1,7 @@
 use super::{
     errors::DownloadFileError, serialize_header_option, AuthorizationToken,
     CacheControlHeaderValueRef, ContentDispositionRef, ContentEncodingRef, ContentLanguageRef,
-    ContentTypeRef, DownloadUrl, ExpiresHeaderValueRef, FileId, JsonErrorObj,
-    ServerSideEncryptionCustomerKey,
+    ContentTypeRef, DownloadUrl, ExpiresHeaderValueRef, FileId, ServerSideEncryptionCustomerKey,
 };
 
 use headers::{HeaderMap, HeaderMapExt};
@@ -98,7 +97,6 @@ pub async fn b2_download_file_by_id(
     if resp.status() == expected_status {
         Ok(resp)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(DownloadFileError::from)?;
-        Err(raw_error.into())
+        Err(DownloadFileError::from_response(resp).await)
     }
 }

@@ -1,10 +1,16 @@
+use super::JsonErrorObj;
+
 macro_rules! error_enum{
     ($enum_name:ident {
         $(($variant_code:literal, $variant_text:literal, $variant_name:ident)),* $(,)?
     }) => {
         #[derive(Debug)]
         pub enum $enum_name {
-            $($variant_name { raw_error: crate::v2::JsonErrorObj },)*
+            $($variant_name {
+                raw_error: crate::v2::JsonErrorObj,
+                /// Retry delay in seconds as returned by the retry-after header, if any
+                retry: Option<usize>,
+            },)*
             /// Error reported from reqwest & not in the data of the request or response
             RequestError{error: reqwest::Error},
             Unexpected {
@@ -12,13 +18,55 @@ macro_rules! error_enum{
             },
         }
 
-        impl From<crate::v2::JsonErrorObj> for $enum_name {
-            fn from(raw_error: crate::v2::JsonErrorObj) -> Self {
+        impl $enum_name {
+            fn from_json_error_obj(raw_error: crate::v2::JsonErrorObj, retry: Option<usize>) -> Self {
                 match (raw_error.status.as_u16(), raw_error.code.as_str()) {
-                    $(($variant_code, $variant_text) => Self::$variant_name { raw_error },)*
+                    $(($variant_code, $variant_text) => Self::$variant_name { raw_error, retry },)*
                     _ => Self::Unexpected {
                         raw_error: crate::v2::Error::JsonError(raw_error),
                     },
+                }
+            }
+
+            fn header_to_usize(header: &headers::HeaderValue) -> Result<usize, crate::v2::Error> {
+                let s = header
+                    .to_str()
+                    .map_err(|_| crate::v2::Error::InvalidRetryAfterHeader {
+                        header: header.clone(),
+                    })?;
+                let v: usize = s
+                    .parse()
+                    .map_err(|_| crate::v2::Error::InvalidRetryAfterHeader {
+                        header: header.clone(),
+                    })?;
+                Ok(v)
+            }
+
+            pub async fn from_response(response: reqwest::Response) -> Self {
+                let retry_after = {
+                    if let Some(retry_after_header) = response.headers().get("retry-after") {
+                        match Self::header_to_usize(retry_after_header) {
+                            Ok(retry_after) => Some(retry_after),
+                            Err(e) => return Self::Unexpected{raw_error: e},
+                        }
+                    } else {
+                        None
+                    }
+                };
+
+                let res: Result<JsonErrorObj, _> = response.json().await;
+                match res {
+                    Ok(raw_error) => Self::from_json_error_obj(raw_error, retry_after),
+                    Err(e) => e.into(),
+                }
+            }
+
+            /// number of seconds from the RetryAfter Header, if any
+            pub fn retry_after(&self) -> Option<usize> {
+                match self {
+                    $( Self::$variant_name { raw_error: _, retry } => *retry,)*
+                    Self::RequestError { error: _ } => None,
+                    Self::Unexpected { raw_error: _ } => None,
                 }
             }
         }
@@ -203,9 +251,12 @@ mod test {
             code: "bad_request".to_owned(),
             message: "message".to_owned(),
         };
-        let err: TestEnum = json_err.clone().into();
+        let err = TestEnum::from_json_error_obj(json_err.clone(), None);
         match err {
-            TestEnum::BadRequest { raw_error } => assert_eq!(json_err, raw_error),
+            TestEnum::BadRequest {
+                raw_error,
+                retry: None,
+            } => assert_eq!(json_err, raw_error),
             _ => panic!("Expected BadRequest, found {:#?}", err),
         }
     }
@@ -217,7 +268,7 @@ mod test {
             code: "does_not_exist".to_owned(),
             message: "message".to_owned(),
         };
-        let err: TestEnum = json_err.clone().into();
+        let err = TestEnum::from_json_error_obj(json_err.clone(), None);
         match err {
             TestEnum::Unexpected {
                 raw_error: crate::v2::Error::JsonError(raw_error),

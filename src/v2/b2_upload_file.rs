@@ -7,9 +7,8 @@ use crate::header_serializer::HeadersFrom;
 use super::{
     errors::UploadFileError, serialize_content_type_header, serialize_header_option,
     server_side_encryption::EncryptionAlgorithm, CacheControlHeaderValueRef, ContentDispositionRef,
-    ContentLanguageRef, ContentTypeRef, ExpiresHeaderValueRef, FileInformation, FileName,
-    JsonErrorObj, Md5Ref, ServerSideEncryptionCustomerKey, Sha1Ref, TimeStamp, UploadParameters,
-    CONTENT_TYPE_AUTO,
+    ContentLanguageRef, ContentTypeRef, ExpiresHeaderValueRef, FileInformation, FileName, Md5Ref,
+    ServerSideEncryptionCustomerKey, Sha1Ref, TimeStamp, UploadParameters, CONTENT_TYPE_AUTO,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -99,7 +98,6 @@ pub async fn b2_upload_file<'a, T: Into<Body>>(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(UploadFileError::from)?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(UploadFileError::from)?;
-        Err(raw_error.into())
+        Err(UploadFileError::from_response(resp).await)
     }
 }

@@ -3,8 +3,8 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors::GenericB2Error, AccountId, ApiUrl, ApplicationKey, ApplicationKeyId,
-    ApplicationKeyIdRef, AuthorizationToken, BucketId, Capabilities, FileNamePrefix, JsonErrorObj,
-    KeyName, KeyNameRef, TimeStamp,
+    ApplicationKeyIdRef, AuthorizationToken, BucketId, Capabilities, FileNamePrefix, KeyName,
+    KeyNameRef, TimeStamp,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -116,7 +116,6 @@ pub async fn b2_create_key<'a>(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(GenericB2Error::from_response(resp).await)
     }
 }

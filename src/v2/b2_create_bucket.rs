@@ -3,7 +3,7 @@ use typed_builder::TypedBuilder;
 
 use super::{
     b2_list_buckets::Bucket, buckets::LifeCycleRule, errors::CreateBucketError, AccountId, ApiUrl,
-    AuthorizationToken, BucketInfo, BucketName, BucketType, JsonErrorObj, ServerSideEncryption,
+    AuthorizationToken, BucketInfo, BucketName, BucketType, ServerSideEncryption,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -55,7 +55,6 @@ pub async fn b2_create_bucket<'a>(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(CreateBucketError::from_response(resp).await)
     }
 }

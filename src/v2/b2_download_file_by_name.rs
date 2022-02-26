@@ -1,6 +1,5 @@
 use super::{
     errors::DownloadFileError, BucketName, DownloadAuthorizationToken, DownloadUrl, FileName,
-    JsonErrorObj,
 };
 
 use headers::{HeaderMap, HeaderMapExt};
@@ -63,7 +62,6 @@ where
     if resp.status().as_u16() == expected_status {
         Ok(resp)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(DownloadFileError::from_response(resp).await)
     }
 }

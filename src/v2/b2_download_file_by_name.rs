@@ -1,7 +1,7 @@
 use super::{
     errors::DownloadFileError, serialize_header_option, BucketName, CacheControlHeaderValueRef,
     ContentDispositionRef, ContentEncodingRef, ContentLanguageRef, ContentTypeRef,
-    DownloadAuthorizationToken, DownloadUrl, ExpiresHeaderValueRef, FileName, JsonErrorObj,
+    DownloadAuthorizationToken, DownloadUrl, ExpiresHeaderValueRef, FileName,
     ServerSideEncryptionCustomerKey,
 };
 
@@ -160,7 +160,6 @@ where
     if resp.status().as_u16() == expected_status {
         Ok(resp)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(DownloadFileError::from_response(resp).await)
     }
 }

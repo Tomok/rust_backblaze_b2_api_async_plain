@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use super::{
     b2_list_buckets::Bucket, errors::GenericB2Error, AccountId, ApiUrl, AuthorizationToken,
-    BucketId, JsonErrorObj,
+    BucketId,
 };
 
 #[derive(Debug, Serialize)]
@@ -31,7 +31,6 @@ pub async fn b2_delete_bucket(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(GenericB2Error::from_response(resp).await)
     }
 }

@@ -2,7 +2,7 @@ use std::{convert::TryFrom, num::NonZeroU16};
 
 use super::{
     errors::ListFileNamesError, file::FileInformation, ApiUrl, AuthorizationToken, BucketId,
-    FileName, FileNameDelimiter, FileNamePrefix, InvalidData, JsonErrorObj,
+    FileName, FileNameDelimiter, FileNamePrefix, InvalidData,
 };
 
 use serde::{Deserialize, Serialize};
@@ -98,8 +98,7 @@ pub async fn b2_list_file_names<'a>(
         let auth_ok: ListFileNamesOk = resp.json().await.map_err(ListFileNamesError::from)?;
         Ok(auth_ok)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(ListFileNamesError::from)?;
-        Err(raw_error.into())
+        Err(ListFileNamesError::from_response(resp).await)
     }
 }
 

@@ -2,7 +2,7 @@
 use super::FileInfo;
 use super::{
     errors::LargeFileError, serialize_content_type_header, ApiUrl, AuthorizationToken, BucketId,
-    ContentTypeRef, FileInformation, FileName, FileRetention, JsonErrorObj, LegalHoldOnOff,
+    ContentTypeRef, FileInformation, FileName, FileRetention, LegalHoldOnOff,
     ServerSideEncryptionCustomerKey, CONTENT_TYPE_AUTO,
 };
 use serde::Serialize;
@@ -48,7 +48,6 @@ pub async fn b2_start_large_file<'a>(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await.map_err(LargeFileError::from)?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(LargeFileError::from)?;
-        Err(raw_error.into())
+        Err(LargeFileError::from_response(resp).await)
     }
 }

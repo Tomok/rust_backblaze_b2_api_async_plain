@@ -1,6 +1,6 @@
 use super::{
     errors, AccountId, ApiUrl, ApplicationKeyIdRef, ApplicationKeyRef, AuthorizationToken,
-    Capabilities, DownloadUrl, JsonErrorObj,
+    Capabilities, DownloadUrl,
 };
 use serde::{Deserialize, Serialize};
 
@@ -81,8 +81,7 @@ pub async fn b2_authorize_account<'a>(
         let auth_ok: AuthorizeAccountOk = resp.json().await?;
         Ok(auth_ok)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(errors::AuthorizeError::from_response(resp).await)
     }
 }
 #[cfg(test)]

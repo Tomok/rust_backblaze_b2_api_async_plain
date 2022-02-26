@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{
     errors::GenericB2Error, AccountId, ApiUrl, ApplicationKeyId, ApplicationKeyIdRef,
-    AuthorizationToken, BucketId, Capabilities, FileNamePrefix, JsonErrorObj, KeyName, TimeStamp,
+    AuthorizationToken, BucketId, Capabilities, FileNamePrefix, KeyName, TimeStamp,
 };
 
 #[derive(Debug, Serialize)]
@@ -98,7 +98,6 @@ pub async fn b2_delete_key(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(GenericB2Error::from_response(resp).await)
     }
 }

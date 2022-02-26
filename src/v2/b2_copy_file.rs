@@ -4,8 +4,7 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors, serialize_header_option, ApiUrl, AuthorizationToken, BucketId, ContentTypeRef, FileId,
-    FileInformation, FileName, FileRetention, JsonErrorObj, LegalHoldOnOff,
-    ServerSideEncryptionCustomerKey,
+    FileInformation, FileName, FileRetention, LegalHoldOnOff, ServerSideEncryptionCustomerKey,
 };
 
 #[cfg(feature = "b2_unstable")]
@@ -97,7 +96,6 @@ pub async fn b2_copy_file(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(errors::CopyError::from_response(resp).await)
     }
 }

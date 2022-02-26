@@ -3,7 +3,6 @@ use typed_builder::TypedBuilder;
 
 use super::{
     errors::UpdateFileLockError, ApiUrl, AuthorizationToken, FileId, FileName, FileRetention,
-    JsonErrorObj,
 };
 
 #[derive(Debug, Serialize, TypedBuilder)]
@@ -56,7 +55,6 @@ pub async fn b2_update_file_retention(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(UpdateFileLockError::from_response(resp).await)
     }
 }

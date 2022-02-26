@@ -3,8 +3,7 @@ use super::{
         BucketId, BucketInfo, BucketName, BucketRevision, BucketType, BucketTypes, LifeCycleRule,
     },
     errors::GenericB2Error,
-    AccountId, ApiUrl, AuthorizationToken, FileLockConfiguration, JsonErrorObj,
-    ServerSideEncryption,
+    AccountId, ApiUrl, AuthorizationToken, FileLockConfiguration, ServerSideEncryption,
 };
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
@@ -149,8 +148,7 @@ pub async fn b2_list_buckets(
         let auth_ok: ListBucketsOk = resp.json().await.map_err(GenericB2Error::from)?;
         Ok(auth_ok)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await.map_err(GenericB2Error::from)?;
-        Err(raw_error.into())
+        Err(GenericB2Error::from_response(resp).await)
     }
 }
 

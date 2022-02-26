@@ -1,8 +1,6 @@
 use serde::Serialize;
 
-use super::{
-    errors::GetFileInfoError, ApiUrl, AuthorizationToken, FileId, FileInformation, JsonErrorObj,
-};
+use super::{errors::GetFileInfoError, ApiUrl, AuthorizationToken, FileId, FileInformation};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,7 +23,6 @@ pub async fn b2_get_file_info(
     if resp.status() == http::StatusCode::OK {
         Ok(resp.json().await?)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(GetFileInfoError::from_response(resp).await)
     }
 }

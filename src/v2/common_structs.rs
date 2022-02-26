@@ -100,6 +100,7 @@ impl std::error::Error for InvalidData {}
 pub enum Error {
     JsonError(JsonErrorObj),
     ReqwestError(reqwest::Error),
+    InvalidRetryAfterHeader { header: headers::HeaderValue },
 }
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]

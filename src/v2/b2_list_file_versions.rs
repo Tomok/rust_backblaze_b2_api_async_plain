@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
-use crate::v2::JsonErrorObj;
-
 use super::{
     errors::ListFileVersionsError, ApiUrl, AuthorizationToken, BucketId, FileId, FileInformation,
     FileName, FileNameDelimiter, FileNamePrefix, MaxFileCount,
@@ -89,7 +87,6 @@ pub async fn b2_list_file_versions<'a>(
         let auth_ok = resp.json().await?;
         Ok(auth_ok)
     } else {
-        let raw_error: JsonErrorObj = resp.json().await?;
-        Err(raw_error.into())
+        Err(ListFileVersionsError::from_response(resp).await)
     }
 }

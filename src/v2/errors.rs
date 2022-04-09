@@ -286,6 +286,7 @@ error_enum!(ListFileVersionsError {
 
 #[cfg(test)]
 mod test {
+    use wiremock::{matchers::method, Mock, MockServer, ResponseTemplate};
 
     use super::*;
     use crate::v2::JsonErrorObj;
@@ -335,5 +336,42 @@ mod test {
         assert_eq!(RecommendedReaction::Raise, err.recommended_action());
         assert_eq!(None, err.retry_after());
     }
+
+    #[tokio::test]
+    async fn test_from_response() {
+        let raw_error = JsonErrorObj {
+            status: 408u16.try_into().unwrap(),
+            code: "request_timeout".to_owned(),
+            message: "message".to_owned(),
+        };
+        let mock_server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .respond_with(
+                ResponseTemplate::new(408)
+                    .insert_header("Retry-After", "123")
+                    .set_body_json(raw_error.clone()),
+            )
+            .mount(&mock_server)
+            .await;
+        let resp = reqwest::get(mock_server.uri()).await.unwrap();
+        let error = TestEnum::from_response(resp).await;
+        match &error {
+            TestEnum::RequestTimeoutInServer {
+                raw_error: raw_error_received,
+                retry: retry_received,
+            } => {
+                assert_eq!(&raw_error, raw_error_received);
+                assert_eq!(&Some(123), retry_received);
+            }
+            _ => panic!(
+                "Wrong enum type, expected RequestTimeoutInServer: {:#?}",
+                &error
+            ),
+        }
+        assert_eq!(Some(123), error.retry_after());
+        assert_eq!(
+            RecommendedReaction::Retry { delay: &Some(123) },
+            error.recommended_action()
+        );
     }
 }

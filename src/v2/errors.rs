@@ -305,13 +305,15 @@ mod test {
             message: "message".to_owned(),
         };
         let err = TestEnum::from_json_error_obj(json_err.clone(), None);
-        match err {
+        match &err {
             TestEnum::BadRequest {
                 raw_error,
                 retry: None,
-            } => assert_eq!(json_err, raw_error),
+            } => assert_eq!(&json_err, raw_error),
             _ => panic!("Expected BadRequest, found {:#?}", err),
         }
+        assert_eq!(RecommendedReaction::Raise, err.recommended_action());
+        assert_eq!(None, err.retry_after());
     }
 
     #[test]
@@ -322,13 +324,16 @@ mod test {
             message: "message".to_owned(),
         };
         let err = TestEnum::from_json_error_obj(json_err.clone(), None);
-        match err {
+        match &err {
             TestEnum::Unexpected {
                 raw_error: crate::v2::Error::JsonError(raw_error),
             } => {
-                assert_eq!(json_err, raw_error)
+                assert_eq!(&json_err, raw_error)
             }
             _ => panic!("Expected Unexpected, found {:#?}", err),
         }
+        assert_eq!(RecommendedReaction::Raise, err.recommended_action());
+        assert_eq!(None, err.retry_after());
+    }
     }
 }

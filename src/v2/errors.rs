@@ -1,8 +1,42 @@
 use super::JsonErrorObj;
 
+/// How this error should be handled acc. to [https://www.backblaze.com/b2/docs/calling.html#error_handling] and [https://www.backblaze.com/b2/docs/integration_checklist.html]
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum RecommendedReaction<'s> {
+    /// Something in the request or api is wrong, call/cap limit reached, ... no chance of recovery
+    Raise,
+    /// Retry after some time
+    Retry {
+        /// delay returned by Backblaze, if any. If none was returned, use an exponential backoff starting with 1 Sec
+        delay: &'s Option<usize>,
+    },
+    /// Authorization expired, reauthenticate
+    Reauthenticate,
+    /// get a new upload url
+    GetNewUploadUrl,
+}
+trait B2Error {
+    fn recommended_action(&self) -> RecommendedReaction<'_>;
+}
+
+macro_rules! reactionIdentToRecommendedReaction {
+    (Raise, $retry:ident) => {
+        RecommendedReaction::Raise
+    };
+    (Retry, $retry:ident) => {
+        RecommendedReaction::Retry { delay: &$retry }
+    };
+    (Reauthenticate, $retry:ident) => {
+        RecommendedReaction::Reauthenticate
+    };
+    (GetNewUploadUrl, $retry:ident) => {
+        RecommendedReaction::GetNewUploadUrl
+    };
+}
+
 macro_rules! error_enum{
     ($enum_name:ident {
-        $(($variant_code:literal, $variant_text:literal, $variant_name:ident)),* $(,)?
+        $(($variant_code:literal, $variant_text:literal, $variant_name:ident, $reaction:ident)),* $(,)?
     }) => {
         #[derive(Debug)]
         pub enum $enum_name {
@@ -85,163 +119,182 @@ macro_rules! error_enum{
                 }
             }
         }
+
+        impl crate::v2::errors::B2Error for $enum_name {
+            #[allow(unused_variables)]
+            fn recommended_action(&self) -> RecommendedReaction<'_> {
+                match self {
+                    $(
+                        Self::$variant_name { raw_error: _, retry } => {reactionIdentToRecommendedReaction!($reaction, retry)}
+                    ,)*
+
+                    Self::RequestError{ error: _ } => {
+                        todo!()
+                    },
+                    Self::Unexpected { raw_error: _ } => RecommendedReaction::Raise,
+
+                }
+            }
+        }
     }
 }
 
 error_enum!(AuthorizeError {
-    (400, "bad_request", BadRequest),
-    (401, "unauthorized", Unauthorized),
-    (401, "unsupported", Unsupported),
-    (403, "transaction_cap_exceeded", TransactionCapExceeded),
+    (401, "bad_request", BadRequest, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "unsupported", Unsupported, Raise),
+    (403, "transaction_cap_exceeded", TransactionCapExceeded, Raise),
 });
 
 error_enum!(CopyError {
-    (400, "bad_request", BadRequest),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (403, "access_denied", AccessDenied),
-    (403, "cap_exceeded", CapExceeded),
-    (404, "not_found", NotFound),
-    (408, "request_timeout", RequestTimeout),
-    (416, "range_not_satisfiable", RangeNotSatisfiable),
+    (400, "bad_request", BadRequest, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (403, "access_denied", AccessDenied, Raise),
+    (403, "cap_exceeded", CapExceeded, Raise),
+    (404, "not_found", NotFound, Raise),
+    (408, "request_timeout", RequestTimeout, Retry),
+    (416, "range_not_satisfiable", RangeNotSatisfiable, Raise),
 });
 
 error_enum!(CreateBucketError {
-    (400, "bad_request", BadRequest),
-    (400, "too_many_buckets", TooManyBuckets),
-    (400, "duplicate_bucket_name", DuplicateBucketName),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
+    (400, "bad_request", BadRequest, Raise),
+    (400, "too_many_buckets", TooManyBuckets, Raise),
+    (400, "duplicate_bucket_name", DuplicateBucketName, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
 });
 
 error_enum!(DeleteFileVersionError {
-    (400, "bad_request", BadRequest),
-    (400, "bad_bucket_id", BadBucketId),
-    (400, "file_not_present", FileNotPresent),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (401, "access_denied", AccessDenied),
+    (400, "bad_request", BadRequest, Raise),
+    (400, "bad_bucket_id", BadBucketId, Raise),
+    (400, "file_not_present", FileNotPresent, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (401, "access_denied", AccessDenied, Raise),
 });
 
 error_enum!(DownloadFileError {
-    (400, "bad_request", BadRequest),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (403, "access_denied", AccessDenied),
-    (403, "download_cap_exceeded", DownloadCapExceeded),
-    (404, "not_found", NotFound),
-    (416, "range_not_satisfiable", RangeNotSatisfiable),
+    (400, "bad_request", BadRequest, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (403, "access_denied", AccessDenied, Raise),
+    (403, "download_cap_exceeded", DownloadCapExceeded, Raise),
+    (404, "not_found", NotFound, Raise),
+    (416, "range_not_satisfiable", RangeNotSatisfiable, Raise),
 });
 
 error_enum!(GetDownloadAuthorizationError {
-    (400, "bad_request", BadRequest),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (503, "service_unavailable", ServiceUnavailable),
+    (400, "bad_request", BadRequest, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (503, "service_unavailable", ServiceUnavailable, Retry),
 });
 
 error_enum!(GetFileInfoError {
-    (400, "bad_request", BadRequest),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (404, "not_found", NotFound),
+    (400, "bad_request", BadRequest, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (404, "not_found", NotFound, Raise),
 });
 
 error_enum!(GetUploadUrlError {
-    (400, "bad_request", BadRequest),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (403, "storage_cap_exceeded", StorageCapExceeded),
-    (503, "service_unavailable", ServiceUnavaliabe),
+    (400, "bad_request", BadRequest, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (403, "storage_cap_exceeded", StorageCapExceeded, Raise),
+    (503, "service_unavailable", ServiceUnavaliabe, Retry),
 });
 
 //Generic Error caused by backblaze, error value for multiple functions
 error_enum!(GenericB2Error {
-    (400, "bad_request", BadRequest),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
+    (400, "bad_request", BadRequest, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
 });
 
 error_enum!(ListFileNamesError {
-    (400, "bad_request", BadRequest),
-    (400, "invalid_bucket_id", InvalidBucketId),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (403, "transaction_cap_exceeded", TransactionCapExceeded),
-    (503, "bad_request", BadRequestTimeout),
+    (400, "bad_request", BadRequest, Raise),
+    (400, "invalid_bucket_id", InvalidBucketId, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (403, "transaction_cap_exceeded", TransactionCapExceeded, Raise),
+    (503, "bad_request", BadRequestTimeout, Retry),
 });
 
 error_enum!(LargeFileError {
-    (400, "bad_request", BadRequest),
-    (400, "bad_bucket_id", BadBucketId),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
+    (400, "bad_request", BadRequest, Raise),
+    (400, "bad_bucket_id", BadBucketId, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
 });
 
 error_enum!(UpdateBucketError {
-    (400, "bad_request", BadRequest),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (409, "conflict", Conflict),
+    (400, "bad_request", BadRequest, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (409, "conflict", Conflict, Raise),
 });
 
 error_enum!(UpdateFileLockError {
-    (400, "bad_request", BadRequest),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (401, "access_denied", AccessDenied),
-    (403, "cap_exceeded", CapExceeded),
-    (405, "method_not_allowed", MethodNotAllowed),
+    (400, "bad_request", BadRequest, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (401, "access_denied", AccessDenied, Raise),
+    (403, "cap_exceeded", CapExceeded, Raise),
+    (405, "method_not_allowed", MethodNotAllowed, Raise),
 });
 
 error_enum!(UploadFileError {
-    (400, "bad_request", BadRequest),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (403, "cap_exceeded", CapExceeded),
-    (408, "request_timeout", RequestTimeout),
-    (503, "service_unavailable", ServiceUnavailable),
+    (400, "bad_request", BadRequest, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (403, "cap_exceeded", CapExceeded, Raise),
+    (408, "request_timeout", RequestTimeout, GetNewUploadUrl),
+    (503, "service_unavailable", ServiceUnavailable, GetNewUploadUrl),
 });
 
 error_enum!(UploadPartError {
-    (400, "bad_request", BadRequest),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (408, "request_timeout", RequestTimeout),
-    (503, "service_unavailable", ServiceUnavailable),
+    (400, "bad_request", BadRequest, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (408, "request_timeout", RequestTimeout, GetNewUploadUrl),
+    (503, "service_unavailable", ServiceUnavailable, GetNewUploadUrl),
 });
 
 error_enum!(ListFileVersionsError {
-    (400, "out_of_range",	OutOfRange),
-    (400, "invalid_file_id", InvalidFileId),
-    (401, "unauthorized", Unauthorized),
-    (401, "bad_auth_token", BadAuthToken),
-    (401, "expired_auth_token", ExpiredAuthToken),
-    (503, "bad_request", BadRequest),
+    (400, "out_of_range",	OutOfRange, Raise),
+    (400, "invalid_file_id", InvalidFileId, Raise),
+    (401, "unauthorized", Unauthorized, Raise),
+    (401, "bad_auth_token", BadAuthToken, Reauthenticate),
+    (401, "expired_auth_token", ExpiredAuthToken, Reauthenticate),
+    (503, "bad_request", BadRequest, Retry),
 });
 
 #[cfg(test)]
 mod test {
 
+    use super::*;
     use crate::v2::JsonErrorObj;
     use std::convert::TryInto;
 
     error_enum!(TestEnum {
-            (400, "bad_request", BadRequest),
-            (401, "unauthorized", Unauthorized)
+            (400, "bad_request", BadRequest, Raise),
+            (401, "unauthorized", Unauthorized, Raise),
+            (408, "request_timeout", RequestTimeoutInServer, Retry),
     });
 
     #[test]

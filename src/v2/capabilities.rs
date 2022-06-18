@@ -27,6 +27,8 @@ pub enum Capability {
     ReadFileRetentions,
     WriteFileRetentions,
     BypassGovernance,
+    ReadBucketReplications,
+    WriteBucketReplications,
 }
 
 pub type Capabilities = EnumSet<Capability>;
@@ -51,4 +53,6 @@ pub fn all_per_bucket_capabilites() -> Capabilities {
         | Capability::ReadFileRetentions
         | Capability::WriteFileRetentions
         | Capability::BypassGovernance
+        | Capability::ReadBucketReplications
+        | Capability::WriteBucketReplications
 }
